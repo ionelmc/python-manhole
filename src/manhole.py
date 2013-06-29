@@ -60,21 +60,32 @@ class Manhole(threading.Thread):
             cry("ManholeUDS@: "+name)
 
             while True:
+                cry("Waiting for new connection ...")
                 client, _ = sock.accept()
+                global _client_inst
+
                 try:
-                    self.handle_connection(client)
-                except IOError:
-                    pass # yes I'm sure !
+                    _client_inst = ManholeConnection(client)
+                    _client_inst.start()
+                    _client_inst.join()
                 except: #pylint: disable=W0703
                     cry(traceback.format_exc())
                 finally:
+                    _client_inst = None
                     del client
         finally:
             if os:
                 os.unlink(name)
 
-    @staticmethod
-    def handle_connection(client):
+class ManholeConnection(threading.Thread):
+    def __init__(self, client):
+        super(ManholeConnection, self).__init__()
+        self.daemon = False
+        self.client = client
+        self.name = "ManholeConnection"
+
+    def run(self):
+        client = self.client
         client.settimeout(None)
         pid, uid, gid = get_peercred(client)
         euid = os.geteuid()
@@ -91,7 +102,6 @@ class Manhole(threading.Thread):
         backup = []
         try:
             client_fd = client.fileno()
-            client_sock = client._sock
             for mode, names in (
                 ('w', (
                     'stderr',
@@ -114,7 +124,7 @@ class Manhole(threading.Thread):
             cry("Cleaning up.")
             old_interval = sys.getcheckinterval()
             sys.setcheckinterval(2147483647)
-            junk = [client] # keep the old file objects alive for a bit
+            junk = [] # keep the old file objects alive for a bit
             for name, fh in backup:
                 junk.append(getattr(sys, name))
                 setattr(sys, name, fh)
@@ -126,10 +136,11 @@ class Manhole(threading.Thread):
                     pass
                 del fh
             del junk
+            self.client = None
             sys.setcheckinterval(old_interval)
 
 _inst_lock = thread.allocate_lock()
-_stderr = _inst = None
+_stderr = _inst = _client_inst = None
 
 def run_repl():
     dump_stactraces()

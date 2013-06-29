@@ -95,8 +95,8 @@ class ManholeTestCase(unittest.TestCase):
         """
         buff = '<UNINITIALIZED>'
 
-        for sec in range(seconds * 10):
-            time.sleep(0.1)
+        for _ in range(int(seconds * 20)):
+            time.sleep(0.05)
             buff = cb()
             check_strings = list(strings)
             check_strings.reverse()
@@ -122,14 +122,44 @@ class ManholeTestCase(unittest.TestCase):
             print "******************************"
             raise
 
-    def test_simple(self):
+    def test_simple_r1(self):
+        self.run_simple(1)
+
+    def test_simple_r2(self):
+        self.run_simple(2)
+
+    def test_simple_r3(self):
+        self.run_simple(3)
+
+    def test_simple_r4(self):
+        self.run_simple(4)
+
+    def test_simple_r5(self):
+        self.run_simple(5)
+
+    def test_simple_r6(self):
+        self.run_simple(6)
+
+    def test_simple_r7(self):
+        self.run_simple(7)
+
+    def test_simple_r8(self):
+        self.run_simple(8)
+
+    def test_simple_r9(self):
+        self.run_simple(9)
+
+    #def test_simple_r10(self):
+        #self.run_simple(10)
+
+    def run_simple(self, count):
         with TestProcess(sys.executable, __file__, 'daemon', 'test_simple') as proc:
             with self._dump_on_error(proc.read):
                 self._wait_for_strings(proc.read, 1, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
-                for i in range(1):
+                for i in range(count):
                     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-                    sock.settimeout(1)
+                    sock.settimeout(0.05)
                     sock.connect(uds_path)
                     with TestSocket(sock) as client:
                         proc.reset()
@@ -149,11 +179,6 @@ class ManholeTestCase(unittest.TestCase):
                             sock.close()
                     self._wait_for_strings(proc.read, 1, 'Cleaning up.')
 
-                self._wait_for_strings(proc.read, 1,
-                   'Cleaning up.',
-                   'DIED.'
-                )
-
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'daemon':
         logging.basicConfig(
@@ -164,7 +189,7 @@ if __name__ == '__main__':
         import manhole
         manhole.install()
         if test_name == 'test_simple':
-            time.sleep(1)
+            time.sleep(10)
         else:
             raise RuntimeError('Invalid test spec.')
         print 'DIED.'
