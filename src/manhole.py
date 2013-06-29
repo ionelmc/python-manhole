@@ -95,8 +95,8 @@ class Manhole(threading.Thread):
                 ('w', (
                     'stderr',
                     'stdout',
-                    #'__stderr__',
-                    #'__stdout__'
+                    '__stderr__',
+                    '__stdout__'
                 )),
                 ('r', (
                     'stdin',
