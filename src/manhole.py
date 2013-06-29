@@ -70,7 +70,8 @@ class Manhole(threading.Thread):
                 finally:
                     del client
         finally:
-            os.unlink(name)
+            if os:
+                os.unlink(name)
 
     @staticmethod
     def handle_connection(client):
