@@ -164,7 +164,13 @@ class ManholeConnection(threading.Thread):
 
 def run_repl():
     dump_stacktraces()
-    code.InteractiveConsole({k: v for k, v in globals().items() if not k.startswith('_')}).interact()
+    code.InteractiveConsole({
+        'dump_stacktraces': dump_stacktraces,
+        'sys': sys,
+        'os': os,
+        'socket': socket,
+        'traceback': traceback,
+    }).interact()
 
 def _remove_manhole_uds():
     name = "/tmp/manhole-%s" % os.getpid()
