@@ -7,10 +7,17 @@ stacktraces for all threads and an interactive prompt.
 
 Access to the socket is restricted to the application's effective user id or root.
 
-Usage::
+       This is just like Twisted's `manhole <http://twistedmatrix.com/documents/current/api/twisted.manhole.html>`__. 
+       It's simpler (no dependencies) and it only runs on Unix domain sockets (in contrast to Twisted's manhole which 
+       can run on telnet or ssh).
+
+
+Usage (you can put this in your django settings, wsgi app file, some module that's always imported early etc)::
 
     import manhole
     manhole.install() # this will start the daemon thread
+    
+    # and now you start your app, eg: server.serve_forever()
 
 Now in a shell you can do either of these::
 
@@ -68,4 +75,4 @@ Not sure yet ... maybe Python 2.6 and 2.7. Check Travis:
     :alt: Coverage Status
     :target: https://coveralls.io/r/ionelmc/python-manhole
 
-Coverage is wrong, must be a bug in coveralls, it should be around 80%-90% depending whether you count branches or not.
+Coverage is wrong, must be a bug in coveralls, it should be at least 80%-90% depending whether you count branches or not.
