@@ -68,3 +68,4 @@ Not sure yet ... maybe Python 2.6 and 2.7. Check Travis:
     :alt: Coverage Status
     :target: https://coveralls.io/r/ionelmc/python-manhole
 
+Coverage is wrong, must be a bug in coveralls, it should be around 80%-90% depending whether you count branches or not.
