@@ -4,7 +4,6 @@ logger = getLogger(__name__)
 
 import thread
 import threading
-#threading._VERBOSE = True
 import traceback
 import socket
 import struct
@@ -12,7 +11,8 @@ import sys
 import os
 import atexit
 import code
-#import weakref
+
+VERBOSE = True
 
 try:
     import ctypes
@@ -36,10 +36,11 @@ def cry(message):
     """
     Fail-ignorant logging function.
     """
-    try:
-        print(message, file=_stderr)
-    except: #pylint: disable=W0702
-        pass
+    if VERBOSE:
+        try:
+            print(message, file=_STDERR)
+        except: #pylint: disable=W0702
+            pass
 
 def get_peercred(sock):
     """Gets the (pid, uid, gid) for the client on the given *connected* socket."""
@@ -47,12 +48,6 @@ def get_peercred(sock):
     return struct.unpack('3i', sock.getsockopt(
         socket.SOL_SOCKET, SO_PEERCRED, struct.calcsize('3i')
     ))
-
-#class _Vigil(object):
-#    pass
-#
-#_vigil_locals = threading.local()
-#_vigil_refs = set()
 
 class SuspiciousClient(Exception):
     pass
@@ -68,7 +63,8 @@ class Manhole(threading.Thread):
         self.poll_interval = poll_interval
         self.name = "Manhole"
 
-    def get_socket(self):
+    @staticmethod
+    def get_socket():
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         pid = os.getpid()
         name = "/tmp/manhole-%s" % pid
@@ -80,25 +76,22 @@ class Manhole(threading.Thread):
         return sock, pid
 
     def run(self):
-        #_vigil_locals.vigil = vigil = _Vigil()
-        #_vigil_refs.add(weakref.ref(vigil, lambda *args: cry('CRITICAL: Manhole thread has died !')))
-        #del vigil
         pthread_setname_np(self.ident, self.name)
 
         sock, pid = self.get_socket()
         cry("Waiting for new connection (in pid:%s) ..." % pid)
         while True:
             client, _ = sock.accept()
-            global _client_inst
+            global _CLIENT_INST #pylint: disable=W0603
 
             try:
-                _client_inst = ManholeConnection(client)
-                _client_inst.start()
-                _client_inst.join()
+                _CLIENT_INST = ManholeConnection(client)
+                _CLIENT_INST.start()
+                _CLIENT_INST.join()
             except: #pylint: disable=W0703
-                cry(traceback.format_exc())
+                cry(traceback.format_exc()) #pylint: disable=W0702
             finally:
-                _client_inst = None
+                _CLIENT_INST = None
                 del client
 
             cry("Waiting for new connection ...")
@@ -178,12 +171,12 @@ def _remove_manhole_uds():
     if os.path.exists(name):
         os.unlink(name)
 
-_inst_lock = thread.allocate_lock()
-_stderr = _inst = _client_inst = _original_os_fork = _original_os_forkpty = None
+_INST_LOCK = thread.allocate_lock()
+_STDERR = _INST = _CLIENT_INST = _ORIGINAL_OS_FORK = _ORIGINAL_OS_FORKPTY = None
 
 def _patched_fork():
     """Fork a child process."""
-    pid = _original_os_fork()
+    pid = _ORIGINAL_OS_FORK()
     if not pid:
         cry('Fork detected. Reinstalling Manhole.')
         reinstall()
@@ -191,52 +184,53 @@ def _patched_fork():
 
 def _patched_forkpty():
     """Fork a new process with a new pseudo-terminal as controlling tty."""
-    pid, master_fd = _original_os_forkpty()
+    pid, master_fd = _ORIGINAL_OS_FORKPTY()
     if not pid:
         cry('Fork detected. Reinstalling Manhole.')
         reinstall()
     return pid, master_fd
 
 def _patch_os_fork_functions():
-    global _original_os_fork, _original_os_forkpty #pylint: disable=W0603
+    global _ORIGINAL_OS_FORK, _ORIGINAL_OS_FORKPTY #pylint: disable=W0603
 
     builtin_function = type(''.join)
     if hasattr(os, 'fork') and isinstance(os.fork, builtin_function):
-        _original_os_fork, os.fork = os.fork, _patched_fork
+        _ORIGINAL_OS_FORK, os.fork = os.fork, _patched_fork
     if hasattr(os, 'forkpty') and isinstance(os.forkpty, builtin_function):
-        _original_os_forkpty, os.forkpty = os.forkpty, _patched_forkpty
+        _ORIGINAL_OS_FORKPTY, os.forkpty = os.forkpty, _patched_forkpty
 
-def install(poll_interval=5):
-    global _stderr, _inst #pylint: disable=W0603
-    with _inst_lock:
-        _stderr = sys.__stderr__
-        if not _inst:
-            _inst = Manhole(poll_interval)
-            _inst.start()
+def install(poll_interval=5, verbose=True):
+    global _STDERR, _INST, VERBOSE #pylint: disable=W0603
+    with _INST_LOCK:
+        VERBOSE = verbose
+        _STDERR = sys.__stderr__
+        if not _INST:
+            _INST = Manhole(poll_interval)
+            _INST.start()
         atexit.register(_remove_manhole_uds)
         _patch_os_fork_functions()
 
 def reinstall():
-    assert _inst
-    global _inst #pylint: disable=W0603
-    with _inst_lock:
-        if not _inst.is_alive():
-            _inst = Manhole(_inst.poll_interval)
-            _inst.start()
+    global _INST #pylint: disable=W0603
+    assert _INST
+    with _INST_LOCK:
+        if not _INST.is_alive():
+            _INST = Manhole(_INST.poll_interval)
+            _INST.start()
 
 def dump_stacktraces():
-    code = []
+    lines = []
     for thread_id, stack in sys._current_frames().items(): #pylint: disable=W0212
-        code.append("\n######### ProcessID=%s, ThreadID=%s #########" % (
+        lines.append("\n######### ProcessID=%s, ThreadID=%s #########" % (
             os.getpid(), thread_id
         ))
         for filename, lineno, name, line in traceback.extract_stack(stack):
-            code.append('File: "%s", line %d, in %s' % (filename, lineno, name))
+            lines.append('File: "%s", line %d, in %s' % (filename, lineno, name))
             if line:
-                code.append("  %s" % (line.strip()))
-    code.append("#############################################\n\n")
+                lines.append("  %s" % (line.strip()))
+    lines.append("#############################################\n\n")
 
-    print('\n'.join(code), file=sys.stderr)
+    print('\n'.join(lines), file=sys.stderr)
 
 
 if __name__ == '__main__':
@@ -250,8 +244,7 @@ if __name__ == '__main__':
 
     import time
     from itertools import cycle
-    for i, _ in enumerate(cycle([None])):
-        #print(i, 'Main(%s)' % os.getpid(), [x() for x in _vigil_refs])
+    for i, _i in enumerate(cycle([None])):
         if i == 3:
             print()
             print('FORKING ----------------')
