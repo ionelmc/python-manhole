@@ -2,6 +2,7 @@ import unittest
 import os
 import sys
 import subprocess
+import traceback
 import socket
 import fcntl
 import errno
@@ -9,6 +10,7 @@ import time
 import logging
 import re
 import atexit
+import signal
 from contextlib import contextmanager
 from cStringIO import StringIO
 
@@ -45,7 +47,8 @@ class TestProcess(BufferingBase):
         self.proc = subprocess.Popen(
             args,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT
+            stderr=subprocess.STDOUT,
+            env=os.environ,
         )
         fd = self.proc.stdout.fileno()
         flags = fcntl.fcntl(fd, fcntl.F_GETFL)
@@ -61,12 +64,16 @@ class TestProcess(BufferingBase):
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         try:
-            self.proc.terminate()
-            # wait 2 second for the process to die gracefully
-            for _ in range(20):
+            self.proc.send_signal(signal.SIGINT)
+            for _ in range(5):
+                time.sleep(0.2)
+                if self.proc.poll() is not None:
+                    self.proc.terminate()
+            for _ in range(10):
                 time.sleep(0.1)
                 if self.proc.poll() is not None:
                     return
+            print >> sys.stderr, 'KILLED %s' % self
             self.proc.kill()
         except OSError as exc:
             if exc.errno != errno.ESRCH:
@@ -183,6 +190,37 @@ class ManholeTestCase(unittest.TestCase):
             'Cleaning up.',
             'Waiting for new connection'
         )
+    def test_exit_with_grace(self):
+        with TestProcess(sys.executable, __file__, 'daemon', 'test_simple') as proc:
+            with self._dump_on_error(proc.read):
+                self._wait_for_strings(proc.read, 1, '/tmp/manhole-')
+                uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
+                self._wait_for_strings(proc.read, 1, 'Waiting for new connection')
+
+                sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                sock.settimeout(0.05)
+                sock.connect(uds_path)
+                with TestSocket(sock) as client:
+                    with self._dump_on_error(client.read):
+                        self._wait_for_strings(client.read, 1,
+                            "ThreadID",
+                            "ProcessID",
+                            ">>>",
+                        )
+                        sock.send("print 'FOOBAR'\n")
+                        self._wait_for_strings(client.read, 1, "FOOBAR")
+
+                        self._wait_for_strings(proc.read, 1,
+                            'from PID:%s UID:%s' % (os.getpid(), os.getuid()),
+                        )
+                        sock.send("exit()\n")
+                        sock.shutdown(socket.SHUT_RDWR)
+                        sock.close()
+                self._wait_for_strings(proc.read, 1,
+                    'DONE.'
+                    'Cleaning up.',
+                    'Waiting for new connection'
+                )
 
     def test_with_fork(self):
         with TestProcess(sys.executable, __file__, 'daemon', 'test_with_fork') as proc:
@@ -240,6 +278,36 @@ class ManholeTestCase(unittest.TestCase):
                     "SuspiciousClient: Can't accept client with PID:-1 UID:-1 GID:-1. It doesn't match the current EUID:",
                     'Waiting for new connection'
                 )
+                proc.proc.send_signal(signal.SIGINT)
+cov = None
+def maybe_enable_coverage():
+    global cov
+    if cov:
+        cov.stop()
+    cov = cov or os.environ.get("WITH_COVERAGE")
+    if cov:
+        from coverage.control import coverage
+        cov = coverage(auto_data=True, data_suffix=True, timid=False, include=['src/*'])
+        cov.start()
+
+    @atexit.register
+    def cleanup():
+        cov.stop()
+        cov.save()
+
+
+def monkeypatch(mod, what):
+    old = getattr(mod, what)
+    def decorator(func):
+        def patch():
+            ret = old()
+            try:
+                func(ret)
+            except:
+                traceback.print_exc()
+            return ret
+        setattr(mod, what, patch)
+    return decorator
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'daemon':
@@ -247,10 +315,21 @@ if __name__ == '__main__':
             level=logging.DEBUG,
             format='[pid=%(process)d - %(asctime)s]: %(name)s - %(levelname)s - %(message)s',
         )
-        import coverage
-        coverage.process_startup()
-
         test_name = sys.argv[2]
+
+        maybe_enable_coverage()
+
+        @monkeypatch(os, 'fork')
+        def patched_fork(pid):
+            if not pid:
+                maybe_enable_coverage()
+            return pid
+
+        @monkeypatch(os, 'forkpty')
+        def patched_forkpty((pid, fd)):
+            if not pid:
+                maybe_enable_coverage()
+            return pid, fd
 
         import manhole
         manhole.install()
@@ -263,7 +342,9 @@ if __name__ == '__main__':
             if pid:
                 @atexit.register
                 def cleanup():
-                    os.kill(pid, 9)
+                    os.kill(pid, signal.SIGINT)
+                    time.sleep(0.2)
+                    os.kill(pid, signal.SIGTERM)
                 while not os.waitpid(pid, os.WNOHANG)[0]:
                     os.write(2, os.read(masterfd, 1024))
             else:
@@ -274,7 +355,9 @@ if __name__ == '__main__':
             if pid:
                 @atexit.register
                 def cleanup():
-                    os.kill(pid, 9)
+                    os.kill(pid, signal.SIGINT)
+                    time.sleep(0.2)
+                    os.kill(pid, signal.SIGTERM)
                 os.waitpid(pid, 0)
             else:
                 time.sleep(10)
