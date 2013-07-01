@@ -46,7 +46,7 @@ What happens when you actually connect to the socket
 1. Credentials are checked (if it's same user or root)
 2. sys.__std\*__/sys.std\* are be redirected to the UDS
 3. Stacktraces for each thread are written to the UDS
-3. REPL is started so you can fiddle with the process
+4. REPL is started so you can fiddle with the process
 
 
 Whishlist
@@ -54,7 +54,6 @@ Whishlist
 
 * Be compatible with eventlet/stackless (provide alternative implementation without thread)
 * More configurable (chose what sys.__std\*__/sys.std\* to patch on connect time)
-
 
 Requirements
 ============
