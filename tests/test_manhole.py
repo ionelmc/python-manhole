@@ -1,5 +1,6 @@
 import unittest
 import os
+import select
 import sys
 import subprocess
 import traceback
@@ -213,11 +214,13 @@ class ManholeTestCase(unittest.TestCase):
                         self._wait_for_strings(proc.read, 1,
                             'from PID:%s UID:%s' % (os.getpid(), os.getuid()),
                         )
-                        sock.send("exit()\n")
-                        sock.shutdown(socket.SHUT_RDWR)
+                        sock.shutdown(socket.SHUT_WR)
+                        select.select([sock], [], [], 5)
+                        sock.recv(1024)
+                        sock.shutdown(socket.SHUT_RD)
                         sock.close()
                 self._wait_for_strings(proc.read, 1,
-                    'DONE.'
+                    'DONE.',
                     'Cleaning up.',
                     'Waiting for new connection'
                 )
@@ -292,8 +295,9 @@ def maybe_enable_coverage():
 
     @atexit.register
     def cleanup():
-        cov.stop()
-        cov.save()
+        if cov:
+            cov.stop()
+            cov.save()
 
 
 def monkeypatch(mod, what):
