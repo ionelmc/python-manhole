@@ -20,32 +20,41 @@ Now in a shell you can do either of these::
 
 Sample output::
 
+    $ nc -U /tmp/manhole-1234
+
+    Python 2.7.3 (default, Apr 10 2013, 06:20:15)
+    [GCC 4.6.3] on linux2
+    Type "help", "copyright", "credits" or "license" for more information.
+    (InteractiveConsole)
+    >>> dir()
+    ['__builtins__', 'dump_stacktraces', 'os', 'socket', 'sys', 'traceback']
+    >>> print 'foobar'
+    foobar
 
 
-Goals
-=====
+Features
+========
 
-Design goals for this component:
+* Uses unix domain sockets, only root or same effective user can connect.
+* Current implementation runs a daemon thread that waits for connection.
+* Lightweight: does not fiddle with your process's singal handlers, settings, file descriptors, etc
+* Compatible with apps that fork, reinstalls the Manhole thread after fork - had to monkeypatch os.fork/os.forkpty for this.
 
-* Have some common sense about security: uses unix domain sockets and checks who connects (via SO_PEERCRED)
-* Be reliable and lightweight enough to leave it always active:
+What happens when you actually connect to the socket
+----------------------------------------------------
 
-  * Work as a python daemon thread for normal operation
-  * Do not mess with process's environment:
-
-    * No custom signal handlers
-    * No dup2 or fiddling with file descriptors
-
-  * Be compatible with applications that fork (rebind the UDS on fork) - **TODO**
-  * Be compatible with eventlet/stackless (provide alternative implementation without thread) - **TODO**
-  * Wake the process as little as possible (async I/O until connection is made)
+1. Credentials are checked (if it's same user or root)
+2. sys.__std\*__/sys.std\* are be redirected to the UDS
+3. Stacktraces for each thread are written to the UDS
+3. REPL is started so you can fiddle with the process
 
 
-Notes
------
+Whishlist
+---------
 
-* It will patch sys.__std\*__/sys.std\* when connection is establised.
-* Windows not supported. It could (named pipes, localhost tcp etc) ...
+* Be compatible with eventlet/stackless (provide alternative implementation without thread)
+* More configurable (chose what sys.__std\*__/sys.std\* to patch on connect time)
+
 
 Requirements
 ============
