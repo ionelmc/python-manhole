@@ -185,6 +185,7 @@ def _patched_fork():
     """Fork a child process."""
     pid = _original_os_fork()
     if not pid:
+        cry('Fork detected. Reinstalling Manhole.')
         reinstall()
     return pid
 
@@ -192,6 +193,7 @@ def _patched_forkpty():
     """Fork a new process with a new pseudo-terminal as controlling tty."""
     pid, master_fd = _original_os_forkpty()
     if not pid:
+        cry('Fork detected. Reinstalling Manhole.')
         reinstall()
     return pid, master_fd
 
