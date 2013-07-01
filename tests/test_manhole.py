@@ -161,7 +161,7 @@ class ManholeTestCase(unittest.TestCase):
     def run_simple(self, count):
         with TestProcess(sys.executable, __file__, 'daemon', 'test_simple') as proc:
             with self._dump_on_error(proc.read):
-                self._wait_for_strings(proc.read, 1, '/tmp/manhole-')
+                self._wait_for_strings(proc.read, 2, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
                 self._wait_for_strings(proc.read, 1, 'Waiting for new connection')
                 for _ in range(count):
