@@ -88,8 +88,8 @@ class Manhole(threading.Thread):
                 _CLIENT_INST = ManholeConnection(client)
                 _CLIENT_INST.start()
                 _CLIENT_INST.join()
-            except: #pylint: disable=W0703
-                cry(traceback.format_exc()) #pylint: disable=W0702
+            #except: #pylint: disable=W0703
+            #    cry(traceback.format_exc()) #pylint: disable=W0702
             finally:
                 _CLIENT_INST = None
                 del client
@@ -192,12 +192,11 @@ def _patched_forkpty():
 
 def _patch_os_fork_functions():
     global _ORIGINAL_OS_FORK, _ORIGINAL_OS_FORKPTY #pylint: disable=W0603
-
-    builtin_function = type(''.join)
-    if hasattr(os, 'fork') and isinstance(os.fork, builtin_function):
+    if not _ORIGINAL_OS_FORK:
         _ORIGINAL_OS_FORK, os.fork = os.fork, _patched_fork
-    if hasattr(os, 'forkpty') and isinstance(os.forkpty, builtin_function):
+    if not _ORIGINAL_OS_FORKPTY:
         _ORIGINAL_OS_FORKPTY, os.forkpty = os.forkpty, _patched_forkpty
+    cry("Patched %s and %s." % (_ORIGINAL_OS_FORK, _ORIGINAL_OS_FORKPTY))
 
 def install(poll_interval=5, verbose=True):
     global _STDERR, _INST, VERBOSE #pylint: disable=W0603
