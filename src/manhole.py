@@ -233,7 +233,7 @@ def dump_stacktraces():
     print('\n'.join(lines), file=sys.stderr)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__': #pragma: no cover
     from logging import basicConfig, DEBUG
     basicConfig(level=DEBUG)
     install(1)

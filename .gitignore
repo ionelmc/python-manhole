@@ -8,3 +8,4 @@ build/
 .build/
 pip-log.txt
 .tox/
+.coverage

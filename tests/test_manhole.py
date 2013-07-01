@@ -62,8 +62,8 @@ class TestProcess(BufferingBase):
     def __exit__(self, exc_type, exc_value, exc_traceback):
         try:
             self.proc.terminate()
-            # wait 1 second for the process to die gracefully
-            for _ in range(10):
+            # wait 2 second for the process to die gracefully
+            for _ in range(20):
                 time.sleep(0.1)
                 if self.proc.poll() is not None:
                     return
@@ -204,6 +204,28 @@ class ManholeTestCase(unittest.TestCase):
                 for _ in range(2):
                     proc.reset()
                     self.assertManholeRunning(proc, new_uds_path)
+
+    def test_with_forkpty(self):
+        with TestProcess(sys.executable, __file__, 'daemon', 'test_with_forkpty') as proc:
+            with self._dump_on_error(proc.read):
+                self._wait_for_strings(proc.read, 1, '/tmp/manhole-')
+                uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
+                self._wait_for_strings(proc.read, 1, 'Waiting for new connection')
+                for _ in range(2):
+                    proc.reset()
+                    self.assertManholeRunning(proc, uds_path)
+
+                proc.reset()
+                self._wait_for_strings(proc.read, 3, 'Fork detected')
+                self._wait_for_strings(proc.read, 1, '/tmp/manhole-')
+                new_uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
+                self.failIfEqual(uds_path, new_uds_path)
+
+                self._wait_for_strings(proc.read, 1, 'Waiting for new connection')
+                for _ in range(2):
+                    proc.reset()
+                    self.assertManholeRunning(proc, new_uds_path)
+
     def test_auth_fail(self):
         with TestProcess(sys.executable, __file__, 'daemon', 'test_auth_fail') as proc:
             with self._dump_on_error(proc.read):
@@ -229,12 +251,25 @@ if __name__ == '__main__':
         coverage.process_startup()
 
         test_name = sys.argv[2]
+
         import manhole
         manhole.install()
+
         if test_name == 'test_simple':
             time.sleep(10)
+        elif test_name == 'test_with_forkpty':
+            time.sleep(1)
+            pid, masterfd = os.forkpty()
+            if pid:
+                @atexit.register
+                def cleanup():
+                    os.kill(pid, 9)
+                while not os.waitpid(pid, os.WNOHANG)[0]:
+                    os.write(2, os.read(masterfd, 1024))
+            else:
+                time.sleep(10)
         elif test_name == 'test_with_fork':
-            time.sleep(2)
+            time.sleep(1)
             pid = os.fork()
             if pid:
                 @atexit.register

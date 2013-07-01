@@ -59,3 +59,4 @@ Not sure yet ... maybe Python 2.6 and 2.7. Check Travis:
 .. image:: https://coveralls.io/repos/ionelmc/python-manhole/badge.png?branch=master
     :alt: Coverage Status
     :target: https://coveralls.io/r/ionelmc/python-manhole
+
