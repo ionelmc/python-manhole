@@ -8,6 +8,7 @@ import errno
 import time
 import logging
 import re
+import atexit
 from contextlib import contextmanager
 from cStringIO import StringIO
 
@@ -155,30 +156,54 @@ class ManholeTestCase(unittest.TestCase):
                 self._wait_for_strings(proc.read, 1, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
                 self._wait_for_strings(proc.read, 1, 'Waiting for new connection')
-                for i in range(count):
-                    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-                    sock.settimeout(0.05)
-                    sock.connect(uds_path)
-                    with TestSocket(sock) as client:
-                        proc.reset()
-                        with self._dump_on_error(client.read):
-                            self._wait_for_strings(client.read, 1,
-                                "ThreadID",
-                                "ProcessID",
-                                ">>>",
-                            )
-                            sock.send("print 'FOOBAR'\n")
-                            self._wait_for_strings(client.read, 1, "FOOBAR")
+                for _ in range(count):
+                    proc.reset()
+                    self.assertManholeRunning(proc, uds_path)
 
-                            self._wait_for_strings(proc.read, 1,
-                                'from pid:%s uid:%s' % (os.getpid(), os.getuid()),
-                            )
-                            sock.shutdown(socket.SHUT_RDWR)
-                            sock.close()
-                    self._wait_for_strings(proc.read, 1,
-                        'Cleaning up.',
-                        'Waiting for new connection'
-                    )
+    def assertManholeRunning(self, proc, uds_path):
+        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        sock.settimeout(0.05)
+        sock.connect(uds_path)
+        with TestSocket(sock) as client:
+            with self._dump_on_error(client.read):
+                self._wait_for_strings(client.read, 1,
+                    "ThreadID",
+                    "ProcessID",
+                    ">>>",
+                )
+                sock.send("print 'FOOBAR'\n")
+                self._wait_for_strings(client.read, 1, "FOOBAR")
+
+                self._wait_for_strings(proc.read, 1,
+                    'from PID:%s UID:%s' % (os.getpid(), os.getuid()),
+                )
+                sock.shutdown(socket.SHUT_RDWR)
+                sock.close()
+        self._wait_for_strings(proc.read, 1,
+            'Cleaning up.',
+            'Waiting for new connection'
+        )
+
+    def test_with_fork(self):
+        with TestProcess(sys.executable, __file__, 'daemon', 'test_with_fork') as proc:
+            with self._dump_on_error(proc.read):
+                self._wait_for_strings(proc.read, 1, '/tmp/manhole-')
+                uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
+                self._wait_for_strings(proc.read, 1, 'Waiting for new connection')
+                for _ in range(2):
+                    proc.reset()
+                    self.assertManholeRunning(proc, uds_path)
+
+                proc.reset()
+                self._wait_for_strings(proc.read, 3, 'Fork detected')
+                self._wait_for_strings(proc.read, 1, '/tmp/manhole-')
+                new_uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
+                self.failIfEqual(uds_path, new_uds_path)
+
+                self._wait_for_strings(proc.read, 1, 'Waiting for new connection')
+                for _ in range(2):
+                    proc.reset()
+                    self.assertManholeRunning(proc, new_uds_path)
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'daemon':
@@ -194,6 +219,16 @@ if __name__ == '__main__':
         manhole.install()
         if test_name == 'test_simple':
             time.sleep(10)
+        if test_name == 'test_with_fork':
+            time.sleep(2)
+            pid = os.fork()
+            if pid:
+                @atexit.register
+                def cleanup():
+                    os.kill(pid, 9)
+                os.waitpid(pid, 0)
+            else:
+                time.sleep(10)
         else:
             raise RuntimeError('Invalid test spec.')
         print 'DIED.'
