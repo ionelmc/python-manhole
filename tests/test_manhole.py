@@ -204,6 +204,20 @@ class ManholeTestCase(unittest.TestCase):
                 for _ in range(2):
                     proc.reset()
                     self.assertManholeRunning(proc, new_uds_path)
+    def test_auth_fail(self):
+        with TestProcess(sys.executable, __file__, 'daemon', 'test_auth_fail') as proc:
+            with self._dump_on_error(proc.read):
+                self._wait_for_strings(proc.read, 1, '/tmp/manhole-')
+                uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
+                self._wait_for_strings(proc.read, 1, 'Waiting for new connection')
+                sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                sock.settimeout(1)
+                sock.connect(uds_path)
+                self.assertEquals("", sock.recv(1024))
+                self._wait_for_strings(proc.read, 1,
+                    "SuspiciousClient: Can't accept client with PID:-1 UID:-1 GID:-1. It doesn't match the current EUID:",
+                    'Waiting for new connection'
+                )
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'daemon':
@@ -219,7 +233,7 @@ if __name__ == '__main__':
         manhole.install()
         if test_name == 'test_simple':
             time.sleep(10)
-        if test_name == 'test_with_fork':
+        elif test_name == 'test_with_fork':
             time.sleep(2)
             pid = os.fork()
             if pid:
@@ -229,6 +243,9 @@ if __name__ == '__main__':
                 os.waitpid(pid, 0)
             else:
                 time.sleep(10)
+        elif test_name == 'test_auth_fail':
+            manhole.get_peercred = lambda _: (-1, -1, -1)
+            time.sleep(10)
         else:
             raise RuntimeError('Invalid test spec.')
         print 'DIED.'
