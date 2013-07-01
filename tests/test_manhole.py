@@ -60,6 +60,12 @@ class TestProcess(BufferingBase):
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         try:
+            self.proc.terminate()
+            # wait 1 second for the process to die gracefully
+            for _ in range(10):
+                time.sleep(0.1)
+                if self.proc.poll() is not None:
+                    return
             self.proc.kill()
         except OSError as exc:
             if exc.errno != errno.ESRCH:
@@ -122,41 +128,33 @@ class ManholeTestCase(unittest.TestCase):
             print "******************************"
             raise
 
-    def test_simple_r1(self):
+    def test_simple_r01(self):
         self.run_simple(1)
-
-    def test_simple_r2(self):
+    def test_simple_r02(self):
         self.run_simple(2)
-
-    def test_simple_r3(self):
+    def test_simple_r03(self):
         self.run_simple(3)
-
-    def test_simple_r4(self):
+    def test_simple_r04(self):
         self.run_simple(4)
-
-    def test_simple_r5(self):
+    def test_simple_r05(self):
         self.run_simple(5)
-
-    def test_simple_r6(self):
+    def test_simple_r06(self):
         self.run_simple(6)
-
-    def test_simple_r7(self):
+    def test_simple_r07(self):
         self.run_simple(7)
-
-    def test_simple_r8(self):
+    def test_simple_r08(self):
         self.run_simple(8)
-
-    def test_simple_r9(self):
+    def test_simple_r09(self):
         self.run_simple(9)
-
-    #def test_simple_r10(self):
-        #self.run_simple(10)
+    def test_simple_r10(self):
+        self.run_simple(10)
 
     def run_simple(self, count):
         with TestProcess(sys.executable, __file__, 'daemon', 'test_simple') as proc:
             with self._dump_on_error(proc.read):
                 self._wait_for_strings(proc.read, 1, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
+                self._wait_for_strings(proc.read, 1, 'Waiting for new connection')
                 for i in range(count):
                     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
                     sock.settimeout(0.05)
@@ -177,7 +175,10 @@ class ManholeTestCase(unittest.TestCase):
                             )
                             sock.shutdown(socket.SHUT_RDWR)
                             sock.close()
-                    self._wait_for_strings(proc.read, 1, 'Cleaning up.')
+                    self._wait_for_strings(proc.read, 1,
+                        'Cleaning up.',
+                        'Waiting for new connection'
+                    )
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'daemon':
@@ -185,6 +186,9 @@ if __name__ == '__main__':
             level=logging.DEBUG,
             format='[pid=%(process)d - %(asctime)s]: %(name)s - %(levelname)s - %(message)s',
         )
+        import coverage
+        coverage.process_startup()
+
         test_name = sys.argv[2]
         import manhole
         manhole.install()
