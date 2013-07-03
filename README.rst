@@ -76,3 +76,11 @@ Not sure yet ... maybe Python 2.6 and 2.7. Check Travis:
     :target: https://coveralls.io/r/ionelmc/python-manhole
 
 Coverage is wrong, must be a bug in coveralls, it should be at least 80%-90% depending whether you count branches or not.
+
+Similar projects
+================
+
+* Twisted's `old manhole <http://twistedmatrix.com/documents/current/api/twisted.manhole.html>`__ and the `newer implementation <http://twistedmatrix.com/documents/current/api/twisted.conch.manhole.html>`__ (colors, serverside history).
+* `wsgi-shell <https://github.com/GrahamDumpleton/wsgi-shell>`_ - spawns a thread.
+* `pyrasite <https://github.com/lmacken/pyrasite>`_ - uses gdb to inject code.
+* `pydbattach <https://github.com/albertz/pydbattach>`_ - uses gdb to inject code.
