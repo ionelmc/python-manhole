@@ -5,7 +5,7 @@ import os
 
 setup(
     name = "manhole",
-    version = "0.1.1",
+    version = "0.1.2",
     url = 'https://github.com/ionelmc/python-manhole',
     download_url = '',
     license = 'BSD',
@@ -13,8 +13,8 @@ setup(
     long_description = file(os.path.join(os.path.dirname(__file__), 'README.rst')).read(),
     author = 'Ionel Cristian Mărieș',
     author_email = 'contact@ionelmc.ro',
-    packages = find_packages('src'),
     package_dir = {'':'src'},
+    py_modules = ['manhole'],
     include_package_data = True,
     zip_safe = False,
     classifiers = [
