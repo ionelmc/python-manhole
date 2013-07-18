@@ -7,16 +7,16 @@ stacktraces for all threads and an interactive prompt.
 
 Access to the socket is restricted to the application's effective user id or root.
 
-       This is just like Twisted's `manhole <http://twistedmatrix.com/documents/current/api/twisted.manhole.html>`__. 
-       It's simpler (no dependencies) and it only runs on Unix domain sockets (in contrast to Twisted's manhole which 
-       can run on telnet or ssh).
+    This is just like Twisted's `manhole <http://twistedmatrix.com/documents/current/api/twisted.manhole.html>`__.
+    It's simpler (no dependencies) and it only runs on Unix domain sockets (in contrast to Twisted's manhole which
+    can run on telnet or ssh).
 
 
 Usage (you can put this in your django settings, wsgi app file, some module that's always imported early etc)::
 
     import manhole
     manhole.install() # this will start the daemon thread
-    
+
     # and now you start your app, eg: server.serve_forever()
 
 Now in a shell you can do either of these::
@@ -46,6 +46,16 @@ Features
 * Current implementation runs a daemon thread that waits for connection.
 * Lightweight: does not fiddle with your process's singal handlers, settings, file descriptors, etc
 * Compatible with apps that fork, reinstalls the Manhole thread after fork - had to monkeypatch os.fork/os.forkpty for this.
+
+Options
+-------
+
+``manhole.install(verbose=True, patch_fork=True, activate_on=None)``:
+
+* ``verbose`` - set it to ``False`` to squelch the stderr ouput
+* ``patch_fork`` - set it to ``False`` if you don't want your ``os.fork`` and ``os.forkpy`` monkeypatched
+* ``activate_on`` - set to ``"USR1"``, ``"USR2"`` or some othe signal name, or a number if you want the Manhole thread
+  to start when this signal is sent. This is desireable in case you don't want the thread active all the time.
 
 What happens when you actually connect to the socket
 ----------------------------------------------------
