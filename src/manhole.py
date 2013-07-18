@@ -13,10 +13,6 @@ import os
 import atexit
 import code
 import signal
-try:
-    import signalfd
-except ImportError:
-    signalfd = None
 
 VERBOSE = True
 
@@ -63,17 +59,11 @@ class Manhole(threading.Thread):
     Thread that runs the infamous "Manhole".
     """
 
-    def __init__(self, poll_interval, signalfd_fixup):
+    def __init__(self, poll_interval):
         super(Manhole, self).__init__()
         self.daemon = True
         self.poll_interval = poll_interval
         self.name = "Manhole"
-        self.signalfd_fixup = signalfd_fixup
-        if signalfd_fixup and signalfd:
-            self.signalfd_mask = signalfd.sigprocmask(signalfd.SIG_BLOCK, ())
-            cry("Current sigprocmask is: %s" % self.signalfd_mask)
-        else:
-            self.signalfd_mask = None
 
     @staticmethod
     def get_socket():
@@ -89,9 +79,6 @@ class Manhole(threading.Thread):
         return sock, pid
 
     def run(self):
-        if self.signalfd_mask:
-            cry("Setting sigprocmask: %s" % self.signalfd_mask)
-            signalfd.sigprocmask(signalfd.SIG_BLOCK, self.signalfd_mask)
         pthread_setname_np(self.ident, self.name)
 
 
@@ -227,13 +214,13 @@ def _activate_on_signal(_signum, _frame):
     assert _INST
     _INST.start()
 
-def install(poll_interval=0.54321, verbose=True, patch_fork=True, activate_on=None, signalfd_fixup=True):
+def install(poll_interval=60, verbose=True, patch_fork=True, activate_on=None):
     global _STDERR, _INST, VERBOSE #pylint: disable=W0603
     with _INST_LOCK:
         VERBOSE = verbose
         _STDERR = sys.__stderr__
         if not _INST:
-            _INST = Manhole(poll_interval, signalfd_fixup)
+            _INST = Manhole(poll_interval)
             if activate_on is None:
                 _INST.start()
             else:
@@ -253,7 +240,7 @@ def reinstall():
     assert _INST
     with _INST_LOCK:
         if not _INST.is_alive():
-            _INST = Manhole(_INST.poll_interval, _INST.signalfd_fixup)
+            _INST = Manhole(_INST.poll_interval)
             _INST.start()
 
 def dump_stacktraces():
