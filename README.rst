@@ -50,11 +50,11 @@ Features
 Options
 -------
 
-``manhole.install(verbose=True, patch_fork=True, activate_on=None)``:
+``manhole.install(verbose=True, patch_fork=True, activate_on=None)``
 
 * ``verbose`` - set it to ``False`` to squelch the stderr ouput
 * ``patch_fork`` - set it to ``False`` if you don't want your ``os.fork`` and ``os.forkpy`` monkeypatched
-* ``activate_on`` - set to ``"USR1"``, ``"USR2"`` or some othe signal name, or a number if you want the Manhole thread
+* ``activate_on`` - set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you want the Manhole thread
   to start when this signal is sent. This is desireable in case you don't want the thread active all the time.
 
 What happens when you actually connect to the socket
