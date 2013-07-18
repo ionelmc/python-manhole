@@ -296,8 +296,20 @@ class ManholeTestCase(unittest.TestCase):
                 with self._dump_on_error(proc.read):
                     self._wait_for_strings(proc.read, 2, '/tmp/manhole-')
                     uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
-                    self._wait_for_strings(proc.read, 15, 'Waiting for new connection', 'reading from signalfd failed with errno 11')
+                    self._wait_for_strings(proc.read, 2, 'Waiting for new connection', *[
+                        '[%s] read from signalfd:' % j for j in range(100)
+                    ])
                     self.assertManholeRunning(proc, uds_path)
+
+        def test_signalfd_weirdness_negative(self):
+            with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_signalfd_weirdness_negative') as proc:
+                with self._dump_on_error(proc.read):
+                    self._wait_for_strings(proc.read, 2, '/tmp/manhole-')
+                    uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
+                    self._wait_for_strings(proc.read, 1, 'Waiting for new connection')
+                    self.assertRaises(AssertionError, self._wait_for_strings, proc.read, 2, '[0] read from signalfd:')
+                    self.assertManholeRunning(proc, uds_path)
+
 
     def test_activate_on_usr2(self):
         with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_activate_on_usr2') as proc:
@@ -369,6 +381,36 @@ if __name__ == '__main__':
             manhole.install(activate_on='USR2')
             for i in range(100):
                 time.sleep(0.1)
+        elif test_name.startswith('test_signalfd_weirdness'):
+            if 'negative' in test_name:
+                manhole.install(sigmask=None)
+            else:
+                manhole.install(sigmask=[signal.SIGCHLD])
+            print 'Starting ...'
+            import signalfd
+            signalfd.sigprocmask(signalfd.SIG_BLOCK, [signal.SIGCHLD])
+            fd = signalfd.signalfd(0, [signal.SIGCHLD], signalfd.SFD_NONBLOCK|signalfd.SFD_CLOEXEC)
+            for i in range(100):
+                print 'Forking', i
+                pid = os.fork()
+                print ' - [%s/%s] forked' % (i, pid)
+                if pid:
+                    while 1:
+                        print ' - [%s/%s] selecting on: %s' % (i, pid, [fd])
+                        read_ready, _, errors = select.select([fd], [], [fd], 1)
+                        if read_ready:
+                            try:
+                                print ' - [%s/%s] reading from signalfd ...' % (i, pid)
+                                print ' - [%s] read from signalfd: %r ' % (i, os.read(fd, 128))
+                                break
+                            except OSError as exc:
+                                print ' - [%s/%s] reading from signalfd failed with errno %s' % (i, pid, exc.errno)
+                        if errors:
+                            raise RuntimeError("fd has error")
+                else:
+                    print ' - [%s/%s] exiting' % (i, pid)
+                    os._exit(0)
+            time.sleep(1)
         else:
             manhole.install()
             if test_name == 'test_simple':
@@ -401,32 +443,6 @@ if __name__ == '__main__':
             elif test_name == 'test_auth_fail':
                 manhole.get_peercred = lambda _: (-1, -1, -1)
                 time.sleep(10)
-            elif test_name == 'test_signalfd_weirdness':
-                print 'Starting ...'
-                import signalfd
-                signalfd.sigprocmask(signalfd.SIG_BLOCK, [signal.SIGCHLD])
-                fd = signalfd.signalfd(0, [signal.SIGCHLD], signalfd.SFD_NONBLOCK|signalfd.SFD_CLOEXEC)
-                for i in range(500):
-                    print 'Forking', i
-                    pid = os.fork()
-                    print ' - [%s/%s] forked' % (i, pid)
-                    if pid:
-                        while 1:
-                            print ' - [%s/%s] selecting on: %s' % (i, pid, [fd])
-                            read_ready, _, errors = select.select([fd], [], [fd], 1)
-                            if read_ready:
-                                try:
-                                    print ' - [%s/%s] reading from signalfd ...' % (i, pid)
-                                    print repr(os.read(fd, 128))
-                                    break
-                                except OSError as exc:
-                                    print ' - [%s/%s] reading from signalfd failed with errno %s' % (i, pid, exc.errno)
-                            if errors:
-                                raise RuntimeError("fd has error")
-                    else:
-                        print ' - [%s/%s] exiting' % (i, pid)
-                        os._exit(0)
-
             else:
                 raise RuntimeError('Invalid test spec.')
         print 'DIED.'

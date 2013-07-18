@@ -13,6 +13,10 @@ import os
 import atexit
 import code
 import signal
+try:
+    import signalfd
+except ImportError:
+    signalfd = None
 
 VERBOSE = True
 
@@ -59,10 +63,11 @@ class Manhole(threading.Thread):
     Thread that runs the infamous "Manhole".
     """
 
-    def __init__(self):
+    def __init__(self, sigmask):
         super(Manhole, self).__init__()
         self.daemon = True
         self.name = "Manhole"
+        self.sigmask = sigmask
 
     @staticmethod
     def get_socket():
@@ -77,6 +82,8 @@ class Manhole(threading.Thread):
         return sock, pid
 
     def run(self):
+        if signalfd and self.sigmask:
+            signalfd.sigprocmask(signalfd.SIG_BLOCK, self.sigmask)
         pthread_setname_np(self.ident, self.name)
 
         sock, pid = self.get_socket()
@@ -86,7 +93,7 @@ class Manhole(threading.Thread):
             global _CLIENT_INST #pylint: disable=W0603
 
             try:
-                _CLIENT_INST = ManholeConnection(client)
+                _CLIENT_INST = ManholeConnection(client, self.sigmask)
                 _CLIENT_INST.start()
                 _CLIENT_INST.join()
             #except: #pylint: disable=W0703
@@ -98,13 +105,16 @@ class Manhole(threading.Thread):
             cry("Waiting for new connection ...")
 
 class ManholeConnection(threading.Thread):
-    def __init__(self, client):
+    def __init__(self, client, sigmask):
         super(ManholeConnection, self).__init__()
         self.daemon = False
         self.client = client
         self.name = "ManholeConnection"
+        self.sigmask = sigmask
 
     def run(self):
+        if signalfd and self.sigmask:
+            signalfd.sigprocmask(signalfd.SIG_BLOCK, self.sigmask)
         pthread_setname_np(self.ident, "Manhole ----")
 
         client = self.client
@@ -209,13 +219,17 @@ def _activate_on_signal(_signum, _frame):
     assert _INST
     _INST.start()
 
-def install(verbose=True, patch_fork=True, activate_on=None):
+ALL_SIGNALS = [
+    getattr(signal, sig) for sig in dir(signal)
+    if sig.startswith('SIG') and '_' not in sig
+]
+def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS):
     global _STDERR, _INST, VERBOSE #pylint: disable=W0603
     with _INST_LOCK:
         VERBOSE = verbose
         _STDERR = sys.__stderr__
         if not _INST:
-            _INST = Manhole()
+            _INST = Manhole(sigmask)
             if activate_on is None:
                 _INST.start()
             else:
@@ -235,7 +249,7 @@ def reinstall():
     assert _INST
     with _INST_LOCK:
         if not _INST.is_alive():
-            _INST = Manhole()
+            _INST = Manhole(_INST.sigmask)
             _INST.start()
 
 def dump_stacktraces():
