@@ -7,10 +7,16 @@ import threading
 import traceback
 import socket
 import struct
+import select
 import sys
 import os
 import atexit
 import code
+import signal
+try:
+    import signalfd
+except ImportError:
+    signalfd = None
 
 VERBOSE = True
 
@@ -38,7 +44,7 @@ def cry(message):
     """
     if VERBOSE:
         try:
-            print(message, file=_STDERR)
+            print("Manhole: "+message, file=_STDERR)
         except: #pylint: disable=W0702
             pass
 
@@ -57,11 +63,17 @@ class Manhole(threading.Thread):
     Thread that runs the infamous "Manhole".
     """
 
-    def __init__(self, poll_interval):
+    def __init__(self, poll_interval, signalfd_fixup):
         super(Manhole, self).__init__()
         self.daemon = True
         self.poll_interval = poll_interval
         self.name = "Manhole"
+        self.signalfd_fixup = signalfd_fixup
+        if signalfd_fixup and signalfd:
+            self.signalfd_mask = signalfd.sigprocmask(signalfd.SIG_BLOCK, ())
+            cry("Current sigprocmask is: %s" % self.signalfd_mask)
+        else:
+            self.signalfd_mask = None
 
     @staticmethod
     def get_socket():
@@ -72,29 +84,36 @@ class Manhole(threading.Thread):
             os.unlink(name)
         sock.bind(name)
         sock.listen(0)
+        sock.setblocking(0)
         cry("Manhole UDS path: "+name)
         return sock, pid
 
     def run(self):
+        if self.signalfd_mask:
+            cry("Setting sigprocmask: %s" % self.signalfd_mask)
+            signalfd.sigprocmask(signalfd.SIG_BLOCK, self.signalfd_mask)
         pthread_setname_np(self.ident, self.name)
+
 
         sock, pid = self.get_socket()
         cry("Waiting for new connection (in pid:%s) ..." % pid)
         while True:
-            client, _ = sock.accept()
-            global _CLIENT_INST #pylint: disable=W0603
+            ready, _, _ = select.select((sock,), (), (), self.poll_interval)
+            if ready:
+                client, _ = sock.accept()
+                global _CLIENT_INST #pylint: disable=W0603
 
-            try:
-                _CLIENT_INST = ManholeConnection(client)
-                _CLIENT_INST.start()
-                _CLIENT_INST.join()
-            #except: #pylint: disable=W0703
-            #    cry(traceback.format_exc()) #pylint: disable=W0702
-            finally:
-                _CLIENT_INST = None
-                del client
+                try:
+                    _CLIENT_INST = ManholeConnection(client)
+                    _CLIENT_INST.start()
+                    _CLIENT_INST.join()
+                #except: #pylint: disable=W0703
+                #    cry(traceback.format_exc()) #pylint: disable=W0702
+                finally:
+                    _CLIENT_INST = None
+                    del client
 
-            cry("Waiting for new connection ...")
+                cry("Waiting for new connection ...")
 
 class ManholeConnection(threading.Thread):
     def __init__(self, client):
@@ -204,23 +223,37 @@ def _patch_os_fork_functions():
         _ORIGINAL_OS_FORKPTY, os.forkpty = os.forkpty, _patched_forkpty
     cry("Patched %s and %s." % (_ORIGINAL_OS_FORK, _ORIGINAL_OS_FORKPTY))
 
-def install(poll_interval=5, verbose=True):
+def _activate_on_signal(_signum, _frame):
+    assert _INST
+    _INST.start()
+
+def install(poll_interval=0.54321, verbose=True, patch_fork=True, activate_on=None, signalfd_fixup=True):
     global _STDERR, _INST, VERBOSE #pylint: disable=W0603
     with _INST_LOCK:
         VERBOSE = verbose
         _STDERR = sys.__stderr__
         if not _INST:
-            _INST = Manhole(poll_interval)
-            _INST.start()
+            _INST = Manhole(poll_interval, signalfd_fixup)
+            if activate_on is None:
+                _INST.start()
+            else:
+                signal.signal(
+                    getattr(signal, 'SIG'+activate_on) if isinstance(activate_on, basestring) else activate_on,
+                    _activate_on_signal
+                )
         atexit.register(_remove_manhole_uds)
-        _patch_os_fork_functions()
+        if patch_fork:
+            if activate_on is None:
+                _patch_os_fork_functions()
+            else:
+                cry("Not patching os.fork and os.forkpty. Activation is done by signal %s" % activate_on)
 
 def reinstall():
     global _INST #pylint: disable=W0603
     assert _INST
     with _INST_LOCK:
         if not _INST.is_alive():
-            _INST = Manhole(_INST.poll_interval)
+            _INST = Manhole(_INST.poll_interval, _INST.signalfd_fixup)
             _INST.start()
 
 def dump_stacktraces():
