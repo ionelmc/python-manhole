@@ -296,7 +296,7 @@ class ManholeTestCase(unittest.TestCase):
                 with self._dump_on_error(proc.read):
                     self._wait_for_strings(proc.read, 2, '/tmp/manhole-')
                     uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
-                    self._wait_for_strings(proc.read, 3, 'Waiting for new connection', 'reading from signalfd failed with errno 11')
+                    self._wait_for_strings(proc.read, 15, 'Waiting for new connection', 'reading from signalfd failed with errno 11')
                     self.assertManholeRunning(proc, uds_path)
 
     def test_activate_on_usr2(self):
@@ -406,7 +406,7 @@ if __name__ == '__main__':
                 import signalfd
                 signalfd.sigprocmask(signalfd.SIG_BLOCK, [signal.SIGCHLD])
                 fd = signalfd.signalfd(0, [signal.SIGCHLD], signalfd.SFD_NONBLOCK|signalfd.SFD_CLOEXEC)
-                for i in range(100):
+                for i in range(500):
                     print 'Forking', i
                     pid = os.fork()
                     print ' - [%s/%s] forked' % (i, pid)
