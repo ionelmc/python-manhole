@@ -60,6 +60,9 @@ class TestProcess(BufferingBase):
     def is_alive(self):
         return self.proc.poll() is None
 
+    def signal(self, sig):
+        self.proc.send_signal(sig)
+
     def __enter__(self):
         return self
 
@@ -159,7 +162,7 @@ class ManholeTestCase(unittest.TestCase):
         self.run_simple(10)
 
     def run_simple(self, count):
-        with TestProcess(sys.executable, __file__, 'daemon', 'test_simple') as proc:
+        with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_simple') as proc:
             with self._dump_on_error(proc.read):
                 self._wait_for_strings(proc.read, 2, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
@@ -192,7 +195,7 @@ class ManholeTestCase(unittest.TestCase):
             'Waiting for new connection'
         )
     def test_exit_with_grace(self):
-        with TestProcess(sys.executable, __file__, 'daemon', 'test_simple') as proc:
+        with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_simple') as proc:
             with self._dump_on_error(proc.read):
                 self._wait_for_strings(proc.read, 1, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
@@ -226,7 +229,7 @@ class ManholeTestCase(unittest.TestCase):
                 )
 
     def test_with_fork(self):
-        with TestProcess(sys.executable, __file__, 'daemon', 'test_with_fork') as proc:
+        with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_with_fork') as proc:
             with self._dump_on_error(proc.read):
                 self._wait_for_strings(proc.read, 1, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
@@ -247,7 +250,7 @@ class ManholeTestCase(unittest.TestCase):
                     self.assertManholeRunning(proc, new_uds_path)
 
     def test_with_forkpty(self):
-        with TestProcess(sys.executable, __file__, 'daemon', 'test_with_forkpty') as proc:
+        with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_with_forkpty') as proc:
             with self._dump_on_error(proc.read):
                 self._wait_for_strings(proc.read, 1, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
@@ -268,7 +271,7 @@ class ManholeTestCase(unittest.TestCase):
                     self.assertManholeRunning(proc, new_uds_path)
 
     def test_auth_fail(self):
-        with TestProcess(sys.executable, __file__, 'daemon', 'test_auth_fail') as proc:
+        with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_auth_fail') as proc:
             with self._dump_on_error(proc.read):
                 self._wait_for_strings(proc.read, 1, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
@@ -282,6 +285,31 @@ class ManholeTestCase(unittest.TestCase):
                     'Waiting for new connection'
                 )
                 proc.proc.send_signal(signal.SIGINT)
+
+    try:
+        import signalfd
+    except ImportError:
+        pass
+    else:
+        def test_signalfd_weirdness(self):
+            with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_signalfd_weirdness') as proc:
+                with self._dump_on_error(proc.read):
+                    self._wait_for_strings(proc.read, 2, '/tmp/manhole-')
+                    uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
+                    self._wait_for_strings(proc.read, 3, 'Waiting for new connection', 'reading from signalfd failed with errno 11')
+                    self.assertManholeRunning(proc, uds_path)
+
+    def test_activate_on_usr2(self):
+        with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_activate_on_usr2') as proc:
+            with self._dump_on_error(proc.read):
+                self._wait_for_strings(proc.read, 1, 'Not patching os.fork and os.forkpty. Activation is done by signal USR2')
+                self.assertRaises(AssertionError, self._wait_for_strings, proc.read, 2, '/tmp/manhole-')
+                proc.signal(signal.SIGUSR2)
+                self._wait_for_strings(proc.read, 2, '/tmp/manhole-')
+                uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
+                self._wait_for_strings(proc.read, 1, 'Waiting for new connection')
+                self.assertManholeRunning(proc, uds_path)
+
 cov = None
 def maybe_enable_coverage():
     global cov
@@ -336,40 +364,71 @@ if __name__ == '__main__':
             return pid, fd
 
         import manhole
-        manhole.install()
 
-        if test_name == 'test_simple':
-            time.sleep(10)
-        elif test_name == 'test_with_forkpty':
-            time.sleep(1)
-            pid, masterfd = os.forkpty()
-            if pid:
-                @atexit.register
-                def cleanup():
-                    os.kill(pid, signal.SIGINT)
-                    time.sleep(0.2)
-                    os.kill(pid, signal.SIGTERM)
-                while not os.waitpid(pid, os.WNOHANG)[0]:
-                    os.write(2, os.read(masterfd, 1024))
-            else:
-                time.sleep(10)
-        elif test_name == 'test_with_fork':
-            time.sleep(1)
-            pid = os.fork()
-            if pid:
-                @atexit.register
-                def cleanup():
-                    os.kill(pid, signal.SIGINT)
-                    time.sleep(0.2)
-                    os.kill(pid, signal.SIGTERM)
-                os.waitpid(pid, 0)
-            else:
-                time.sleep(10)
-        elif test_name == 'test_auth_fail':
-            manhole.get_peercred = lambda _: (-1, -1, -1)
-            time.sleep(10)
+        if test_name == 'test_activate_on_usr2':
+            manhole.install(activate_on='USR2')
+            for i in range(100):
+                time.sleep(0.1)
         else:
-            raise RuntimeError('Invalid test spec.')
+            manhole.install()
+            if test_name == 'test_simple':
+                time.sleep(10)
+            elif test_name == 'test_with_forkpty':
+                time.sleep(1)
+                pid, masterfd = os.forkpty()
+                if pid:
+                    @atexit.register
+                    def cleanup():
+                        os.kill(pid, signal.SIGINT)
+                        time.sleep(0.2)
+                        os.kill(pid, signal.SIGTERM)
+                    while not os.waitpid(pid, os.WNOHANG)[0]:
+                        os.write(2, os.read(masterfd, 1024))
+                else:
+                    time.sleep(10)
+            elif test_name == 'test_with_fork':
+                time.sleep(1)
+                pid = os.fork()
+                if pid:
+                    @atexit.register
+                    def cleanup():
+                        os.kill(pid, signal.SIGINT)
+                        time.sleep(0.2)
+                        os.kill(pid, signal.SIGTERM)
+                    os.waitpid(pid, 0)
+                else:
+                    time.sleep(10)
+            elif test_name == 'test_auth_fail':
+                manhole.get_peercred = lambda _: (-1, -1, -1)
+                time.sleep(10)
+            elif test_name == 'test_signalfd_weirdness':
+                print 'Starting ...'
+                import signalfd
+                signalfd.sigprocmask(signalfd.SIG_BLOCK, [signal.SIGCHLD])
+                fd = signalfd.signalfd(0, [signal.SIGCHLD], signalfd.SFD_NONBLOCK|signalfd.SFD_CLOEXEC)
+                for i in range(100):
+                    print 'Forking', i
+                    pid = os.fork()
+                    print ' - [%s/%s] forked' % (i, pid)
+                    if pid:
+                        while 1:
+                            print ' - [%s/%s] selecting on: %s' % (i, pid, [fd])
+                            read_ready, _, errors = select.select([fd], [], [fd], 1)
+                            if read_ready:
+                                try:
+                                    print ' - [%s/%s] reading from signalfd ...' % (i, pid)
+                                    print repr(os.read(fd, 128))
+                                    break
+                                except OSError as exc:
+                                    print ' - [%s/%s] reading from signalfd failed with errno %s' % (i, pid, exc.errno)
+                            if errors:
+                                raise RuntimeError("fd has error")
+                    else:
+                        print ' - [%s/%s] exiting' % (i, pid)
+                        os._exit(0)
+
+            else:
+                raise RuntimeError('Invalid test spec.')
         print 'DIED.'
     else:
         unittest.main()
