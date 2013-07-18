@@ -59,10 +59,9 @@ class Manhole(threading.Thread):
     Thread that runs the infamous "Manhole".
     """
 
-    def __init__(self, poll_interval):
+    def __init__(self):
         super(Manhole, self).__init__()
         self.daemon = True
-        self.poll_interval = poll_interval
         self.name = "Manhole"
 
     @staticmethod
@@ -74,33 +73,29 @@ class Manhole(threading.Thread):
             os.unlink(name)
         sock.bind(name)
         sock.listen(0)
-        sock.setblocking(0)
         cry("Manhole UDS path: "+name)
         return sock, pid
 
     def run(self):
         pthread_setname_np(self.ident, self.name)
 
-
         sock, pid = self.get_socket()
         cry("Waiting for new connection (in pid:%s) ..." % pid)
         while True:
-            ready, _, _ = select.select((sock,), (), (), self.poll_interval)
-            if ready:
-                client, _ = sock.accept()
-                global _CLIENT_INST #pylint: disable=W0603
+            client, _ = sock.accept()
+            global _CLIENT_INST #pylint: disable=W0603
 
-                try:
-                    _CLIENT_INST = ManholeConnection(client)
-                    _CLIENT_INST.start()
-                    _CLIENT_INST.join()
-                #except: #pylint: disable=W0703
-                #    cry(traceback.format_exc()) #pylint: disable=W0702
-                finally:
-                    _CLIENT_INST = None
-                    del client
+            try:
+                _CLIENT_INST = ManholeConnection(client)
+                _CLIENT_INST.start()
+                _CLIENT_INST.join()
+            #except: #pylint: disable=W0703
+            #    cry(traceback.format_exc()) #pylint: disable=W0702
+            finally:
+                _CLIENT_INST = None
+                del client
 
-                cry("Waiting for new connection ...")
+            cry("Waiting for new connection ...")
 
 class ManholeConnection(threading.Thread):
     def __init__(self, client):
@@ -214,13 +209,13 @@ def _activate_on_signal(_signum, _frame):
     assert _INST
     _INST.start()
 
-def install(poll_interval=60, verbose=True, patch_fork=True, activate_on=None):
+def install(verbose=True, patch_fork=True, activate_on=None):
     global _STDERR, _INST, VERBOSE #pylint: disable=W0603
     with _INST_LOCK:
         VERBOSE = verbose
         _STDERR = sys.__stderr__
         if not _INST:
-            _INST = Manhole(poll_interval)
+            _INST = Manhole()
             if activate_on is None:
                 _INST.start()
             else:
@@ -240,7 +235,7 @@ def reinstall():
     assert _INST
     with _INST_LOCK:
         if not _INST.is_alive():
-            _INST = Manhole(_INST.poll_interval)
+            _INST = Manhole()
             _INST.start()
 
 def dump_stacktraces():
