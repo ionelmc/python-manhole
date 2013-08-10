@@ -118,7 +118,7 @@ class ManholeConnection(threading.Thread):
         pthread_setname_np(self.ident, "Manhole ----")
 
         client = self.client
-        client.settimeout(None)
+        del self.client
         pid, uid, gid = get_peercred(client)
         euid = os.geteuid()
         client_name = "PID:%s UID:%s GID:%s" % (pid, uid, gid)
@@ -131,6 +131,12 @@ class ManholeConnection(threading.Thread):
 
         cry("Accepted connection %s from %s" % (client, client_name))
         pthread_setname_np(self.ident, "Manhole %s" % pid)
+
+        self.handle(client)
+
+    @staticmethod
+    def handle(client):
+        client.settimeout(None)
         client.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 0)
         client.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 0)
         backup = []
@@ -170,7 +176,6 @@ class ManholeConnection(threading.Thread):
                     pass
                 del fh
             del junk
-            self.client = None
             sys.setcheckinterval(old_interval)
 
 def run_repl():
@@ -183,13 +188,21 @@ def run_repl():
         'traceback': traceback,
     }).interact()
 
+def _handle_oneshot(_signum, _frame):
+    try:
+        sock, _ = Manhole.get_socket()
+        client, _ = sock.accept()
+        ManholeConnection.handle(client)
+    except SystemExit:
+        pass
+
 def _remove_manhole_uds():
     name = "/tmp/manhole-%s" % os.getpid()
     if os.path.exists(name):
         os.unlink(name)
 
 _INST_LOCK = thread.allocate_lock()
-_STDERR = _INST = _CLIENT_INST = _ORIGINAL_OS_FORK = _ORIGINAL_OS_FORKPTY = None
+_STDERR = _INST = _CLIENT_INST = _ORIGINAL_OS_FORK = _ORIGINAL_OS_FORKPTY = _SHOULD_RESTART = None
 
 def _patched_fork():
     """Fork a child process."""
@@ -223,20 +236,26 @@ ALL_SIGNALS = [
     getattr(signal, sig) for sig in dir(signal)
     if sig.startswith('SIG') and '_' not in sig
 ]
-def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS):
-    global _STDERR, _INST, VERBOSE #pylint: disable=W0603
+def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS, oneshot_on=None):
+    global _STDERR, _INST, _SHOULD_RESTART, VERBOSE #pylint: disable=W0603
     with _INST_LOCK:
         VERBOSE = verbose
         _STDERR = sys.__stderr__
         if not _INST:
             _INST = Manhole(sigmask)
+            if oneshot_on is not None:
+                oneshot_on = getattr(signal, 'SIG'+oneshot_on) if isinstance(oneshot_on, basestring) else oneshot_on
+                signal.signal(oneshot_on, _handle_oneshot)
+
             if activate_on is None:
-                _INST.start()
+                if oneshot_on is None:
+                    _INST.start()
+                    _SHOULD_RESTART = True
             else:
-                signal.signal(
-                    getattr(signal, 'SIG'+activate_on) if isinstance(activate_on, basestring) else activate_on,
-                    _activate_on_signal
-                )
+                activate_on = getattr(signal, 'SIG'+activate_on) if isinstance(activate_on, basestring) else activate_on
+                if activate_on == oneshot_on:
+                    raise RuntimeError('You cannot do activation of the Manhole thread on the same signal that you want to do oneshot activation !')
+                signal.signal(activate_on, _activate_on_signal)
         atexit.register(_remove_manhole_uds)
         if patch_fork:
             if activate_on is None:
@@ -250,7 +269,8 @@ def reinstall():
     with _INST_LOCK:
         if not _INST.is_alive():
             _INST = Manhole(_INST.sigmask)
-            _INST.start()
+            if _SHOULD_RESTART:
+                _INST.start()
 
 def dump_stacktraces():
     lines = []
@@ -270,7 +290,7 @@ def dump_stacktraces():
 if __name__ == '__main__': #pragma: no cover
     from logging import basicConfig, DEBUG
     basicConfig(level=DEBUG)
-    install(1)
+    install(verbose=True, oneshot_on='USR2')
     import faulthandler
     faulthandler.enable()
 
