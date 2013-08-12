@@ -119,6 +119,13 @@ class ManholeConnection(threading.Thread):
 
         client = self.client
         del self.client
+        pid, _, _ = self.check_credentials(client)
+        pthread_setname_np(self.ident, "Manhole %s" % pid)
+
+        self.handle(client)
+
+    @staticmethod
+    def check_credentials(client):
         pid, uid, gid = get_peercred(client)
         euid = os.geteuid()
         client_name = "PID:%s UID:%s GID:%s" % (pid, uid, gid)
@@ -130,9 +137,7 @@ class ManholeConnection(threading.Thread):
             ))
 
         cry("Accepted connection %s from %s" % (client, client_name))
-        pthread_setname_np(self.ident, "Manhole %s" % pid)
-
-        self.handle(client)
+        return pid, uid, gid
 
     @staticmethod
     def handle(client):
@@ -190,8 +195,10 @@ def run_repl():
 
 def _handle_oneshot(_signum, _frame):
     try:
-        sock, _ = Manhole.get_socket()
+        sock, pid = Manhole.get_socket()
+        cry("Waiting for new connection (in pid:%s) ..." % pid)
         client, _ = sock.accept()
+        ManholeConnection.check_credentials(client)
         ManholeConnection.handle(client)
     except SystemExit:
         pass
@@ -258,10 +265,13 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
                 signal.signal(activate_on, _activate_on_signal)
         atexit.register(_remove_manhole_uds)
         if patch_fork:
-            if activate_on is None:
+            if activate_on is None and oneshot_on is None:
                 _patch_os_fork_functions()
             else:
-                cry("Not patching os.fork and os.forkpty. Activation is done by signal %s" % activate_on)
+                if activate_on:
+                    cry("Not patching os.fork and os.forkpty. Activation is done by signal %s" % activate_on)
+                elif oneshot_on:
+                    cry("Not patching os.fork and os.forkpty. Oneshot activation is done by signal %s" % oneshot_on)
 
 def reinstall():
     global _INST #pylint: disable=W0603

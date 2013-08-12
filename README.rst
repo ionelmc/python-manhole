@@ -49,12 +49,14 @@ Features
 Options
 -------
 
-``manhole.install(verbose=True, patch_fork=True, activate_on=None, sigmask=manhole.ALL_SIGNALS)``
+``manhole.install(verbose=True, patch_fork=True, activate_on=None, sigmask=manhole.ALL_SIGNALS, oneshot_on=None)``
 
 * ``verbose`` - set it to ``False`` to squelch the stderr ouput
 * ``patch_fork`` - set it to ``False`` if you don't want your ``os.fork`` and ``os.forkpy`` monkeypatched
 * ``activate_on`` - set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you want the Manhole thread
   to start when this signal is sent. This is desireable in case you don't want the thread active all the time.
+* ``oneshot_on`` - set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you want the Manhole to listen
+  for connection in the signal handler. This is desireable in case you don't want threads at all.
 * ``sigmask`` - will set the signal mask to the given list (using ``signalfd.sigprocmask``). No action is done if
   ``signalfd`` is not importable. **NOTE**: This is done so that the Manhole thread doesn't *steal* any signals; Normally
   that is fine cause Python will force all the signal handling to be run in the main thread but signalfd doesn't.

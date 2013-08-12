@@ -121,7 +121,7 @@ class ManholeTestCase(unittest.TestCase):
             for line in buff.splitlines():
                 if not check_strings:
                     break
-                if check_strings[-1] in line:
+                while check_strings and check_strings[-1] in line:
                     check_strings.pop()
             if not check_strings:
                 return
@@ -171,15 +171,15 @@ class ManholeTestCase(unittest.TestCase):
                     proc.reset()
                     self.assertManholeRunning(proc, uds_path)
 
-    def assertManholeRunning(self, proc, uds_path):
+    def assertManholeRunning(self, proc, uds_path, oneshot=False):
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         sock.settimeout(0.05)
         sock.connect(uds_path)
         with TestSocket(sock) as client:
             with self._dump_on_error(client.read):
                 self._wait_for_strings(client.read, 1,
-                    "ThreadID",
                     "ProcessID",
+                    "ThreadID",
                     ">>>",
                 )
                 sock.send("print 'FOOBAR'\n")
@@ -192,7 +192,7 @@ class ManholeTestCase(unittest.TestCase):
                 sock.close()
         self._wait_for_strings(proc.read, 1,
             'Cleaning up.',
-            'Waiting for new connection'
+            *[] if oneshot else ['Waiting for new connection']
         )
     def test_exit_with_grace(self):
         with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_simple') as proc:
@@ -315,13 +315,29 @@ class ManholeTestCase(unittest.TestCase):
     def test_activate_on_usr2(self):
         with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_activate_on_usr2') as proc:
             with self._dump_on_error(proc.read):
-                self._wait_for_strings(proc.read, 1, 'Not patching os.fork and os.forkpty. Activation is done by signal USR2')
+                self._wait_for_strings(proc.read, 1, 'Not patching os.fork and os.forkpty. Activation is done by signal 12')
                 self.assertRaises(AssertionError, self._wait_for_strings, proc.read, 2, '/tmp/manhole-')
                 proc.signal(signal.SIGUSR2)
                 self._wait_for_strings(proc.read, 2, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
                 self._wait_for_strings(proc.read, 1, 'Waiting for new connection')
                 self.assertManholeRunning(proc, uds_path)
+
+    def test_activate_on_with_oneshot_on(self):
+        with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_activate_on_with_oneshot_on') as proc:
+            with self._dump_on_error(proc.read):
+                self._wait_for_strings(proc.read, 1, "RuntimeError('You cannot do activation of the Manhole thread on the same signal that you want to do oneshot activation !')")
+
+    def test_oneshot_on_usr2(self):
+        with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_oneshot_on_usr2') as proc:
+            with self._dump_on_error(proc.read):
+                self._wait_for_strings(proc.read, 1, 'Not patching os.fork and os.forkpty. Oneshot activation is done by signal 12')
+                self.assertRaises(AssertionError, self._wait_for_strings, proc.read, 2, '/tmp/manhole-')
+                proc.signal(signal.SIGUSR2)
+                self._wait_for_strings(proc.read, 2, '/tmp/manhole-')
+                uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
+                self._wait_for_strings(proc.read, 1, 'Waiting for new connection')
+                self.assertManholeRunning(proc, uds_path, oneshot=True)
 
 cov = None
 def maybe_enable_coverage():
@@ -380,6 +396,14 @@ if __name__ == '__main__':
 
         if test_name == 'test_activate_on_usr2':
             manhole.install(activate_on='USR2')
+            for i in range(100):
+                time.sleep(0.1)
+        elif test_name == 'test_activate_on_with_oneshot_on':
+            manhole.install(activate_on='USR2', oneshot_on='USR2')
+            for i in range(100):
+                time.sleep(0.1)
+        elif test_name == 'test_oneshot_on_usr2':
+            manhole.install(oneshot_on='USR2')
             for i in range(100):
                 time.sleep(0.1)
         elif test_name.startswith('test_signalfd_weirdness'):
