@@ -181,23 +181,25 @@ class ManholeTestCase(unittest.TestCase):
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         sock.settimeout(0.5)
         sock.connect(uds_path)
-        with TestSocket(sock) as client:
-            with self._dump_on_error(client.read):
-                self._wait_for_strings(client.read, 1,
-                    "ProcessID",
-                    "ThreadID",
-                    ">>>",
-                )
-                sock.send(b"print('FOOBAR')\n")
-                self._wait_for_strings(client.read, 1, "FOOBAR")
+        try:
+            with TestSocket(sock) as client:
+                with self._dump_on_error(client.read):
+                    self._wait_for_strings(client.read, 1,
+                        "ProcessID",
+                        "ThreadID",
+                        ">>>",
+                    )
+                    sock.send(b"print('FOOBAR')\n")
+                    self._wait_for_strings(client.read, 1, "FOOBAR")
 
-                self._wait_for_strings(proc.read, 1,
-                    'from PID:%s UID:%s' % (os.getpid(), os.getuid()),
-                )
-                sock.shutdown(socket.SHUT_RDWR)
-                sock.close()
+                    self._wait_for_strings(proc.read, 1,
+                        'from PID:%s UID:%s' % (os.getpid(), os.getuid()),
+                    )
+                    sock.shutdown(socket.SHUT_RDWR)
+        finally:
+            sock.close()
         self._wait_for_strings(proc.read, 1,
-            'Cleaning up.',
+            'Cleaned up.',
             *[] if oneshot else ['Waiting for new connection']
         )
     def test_exit_with_grace(self):
@@ -230,7 +232,7 @@ class ManholeTestCase(unittest.TestCase):
                         sock.close()
                 self._wait_for_strings(proc.read, 1,
                     'DONE.',
-                    'Cleaning up.',
+                    'Cleaned up.',
                     'Waiting for new connection'
                 )
 
@@ -317,7 +319,7 @@ class ManholeTestCase(unittest.TestCase):
                     self._wait_for_strings(proc.read, 2, '/tmp/manhole-')
                     uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
                     self._wait_for_strings(proc.read, 1, 'Waiting for new connection')
-                    self.assertRaises(AssertionError, self._wait_for_strings, proc.read, 2, '[0] read from signalfd:')
+                    self._wait_for_strings(proc.read, 2, 'reading from signalfd failed')
                     self.assertManholeRunning(proc, uds_path)
 
 
@@ -429,14 +431,14 @@ if __name__ == '__main__':
             import signalfd
             signalfd.sigprocmask(signalfd.SIG_BLOCK, [signal.SIGCHLD])
             fd = signalfd.signalfd(0, [signal.SIGCHLD], signalfd.SFD_NONBLOCK|signalfd.SFD_CLOEXEC)
-            for i in range(100):
+            for i in range(500):
                 print('Forking', i)
                 pid = os.fork()
                 print(' - [%s/%s] forked' % (i, pid))
                 if pid:
                     while 1:
                         print(' - [%s/%s] selecting on: %s' % (i, pid, [fd]))
-                        read_ready, _, errors = select.select([fd], [], [fd], 1)
+                        read_ready, _, errors = select.select([fd], [], [fd], 0.4)
                         if read_ready:
                             try:
                                 print(' - [%s/%s] reading from signalfd ...' % (i, pid))
@@ -444,6 +446,8 @@ if __name__ == '__main__':
                                 break
                             except OSError as exc:
                                 print(' - [%s/%s] reading from signalfd failed with errno %s' % (i, pid, exc.errno))
+                        else:
+                            print(' - [%s/%s] reading from signalfd failed - not ready !' % (i, pid))
                         if errors:
                             raise RuntimeError("fd has error")
                 else:
