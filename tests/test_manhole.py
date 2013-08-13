@@ -88,6 +88,15 @@ class TestProcess(BufferingBase):
         except OSError as exc:
             if exc.errno != errno.ESRCH:
                 raise
+        finally:
+            self.read()
+            if self.proc.stdout:
+                self.proc.stdout.close()
+            if self.proc.stderr:
+                self.proc.stderr.close()
+            if self.proc.stdin:
+                self.proc.stdin.close()
+            self.proc.wait() # reap the zombie  
 
 class TestSocket(BufferingBase):
     BUFFSIZE = 8192
