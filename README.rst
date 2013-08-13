@@ -73,8 +73,9 @@ What happens when you actually connect to the socket
 Whishlist
 ---------
 
-* Be compatible with eventlet/stackless (provide alternative implementation without thread)
+* Be compatible with eventlet/stackless (provide alternative implementation without thread) - currently ``oneshot_on`` should be usable for those. The are not tests done on eventlet/stackless for now.
 * More configurable (chose what sys.__std\*__/sys.std\* to patch on connect time)
+* Support windows ?!
 
 Requirements
 ============
