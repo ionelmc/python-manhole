@@ -84,8 +84,6 @@ class TestProcess(BufferingBase):
                     return
             print('KILLED %s' % self, file=sys.stderr)
             self.proc.kill()
-            self.proc.stdout.close()
-            self.proc.stderr.close()
         except OSError as exc:
             if exc.errno != errno.ESRCH:
                 raise
