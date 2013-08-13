@@ -55,6 +55,7 @@ class TestProcess(BufferingBase):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             env=os.environ,
+            bufsize=1,
         )
         fd = self.proc.stdout.fileno()
         flags = fcntl.fcntl(fd, fcntl.F_GETFL)
@@ -178,7 +179,7 @@ class ManholeTestCase(unittest.TestCase):
 
     def assertManholeRunning(self, proc, uds_path, oneshot=False):
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        sock.settimeout(0.05)
+        sock.settimeout(0.5)
         sock.connect(uds_path)
         with TestSocket(sock) as client:
             with self._dump_on_error(client.read):
