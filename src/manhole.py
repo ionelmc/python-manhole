@@ -2,12 +2,14 @@ from __future__ import print_function
 from logging import getLogger
 logger = getLogger(__name__)
 
-import thread
+try:
+    import thread
+except ImportError: # python 3
+    import _thread as thread
 import threading
 import traceback
 import socket
 import struct
-import select
 import sys
 import os
 import atexit
@@ -17,6 +19,10 @@ try:
     import signalfd
 except ImportError:
     signalfd = None
+try:
+    string = basestring
+except NameError: # python 3
+    string = str
 
 VERBOSE = True
 
@@ -32,7 +38,7 @@ try:
     _pthread_setname_np = libpthread.pthread_setname_np
     _pthread_setname_np.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
     _pthread_setname_np.restype = ctypes.c_int
-    pthread_setname_np = lambda ident, name: _pthread_setname_np(ident, name[:15])
+    pthread_setname_np = lambda ident, name: _pthread_setname_np(ident, name[:15].encode('utf8'))
 except ImportError:
     pthread_setname_np = lambda ident, name: None
 
@@ -161,7 +167,7 @@ class ManholeConnection(threading.Thread):
             ):
                 for name in names:
                     backup.append((name, getattr(sys, name)))
-                    setattr(sys, name, os.fdopen(client_fd, mode, 0))
+                    setattr(sys, name, os.fdopen(client_fd, mode, 1))
 
             run_repl()
             cry("DONE.")
@@ -251,7 +257,7 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
         if not _INST:
             _INST = Manhole(sigmask)
             if oneshot_on is not None:
-                oneshot_on = getattr(signal, 'SIG'+oneshot_on) if isinstance(oneshot_on, basestring) else oneshot_on
+                oneshot_on = getattr(signal, 'SIG'+oneshot_on) if isinstance(oneshot_on, string) else oneshot_on
                 signal.signal(oneshot_on, _handle_oneshot)
 
             if activate_on is None:
@@ -259,7 +265,7 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
                     _INST.start()
                     _SHOULD_RESTART = True
             else:
-                activate_on = getattr(signal, 'SIG'+activate_on) if isinstance(activate_on, basestring) else activate_on
+                activate_on = getattr(signal, 'SIG'+activate_on) if isinstance(activate_on, string) else activate_on
                 if activate_on == oneshot_on:
                     raise RuntimeError('You cannot do activation of the Manhole thread on the same signal that you want to do oneshot activation !')
                 signal.signal(activate_on, _activate_on_signal)
@@ -300,7 +306,7 @@ def dump_stacktraces():
 if __name__ == '__main__': #pragma: no cover
     from logging import basicConfig, DEBUG
     basicConfig(level=DEBUG)
-    install(verbose=True, oneshot_on='USR2')
+    install(verbose=True)#, oneshot_on='USR2')
     import faulthandler
     faulthandler.enable()
 
