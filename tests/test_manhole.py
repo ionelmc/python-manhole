@@ -354,7 +354,11 @@ def maybe_enable_coverage():
         cov.stop()
     cov = cov or os.environ.get("WITH_COVERAGE")
     if cov:
-        from coverage.control import coverage
+        try:
+            from coverage.control import coverage
+        except ImportError:
+            cov = None
+            return
         cov = coverage(auto_data=True, data_suffix=True, timid=False, include=['src/*'])
         cov.start()
 
