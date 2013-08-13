@@ -79,7 +79,7 @@ Whishlist
 Requirements
 ============
 
-Not sure yet ... maybe Python 2.6 and 2.7. Check Travis:
+Not sure yet ... so far Python 2.6, 2.7, 3.2, 3.3 and pypy are tested in Travis:
 
 .. image:: https://secure.travis-ci.org/ionelmc/python-manhole.png
     :alt: Build Status
