@@ -23,7 +23,7 @@ try:
     string = basestring
 except NameError: # python 3
     string = str
-
+PY3 = sys.version_info[0] == 3
 VERBOSE = True
 
 try:
@@ -167,7 +167,7 @@ class ManholeConnection(threading.Thread):
             ):
                 for name in names:
                     backup.append((name, getattr(sys, name)))
-                    setattr(sys, name, os.fdopen(client_fd, mode, 1))
+                    setattr(sys, name, os.fdopen(client_fd, mode, 1 if PY3 else 0))
 
             run_repl()
             cry("DONE.")
@@ -307,8 +307,11 @@ if __name__ == '__main__': #pragma: no cover
     from logging import basicConfig, DEBUG
     basicConfig(level=DEBUG)
     install(verbose=True)#, oneshot_on='USR2')
-    import faulthandler
-    faulthandler.enable()
+    try:
+        import faulthandler
+        faulthandler.enable()
+    except ImportError:
+        pass
 
     print()
 

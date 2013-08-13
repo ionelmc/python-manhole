@@ -13,7 +13,7 @@ import logging
 import re
 import atexit
 import signal
-from contextlib import contextmanager
+from contextlib import contextmanager, closing
 try:
     from cStringIO import StringIO
 except ImportError:
@@ -281,10 +281,13 @@ class ManholeTestCase(unittest.TestCase):
                 self._wait_for_strings(proc.read, 1, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
                 self._wait_for_strings(proc.read, 1, 'Waiting for new connection')
-                with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
+                with closing(socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)) as sock:
                     sock.settimeout(1)
                     sock.connect(uds_path)
-                    self.assertEqual(b"", sock.recv(1024))
+                    try:
+                        self.assertEqual(b"", sock.recv(1024))
+                    except socket.timeout:
+                        pass
                     self._wait_for_strings(proc.read, 1,
                         "SuspiciousClient: Can't accept client with PID:-1 UID:-1 GID:-1. It doesn't match the current EUID:",
                         'Waiting for new connection'
