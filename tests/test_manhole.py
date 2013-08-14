@@ -317,8 +317,8 @@ class ManholeTestCase(unittest.TestCase):
                     self._wait_for_strings(proc.read, 10, '/tmp/manhole-')
                     uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
                     self._wait_for_strings(proc.read, 10, 'Waiting for new connection')
-                    self._wait_for_strings(proc.read, 140, *[
-                        '[%s] read from signalfd:' % j for j in range(500)
+                    self._wait_for_strings(proc.read, 250, *[
+                        '[%s] read from signalfd:' % j for j in range(200)
                     ])
                     self.assertManholeRunning(proc, uds_path)
 
@@ -440,14 +440,14 @@ if __name__ == '__main__':
             import signalfd
             signalfd.sigprocmask(signalfd.SIG_BLOCK, [signal.SIGCHLD])
             fd = signalfd.signalfd(0, [signal.SIGCHLD], signalfd.SFD_NONBLOCK|signalfd.SFD_CLOEXEC)
-            for i in range(500):
+            for i in range(200):
                 print('Forking', i)
                 pid = os.fork()
                 print(' - [%s/%s] forked' % (i, pid))
                 if pid:
                     while 1:
                         print(' - [%s/%s] selecting on: %s' % (i, pid, [fd]))
-                        read_ready, _, errors = select.select([fd], [], [fd], 0.2)
+                        read_ready, _, errors = select.select([fd], [], [fd], 1)
                         if read_ready:
                             try:
                                 print(' - [%s/%s] reading from signalfd ...' % (i, pid))
