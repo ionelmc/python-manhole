@@ -1,8 +1,23 @@
 language: python
 python:
   - "2.7"
+  - "2.6"
+  - "3.2"
+  - "3.3"
+  - "pypy"
 env:
-  - LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ 
-  - NO_LD_HACK=yep
-install: pip install tox 
-script: tox
+  global:
+    PYTHONPATH=src:tests
+    PYTHONUNBUFFERED=yes
+  matrix:
+    - LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=yes
+    - NO_LD_HACK=yep WITH_COVERAGE=yes
+    - LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=no
+    - NO_LD_HACK=yep WITH_COVERAGE=no
+install: 
+  - pip install python-signalfd
+  - if [[ $WITH_COVERAGE == yes ]]; then pip install coverage coveralls; fi
+
+script: 
+  - rm .coverage* || true
+  - if [[ $WITH_COVERAGE == yes ]]; then coverage run --source=src --parallel-mode tests/test_manhole.py -v; else python tests/test_manhole.py -v; fi
