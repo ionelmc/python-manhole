@@ -35,6 +35,10 @@ matrix:
     - end: RUN=3 NO_LD_HACK=yep WITH_COVERAGE=no
     - end: RUN=3 NO_LD_HACK=yep WITH_COVERAGE=yes
 
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq lib32gcc1
+ 
 install: 
   - pip install python-signalfd
   - if [[ $WITH_COVERAGE == yes ]]; then pip install coverage coveralls; fi
