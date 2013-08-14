@@ -15,6 +15,7 @@ import os
 import atexit
 import code
 import signal
+import errno
 try:
     import signalfd
 except ImportError:
@@ -23,7 +24,10 @@ try:
     string = basestring
 except NameError: # python 3
     string = str
-
+try:
+    InterruptedError = InterruptedError
+except NameError: # python <= 3.2
+    InterruptedError = OSError
 if hasattr(sys, 'setswitchinterval'):
     setinterval = sys.setswitchinterval
     getinterval = sys.getswitchinterval
@@ -104,7 +108,7 @@ class Manhole(threading.Thread):
         while True:
             try:
                 client, _ = sock.accept()
-            except OSError as e:
+            except InterruptedError as e:
                 if e.errno != errno.EINTR:
                     raise
                 continue
