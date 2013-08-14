@@ -99,8 +99,6 @@ class Manhole(threading.Thread):
         return sock, pid
 
     def run(self):
-        global _CLIENT_INST #pylint: disable=W0603
-
         if signalfd and self.sigmask:
             signalfd.sigprocmask(signalfd.SIG_BLOCK, self.sigmask)
         pthread_setname_np(self.ident, self.name)
@@ -109,13 +107,15 @@ class Manhole(threading.Thread):
         while True:
             cry("Waiting for new connection (in pid:%s) ..." % pid)
             try:
-                _CLIENT_INST = ManholeConnection(sock.accept()[0], self.sigmask)
-                _CLIENT_INST.start()
-                _CLIENT_INST.join()
+                client = ManholeConnection(sock.accept()[0], self.sigmask)
+                client.start()
+                client.join()
             except (InterruptedError, socket.error) as e:
                 if e.errno != errno.EINTR:
                     raise
                 continue
+            finally:
+                del client
 
 class ManholeConnection(threading.Thread):
     def __init__(self, client, sigmask):
@@ -227,7 +227,7 @@ def _remove_manhole_uds():
         os.unlink(name)
 
 _INST_LOCK = thread.allocate_lock()
-_STDERR = _INST = _CLIENT_INST = _ORIGINAL_OS_FORK = _ORIGINAL_OS_FORKPTY = _SHOULD_RESTART = None
+_STDERR = _INST = _ORIGINAL_OS_FORK = _ORIGINAL_OS_FORKPTY = _SHOULD_RESTART = None
 
 def _patched_fork():
     """Fork a child process."""
