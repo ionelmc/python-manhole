@@ -473,9 +473,13 @@ if __name__ == '__main__':
                 if pid:
                     @atexit.register
                     def cleanup():
-                        os.kill(pid, signal.SIGINT)
-                        time.sleep(0.2)
-                        os.kill(pid, signal.SIGTERM)
+                        try:
+                            os.kill(pid, signal.SIGINT)
+                            time.sleep(0.2)
+                            os.kill(pid, signal.SIGTERM)
+                        except OSError as e:
+                            if e.errno != 3:
+                                raise
                     while not os.waitpid(pid, os.WNOHANG)[0]:
                         os.write(2, os.read(masterfd, 1024))
                 else:
@@ -486,9 +490,13 @@ if __name__ == '__main__':
                 if pid:
                     @atexit.register
                     def cleanup():
-                        os.kill(pid, signal.SIGINT)
-                        time.sleep(0.2)
-                        os.kill(pid, signal.SIGTERM)
+                        try:
+                            os.kill(pid, signal.SIGINT)
+                            time.sleep(0.2)
+                            os.kill(pid, signal.SIGTERM)
+                        except OSError as e:
+                            if e.errno != 3:
+                                raise
                     os.waitpid(pid, 0)
                 else:
                     time.sleep(10)
