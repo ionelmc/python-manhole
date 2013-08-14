@@ -96,7 +96,7 @@ class TestProcess(BufferingBase):
                 self.proc.stderr.close()
             if self.proc.stdin:
                 self.proc.stdin.close()
-            self.proc.wait() # reap the zombie  
+            self.proc.wait() # reap the zombie
 
 class TestSocket(BufferingBase):
     BUFFSIZE = 8192
@@ -318,7 +318,7 @@ class ManholeTestCase(unittest.TestCase):
                     uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
                     self._wait_for_strings(proc.read, 1, 'Waiting for new connection')
                     self._wait_for_strings(proc.read, 2, *[
-                        '[%s] read from signalfd:' % j for j in range(100)
+                        '[%s] read from signalfd:' % j for j in range(500)
                     ])
                     self.assertManholeRunning(proc, uds_path)
 
