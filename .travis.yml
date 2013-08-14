@@ -12,48 +12,18 @@ env:
     PYTHONPATH=src:tests
     PYTHONUNBUFFERED=yes
   matrix:
-    - RUN=1 LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=yes
-    - RUN=1 NO_LD_HACK=yep WITH_COVERAGE=yes
-    - RUN=1 LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=no
-    - RUN=1 NO_LD_HACK=yep WITH_COVERAGE=no
-    - RUN=2 LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=yes
-    - RUN=2 NO_LD_HACK=yep WITH_COVERAGE=yes
-    - RUN=2 LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=no
-    - RUN=2 NO_LD_HACK=yep WITH_COVERAGE=no
-    - RUN=3 LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=yes
-    - RUN=3 NO_LD_HACK=yep WITH_COVERAGE=yes
-    - RUN=3 LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=no
-    - RUN=3 NO_LD_HACK=yep WITH_COVERAGE=no
-
-
-matrix:
-  allow_failures:
-    - env: RUN=1 NO_LD_HACK=yep WITH_COVERAGE=no
-      python: "3.2"
-    - env: RUN=1 NO_LD_HACK=yep WITH_COVERAGE=yes
-      python: "3.2"
-    - env: RUN=2 NO_LD_HACK=yep WITH_COVERAGE=no
-      python: "3.2"
-    - env: RUN=2 NO_LD_HACK=yep WITH_COVERAGE=yes
-      python: "3.2"
-    - env: RUN=3 NO_LD_HACK=yep WITH_COVERAGE=no
-      python: "3.2"
-    - env: RUN=3 NO_LD_HACK=yep WITH_COVERAGE=yes
-      python: "3.2"
-
-    - env: RUN=1 NO_LD_HACK=yep WITH_COVERAGE=no
-      python: "3.3"
-    - env: RUN=1 NO_LD_HACK=yep WITH_COVERAGE=yes
-      python: "3.3"
-    - env: RUN=2 NO_LD_HACK=yep WITH_COVERAGE=no
-      python: "3.3"
-    - env: RUN=2 NO_LD_HACK=yep WITH_COVERAGE=yes
-      python: "3.3"
-    - env: RUN=3 NO_LD_HACK=yep WITH_COVERAGE=no
-      python: "3.3"
-    - env: RUN=3 NO_LD_HACK=yep WITH_COVERAGE=yes
-      python: "3.3"
-
+    - RUN=1 WITH_COVERAGE=no
+    - RUN=1 WITH_COVERAGE=yes
+    - RUN=2 WITH_COVERAGE=no
+    - RUN=2 WITH_COVERAGE=yes
+    - RUN=3 WITH_COVERAGE=no
+    - RUN=3 WITH_COVERAGE=yes
+    - RUN=4 WITH_COVERAGE=no
+    - RUN=4 WITH_COVERAGE=yes
+    - RUN=5 WITH_COVERAGE=no
+    - RUN=5 WITH_COVERAGE=yes
+    - RUN=6 WITH_COVERAGE=no
+    - RUN=6 WITH_COVERAGE=yes
 
 before_install:
   - sudo apt-get update -qq
