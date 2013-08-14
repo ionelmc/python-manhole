@@ -481,7 +481,10 @@ if __name__ == '__main__':
                             if e.errno != 3:
                                 raise
                     while not os.waitpid(pid, os.WNOHANG)[0]:
-                        os.write(2, os.read(masterfd, 1024))
+                        try:
+                            os.write(2, os.read(masterfd, 1024))
+                        except OSError as e:
+                            print("Error while reading from masterfd:", e)
                 else:
                     time.sleep(10)
             elif test_name == 'test_with_fork':
