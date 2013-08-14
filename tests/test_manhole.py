@@ -317,7 +317,7 @@ class ManholeTestCase(unittest.TestCase):
                     self._wait_for_strings(proc.read, 2, '/tmp/manhole-')
                     uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
                     self._wait_for_strings(proc.read, 1, 'Waiting for new connection')
-                    self._wait_for_strings(proc.read, 2, *[
+                    self._wait_for_strings(proc.read, 20, *[
                         '[%s] read from signalfd:' % j for j in range(500)
                     ])
                     self.assertManholeRunning(proc, uds_path)
