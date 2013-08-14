@@ -41,6 +41,7 @@ install:
 
 script: 
   - rm .coverage* || true
+  - stat /lib/x86_64-linux-gnu/libgcc_s.so.1
   - if [[ $WITH_COVERAGE == yes ]]; then coverage run --source=src --parallel-mode tests/test_manhole.py -v; else python tests/test_manhole.py -v; fi
 
 after_success:
