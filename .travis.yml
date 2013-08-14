@@ -12,20 +12,18 @@ env:
     PYTHONPATH=src:tests
     PYTHONUNBUFFERED=yes
   matrix:
-    - LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=yes INSIST=1
-    - NO_LD_HACK=yep WITH_COVERAGE=yes INSIST=1
-    - LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=no INSIST=1
-    - NO_LD_HACK=yep WITH_COVERAGE=no INSIST=1
-
-    - LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=yes INSIST=2
-    - NO_LD_HACK=yep WITH_COVERAGE=yes INSIST=2
-    - LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=no INSIST=2
-    - NO_LD_HACK=yep WITH_COVERAGE=no INSIST=2
-
-    - LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=yes INSIST=3
-    - NO_LD_HACK=yep WITH_COVERAGE=yes INSIST=3
-    - LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=no INSIST=3
-    - NO_LD_HACK=yep WITH_COVERAGE=no INSIST=3
+    - RUN=1 LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=yes
+    - RUN=1 NO_LD_HACK=yep WITH_COVERAGE=yes
+    - RUN=1 LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=no
+    - RUN=1 NO_LD_HACK=yep WITH_COVERAGE=no
+    - RUN=2 LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=yes
+    - RUN=2 NO_LD_HACK=yep WITH_COVERAGE=yes
+    - RUN=2 LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=no
+    - RUN=2 NO_LD_HACK=yep WITH_COVERAGE=no
+    - RUN=3 LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=yes
+    - RUN=3 NO_LD_HACK=yep WITH_COVERAGE=yes
+    - RUN=3 LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=no
+    - RUN=3 NO_LD_HACK=yep WITH_COVERAGE=no
 
 install: 
   - pip install python-signalfd
