@@ -374,9 +374,8 @@ def maybe_enable_coverage():
         cov = coverage(auto_data=True, data_suffix=True, timid=False, include=['src/*'])
         cov.start()
 
-    @atexit.register
-    def cleanup():
-        if cov:
+        @atexit.register
+        def cleanup():
             cov.stop()
             cov.save()
 
