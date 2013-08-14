@@ -317,7 +317,7 @@ class ManholeTestCase(unittest.TestCase):
                     self._wait_for_strings(proc.read, 2, '/tmp/manhole-')
                     uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
                     self._wait_for_strings(proc.read, 1, 'Waiting for new connection')
-                    self._wait_for_strings(proc.read, 20, *[
+                    self._wait_for_strings(proc.read, 140, *[
                         '[%s] read from signalfd:' % j for j in range(500)
                     ])
                     self.assertManholeRunning(proc, uds_path)
@@ -447,7 +447,7 @@ if __name__ == '__main__':
                 if pid:
                     while 1:
                         print(' - [%s/%s] selecting on: %s' % (i, pid, [fd]))
-                        read_ready, _, errors = select.select([fd], [], [fd], 0.4)
+                        read_ready, _, errors = select.select([fd], [], [fd], 0.2)
                         if read_ready:
                             try:
                                 print(' - [%s/%s] reading from signalfd ...' % (i, pid))
