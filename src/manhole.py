@@ -117,13 +117,13 @@ class Manhole(threading.Thread):
 
             try:
                 _CLIENT_INST = ManholeConnection(client, self.sigmask)
+                del client
                 _CLIENT_INST.start()
                 _CLIENT_INST.join()
             #except: #pylint: disable=W0703
             #    cry(traceback.format_exc()) #pylint: disable=W0702
             finally:
                 _CLIENT_INST = None
-                del client
 
             cry("Waiting for new connection ...")
 
