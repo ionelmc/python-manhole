@@ -478,7 +478,7 @@ if __name__ == '__main__':
                             time.sleep(0.2)
                             os.kill(pid, signal.SIGTERM)
                         except OSError as e:
-                            if e.errno != 3:
+                            if e.errno != errno.ESRCH:
                                 raise
                     while not os.waitpid(pid, os.WNOHANG)[0]:
                         try:
@@ -498,7 +498,7 @@ if __name__ == '__main__':
                             time.sleep(0.2)
                             os.kill(pid, signal.SIGTERM)
                         except OSError as e:
-                            if e.errno != 3:
+                            if e.errno != errno.ESRCH:
                                 raise
                     os.waitpid(pid, 0)
                 else:
