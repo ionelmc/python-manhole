@@ -25,6 +25,16 @@ env:
     - RUN=3 LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=no
     - RUN=3 NO_LD_HACK=yep WITH_COVERAGE=no
 
+
+matrix:
+  allow_failures:
+    - env: RUN=1 NO_LD_HACK=yep WITH_COVERAGE=no
+    - end: RUN=1 NO_LD_HACK=yep WITH_COVERAGE=yes
+    - end: RUN=2 NO_LD_HACK=yep WITH_COVERAGE=no
+    - end: RUN=2 NO_LD_HACK=yep WITH_COVERAGE=yes
+    - end: RUN=3 NO_LD_HACK=yep WITH_COVERAGE=no
+    - end: RUN=3 NO_LD_HACK=yep WITH_COVERAGE=yes
+
 install: 
   - pip install python-signalfd
   - if [[ $WITH_COVERAGE == yes ]]; then pip install coverage coveralls; fi
