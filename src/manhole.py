@@ -102,7 +102,13 @@ class Manhole(threading.Thread):
         sock, pid = self.get_socket()
         cry("Waiting for new connection (in pid:%s) ..." % pid)
         while True:
-            client, _ = sock.accept()
+            try:
+                client, _ = sock.accept()
+            except OSError as e:
+                if e.errno != errno.EINTR:
+                    raise
+                continue
+
             global _CLIENT_INST #pylint: disable=W0603
 
             try:
