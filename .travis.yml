@@ -29,11 +29,31 @@ env:
 matrix:
   allow_failures:
     - env: RUN=1 NO_LD_HACK=yep WITH_COVERAGE=no
-    - end: RUN=1 NO_LD_HACK=yep WITH_COVERAGE=yes
-    - end: RUN=2 NO_LD_HACK=yep WITH_COVERAGE=no
-    - end: RUN=2 NO_LD_HACK=yep WITH_COVERAGE=yes
-    - end: RUN=3 NO_LD_HACK=yep WITH_COVERAGE=no
-    - end: RUN=3 NO_LD_HACK=yep WITH_COVERAGE=yes
+      python: 3.2
+    - env: RUN=1 NO_LD_HACK=yep WITH_COVERAGE=yes
+      python: 3.2
+    - env: RUN=2 NO_LD_HACK=yep WITH_COVERAGE=no
+      python: 3.2
+    - env: RUN=2 NO_LD_HACK=yep WITH_COVERAGE=yes
+      python: 3.2
+    - env: RUN=3 NO_LD_HACK=yep WITH_COVERAGE=no
+      python: 3.2
+    - env: RUN=3 NO_LD_HACK=yep WITH_COVERAGE=yes
+      python: 3.2
+
+    - env: RUN=1 NO_LD_HACK=yep WITH_COVERAGE=no
+      python: 3.3
+    - env: RUN=1 NO_LD_HACK=yep WITH_COVERAGE=yes
+      python: 3.3
+    - env: RUN=2 NO_LD_HACK=yep WITH_COVERAGE=no
+      python: 3.3
+    - env: RUN=2 NO_LD_HACK=yep WITH_COVERAGE=yes
+      python: 3.3
+    - env: RUN=3 NO_LD_HACK=yep WITH_COVERAGE=no
+      python: 3.3
+    - env: RUN=3 NO_LD_HACK=yep WITH_COVERAGE=yes
+      python: 3.3
+
 
 before_install:
   - sudo apt-get update -qq
