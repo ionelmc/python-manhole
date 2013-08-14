@@ -170,45 +170,49 @@ class ManholeConnection(threading.Thread):
         backup = []
         old_interval = getinterval()
         try:
-            client_fd = client.fileno()
-            for mode, names in (
-                ('w', (
-                    'stderr',
-                    'stdout',
-                    '__stderr__',
-                    '__stdout__'
-                )),
-                ('r', (
-                    'stdin',
-                    '__stdin__'
-                ))
-            ):
-                for name in names:
-                    backup.append((name, getattr(sys, name)))
-                    setattr(sys, name, os.fdopen(client_fd, mode, 1 if PY3 else 0))
-
-            run_repl()
-            cry("DONE.")
-        finally:
             try:
-                setinterval(2147483647) # change the switch/check interval to something ridiculous
-                                        # we don't want to have other thread try to write to the
-                                        # redirected sys.__std*/sys.std* - it would fail horribly
-                junk = [] # keep the old file objects alive for a bit
-                for name, fh in backup:
-                    junk.append(getattr(sys, name))
-                    setattr(sys, name, fh)
-                del backup
-                for fh in junk:
-                    try:
-                        fh.close()
-                    except IOError:
-                        pass
-                    del fh
-                del junk
+                client_fd = client.fileno()
+                for mode, names in (
+                    ('w', (
+                        'stderr',
+                        'stdout',
+                        '__stderr__',
+                        '__stdout__'
+                    )),
+                    ('r', (
+                        'stdin',
+                        '__stdin__'
+                    ))
+                ):
+                    for name in names:
+                        backup.append((name, getattr(sys, name)))
+                        setattr(sys, name, os.fdopen(client_fd, mode, 1 if PY3 else 0))
+
+                run_repl()
+                cry("DONE.")
             finally:
-                setinterval(old_interval)
-                cry("Cleaned up.")
+                try:
+                    setinterval(2147483647) # change the switch/check interval to something ridiculous
+                                            # we don't want to have other thread try to write to the
+                                            # redirected sys.__std*/sys.std* - it would fail horribly
+                    junk = [] # keep the old file objects alive for a bit
+                    for name, fh in backup:
+                        junk.append(getattr(sys, name))
+                        setattr(sys, name, fh)
+                    del backup
+                    for fh in junk:
+                        try:
+                            fh.close()
+                        except IOError:
+                            pass
+                        del fh
+                    del junk
+                finally:
+                    setinterval(old_interval)
+                    cry("Cleaned up.")
+        except Exception:
+            cry("ManholeConnection thread failed:")
+            cry(traceback.format_exc())
 
 def run_repl():
     dump_stacktraces()
