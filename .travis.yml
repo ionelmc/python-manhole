@@ -1,19 +1,32 @@
 language: python
+
 python:
   - "2.7"
   - "2.6"
   - "3.2"
   - "3.3"
   - "pypy"
+
 env:
   global:
     PYTHONPATH=src:tests
     PYTHONUNBUFFERED=yes
   matrix:
-    - LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=yes
-    - NO_LD_HACK=yep WITH_COVERAGE=yes
-    - LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=no
-    - NO_LD_HACK=yep WITH_COVERAGE=no
+    - LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=yes INSIST=1
+    - NO_LD_HACK=yep WITH_COVERAGE=yes INSIST=1
+    - LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=no INSIST=1
+    - NO_LD_HACK=yep WITH_COVERAGE=no INSIST=1
+
+    - LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=yes INSIST=2
+    - NO_LD_HACK=yep WITH_COVERAGE=yes INSIST=2
+    - LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=no INSIST=2
+    - NO_LD_HACK=yep WITH_COVERAGE=no INSIST=2
+
+    - LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=yes INSIST=3
+    - NO_LD_HACK=yep WITH_COVERAGE=yes INSIST=3
+    - LD_LIBRARY_PATH=/lib/x86_64-linux-gnu/ WITH_COVERAGE=no INSIST=3
+    - NO_LD_HACK=yep WITH_COVERAGE=no INSIST=3
+
 install: 
   - pip install python-signalfd
   - if [[ $WITH_COVERAGE == yes ]]; then pip install coverage coveralls; fi
@@ -21,3 +34,8 @@ install:
 script: 
   - rm .coverage* || true
   - if [[ $WITH_COVERAGE == yes ]]; then coverage run --source=src --parallel-mode tests/test_manhole.py -v; else python tests/test_manhole.py -v; fi
+
+after_success:
+  - coverage combine || true
+  - coverage report --show-missing --include='src/*' || true
+  - coveralls || true
