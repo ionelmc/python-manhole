@@ -132,7 +132,6 @@ class ManholeConnection(threading.Thread):
 
         pid, _, _ = self.check_credentials(self.client)
         pthread_setname_np(self.ident, "Manhole %s" % pid)
-
         self.handle(self.client)
 
     @staticmethod
@@ -182,6 +181,7 @@ class ManholeConnection(threading.Thread):
                     setinterval(2147483647) # change the switch/check interval to something ridiculous
                                             # we don't want to have other thread try to write to the
                                             # redirected sys.__std*/sys.std* - it would fail horribly
+                    client.close() # close before it's too late. it may already be dead
                     junk = [] # keep the old file objects alive for a bit
                     for name, fh in backup:
                         junk.append(getattr(sys, name))
