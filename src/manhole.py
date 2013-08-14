@@ -99,33 +99,23 @@ class Manhole(threading.Thread):
         return sock, pid
 
     def run(self):
+        global _CLIENT_INST #pylint: disable=W0603
+
         if signalfd and self.sigmask:
             signalfd.sigprocmask(signalfd.SIG_BLOCK, self.sigmask)
         pthread_setname_np(self.ident, self.name)
 
         sock, pid = self.get_socket()
-        cry("Waiting for new connection (in pid:%s) ..." % pid)
         while True:
+            cry("Waiting for new connection (in pid:%s) ..." % pid)
             try:
-                client, _ = sock.accept()
-            except InterruptedError as e:
+                _CLIENT_INST = ManholeConnection(sock.accept()[0], self.sigmask)
+                _CLIENT_INST.start()
+                _CLIENT_INST.join()
+            except (InterruptedError, socket.error) as e:
                 if e.errno != errno.EINTR:
                     raise
                 continue
-
-            global _CLIENT_INST #pylint: disable=W0603
-
-            try:
-                _CLIENT_INST = ManholeConnection(client, self.sigmask)
-                del client
-                _CLIENT_INST.start()
-                _CLIENT_INST.join()
-            #except: #pylint: disable=W0703
-            #    cry(traceback.format_exc()) #pylint: disable=W0702
-            finally:
-                _CLIENT_INST = None
-
-            cry("Waiting for new connection ...")
 
 class ManholeConnection(threading.Thread):
     def __init__(self, client, sigmask):
@@ -140,12 +130,10 @@ class ManholeConnection(threading.Thread):
             signalfd.sigprocmask(signalfd.SIG_BLOCK, self.sigmask)
         pthread_setname_np(self.ident, "Manhole ----")
 
-        client = self.client
-        del self.client
-        pid, _, _ = self.check_credentials(client)
+        pid, _, _ = self.check_credentials(self.client)
         pthread_setname_np(self.ident, "Manhole %s" % pid)
 
-        self.handle(client)
+        self.handle(self.client)
 
     @staticmethod
     def check_credentials(client):
@@ -187,7 +175,6 @@ class ManholeConnection(threading.Thread):
                     for name in names:
                         backup.append((name, getattr(sys, name)))
                         setattr(sys, name, os.fdopen(client_fd, mode, 1 if PY3 else 0))
-
                 run_repl()
                 cry("DONE.")
             finally:
@@ -267,7 +254,7 @@ def _patch_os_fork_functions():
     cry("Patched %s and %s." % (_ORIGINAL_OS_FORK, _ORIGINAL_OS_FORKPTY))
 
 def _activate_on_signal(_signum, _frame):
-    assert _INST
+    assert _INST, "Manhole wasn't installed !"
     _INST.start()
 
 ALL_SIGNALS = [
