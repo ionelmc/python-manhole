@@ -193,13 +193,13 @@ class ManholeTestCase(unittest.TestCase):
         try:
             with TestSocket(sock) as client:
                 with self._dump_on_error(client.read):
-                    self._wait_for_strings(client.read, 1,
+                    self._wait_for_strings(client.read, 10,
                         "ProcessID",
                         "ThreadID",
                         ">>>",
                     )
                     sock.send(b"print('FOOBAR')\n")
-                    self._wait_for_strings(client.read, 1, "FOOBAR")
+                    self._wait_for_strings(client.read, 10, "FOOBAR")
 
                     self._wait_for_strings(proc.read, 10,
                         'from PID:%s UID:%s' % (os.getpid(), os.getuid()),
@@ -223,13 +223,13 @@ class ManholeTestCase(unittest.TestCase):
                 sock.connect(uds_path)
                 with TestSocket(sock) as client:
                     with self._dump_on_error(client.read):
-                        self._wait_for_strings(client.read, 1,
+                        self._wait_for_strings(client.read, 10,
                             "ThreadID",
                             "ProcessID",
                             ">>>",
                         )
                         sock.send(b"print('FOOBAR')\n")
-                        self._wait_for_strings(client.read, 1, "FOOBAR")
+                        self._wait_for_strings(client.read, 10, "FOOBAR")
 
                         self._wait_for_strings(proc.read, 10,
                             'from PID:%s UID:%s' % (os.getpid(), os.getuid()),
