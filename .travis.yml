@@ -68,8 +68,10 @@ before_install:
     if python --version | grep PyPy; then
       wget https://bitbucket.org/pypy/pypy/downloads/pypy-2.1-linux64.tar.bz2;
       tar -xf pypy-2.1-linux64.tar.bz2;
-      sudo rm -rf /home/travis/virtualenv/pypy
-      sudo virtualenv python=pypy-2.1/bin/pypy /home/travis/virtualenv/pypy 
+      deactivate
+      sudo rm -rf ~/virtualenv/pypy
+      sudo virtualenv python=pypy-2.1/bin/pypy ~/virtualenv/pypy
+      source ~/virtualenv/pypy/bin/activate
     fi
     python --version
  
