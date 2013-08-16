@@ -72,6 +72,8 @@ before_install:
       sudo rm -rf ~/virtualenv/pypy
       sudo virtualenv --python=pypy-2.1/bin/pypy ~/virtualenv/pypy
       source ~/virtualenv/pypy/bin/activate
+      python --version
+      ~/virtualenv/pypy/bin/python --version
     fi
     python --version
  
