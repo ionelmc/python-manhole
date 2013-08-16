@@ -1,10 +1,10 @@
 language: python
 
 python:
-  #- "2.7"
-  #- "2.6"
-  #- "3.2"
-  #- "3.3"
+  - "2.7"
+  - "2.6"
+  - "3.2"
+  - "3.3"
   - "pypy"
 
 env:
@@ -13,7 +13,7 @@ env:
     PYTHONUNBUFFERED=yes
   matrix:
     - RUN=01 WITH_COVERAGE=no
-    #- RUN=02 WITH_COVERAGE=yes
+    - RUN=02 WITH_COVERAGE=yes
     #- RUN=03 WITH_COVERAGE=no
     #- RUN=04 WITH_COVERAGE=yes
     #- RUN=05 WITH_COVERAGE=no
