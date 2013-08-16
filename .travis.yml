@@ -63,6 +63,15 @@ env:
     - RUN=49 WITH_COVERAGE=no
     - RUN=50 WITH_COVERAGE=yes
     
+before_install:
+  - |
+    if  python --version | grep PyPy; then
+      wget https://bitbucket.org/pypy/pypy/downloads/pypy-2.1-linux64.tar.bz2;
+      tar -xf pypy-2.1-linux64.tar.bz2;
+      sudo ln -sf pypy-2.1/bin/pypy `which python`;
+      sudo ln -sf pypy-2.1/bin/pypy `which pypy`;
+    fi
+ 
 install: 
   - pip install python-signalfd
   - if [[ $WITH_COVERAGE == yes ]]; then pip install coverage coveralls; fi
