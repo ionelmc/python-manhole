@@ -65,7 +65,7 @@ env:
     
 before_install:
   - |
-    if python --version | grep PyPy; then
+    #if python --version | grep PyPy; then
       wget "https://bitbucket.org/pypy/pypy/downloads/pypy-2.1-linux64.tar.bz2"
       pwd
       tar -xf pypy-2.1-linux64.tar.bz2
@@ -76,7 +76,7 @@ before_install:
       ls -al
       python --version
       ~/virtualenv/pypy/bin/python --version
-    fi
+    #fi
     python --version
  
 install: 
