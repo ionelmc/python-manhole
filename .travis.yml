@@ -65,7 +65,7 @@ env:
     
 before_install:
   - |
-    if ! python --version | grep PyPy; then
+    if python --version | grep PyPy; then
       wget https://bitbucket.org/pypy/pypy/downloads/pypy-2.1-linux64.tar.bz2;
       tar -xf pypy-2.1-linux64.tar.bz2;
       sudo rm -rf /home/travis/virtualenv/pypy
