@@ -65,18 +65,17 @@ env:
     
 before_install:
   - |
-    #if [ -z "$(python --version | grep PyPy)"]; then
-      wget "https://bitbucket.org/pypy/pypy/downloads/pypy-2.1-linux64.tar.bz2"
-      pwd
-      tar -xf pypy-2.1-linux64.tar.bz2
+    if python --version |& grep PyPy; then
       deactivate
-      sudo rm -rf ~/virtualenv/pypy
-      virtualenv --python=pypy-2.1/bin/pypy ~/virtualenv/pypy
+      (
+        cd ~
+        wget "https://bitbucket.org/pypy/pypy/downloads/pypy-2.1-linux64.tar.bz2"
+        tar -xf pypy-2.1-linux64.tar.bz2
+        sudo rm -rf ~/virtualenv/pypy
+        virtualenv --python=pypy-2.1/bin/pypy ~/virtualenv/pypy
+      )
       source ~/virtualenv/pypy/bin/activate
-      ls -al
-      python --version
-      ~/virtualenv/pypy/bin/python --version
-    #fi
+    fi
     python --version
  
 install: 
