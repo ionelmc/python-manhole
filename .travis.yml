@@ -1,10 +1,10 @@
 language: python
 
 python:
-  - "2.7"
-  - "2.6"
-  - "3.2"
-  - "3.3"
+  #- "2.7"
+  #- "2.6"
+  #- "3.2"
+  #- "3.3"
   - "pypy"
 
 env:
@@ -13,7 +13,7 @@ env:
     PYTHONUNBUFFERED=yes
   matrix:
     - RUN=01 WITH_COVERAGE=no
-    - RUN=02 WITH_COVERAGE=yes
+    #- RUN=02 WITH_COVERAGE=yes
     #- RUN=03 WITH_COVERAGE=no
     #- RUN=04 WITH_COVERAGE=yes
     #- RUN=05 WITH_COVERAGE=no
@@ -66,11 +66,12 @@ env:
 before_install:
   - |
     if python --version | grep PyPy; then
-      wget https://bitbucket.org/pypy/pypy/downloads/pypy-2.1-linux64.tar.bz2
+      wget "https://bitbucket.org/pypy/pypy/downloads/pypy-2.1-linux64.tar.bz2"
+      pwd
       tar -xf pypy-2.1-linux64.tar.bz2
       deactivate
       sudo rm -rf ~/virtualenv/pypy
-      sudo virtualenv --python=pypy-2.1/bin/pypy ~/virtualenv/pypy
+      virtualenv --python=pypy-2.1/bin/pypy ~/virtualenv/pypy
       source ~/virtualenv/pypy/bin/activate
       ls -al
       python --version
