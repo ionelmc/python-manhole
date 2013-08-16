@@ -218,8 +218,10 @@ def _handle_oneshot(_signum, _frame):
         client, _ = sock.accept()
         ManholeConnection.check_credentials(client)
         ManholeConnection.handle(client)
-    except SystemExit:
-        pass
+    except: # pylint: disable=W0702
+        # we don't want to let any exception out, it might make the application missbehave
+        cry("Manhole oneshot connection failed:")
+        cry(traceback.format_exc())
 
 def _remove_manhole_uds():
     name = "/tmp/manhole-%s" % os.getpid()
