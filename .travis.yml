@@ -65,7 +65,7 @@ env:
     
 before_install:
   - |
-    #if python --version | grep PyPy; then
+    #if [ -z "$(python --version | grep PyPy)"]; then
       wget "https://bitbucket.org/pypy/pypy/downloads/pypy-2.1-linux64.tar.bz2"
       pwd
       tar -xf pypy-2.1-linux64.tar.bz2
@@ -84,6 +84,7 @@ install:
   - if [[ $WITH_COVERAGE == yes ]]; then pip install coverage coveralls; fi
 
 script: 
+  - python --version
   - rm .coverage* || true
   - stat /lib/x86_64-linux-gnu/libgcc_s.so.1
   - if [[ $WITH_COVERAGE == yes ]]; then coverage run --source=src --parallel-mode tests/test_manhole.py -v; else python tests/test_manhole.py -v; fi
