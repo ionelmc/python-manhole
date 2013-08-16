@@ -71,6 +71,7 @@ before_install:
       sudo rm -rf /home/travis/virtualenv/pypy
       sudo virtualenv python=pypy-2.1/bin/pypy /home/travis/virtualenv/pypy 
     fi
+    python --version
  
 install: 
   - pip install python-signalfd
