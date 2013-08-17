@@ -404,7 +404,11 @@ cov = None
 def maybe_enable_coverage():
     global cov
     if cov:
+        cov.save()
         cov.stop()
+    from coverage.collector import Collector
+    if Collector._collectors:
+        Collector._collectors[-1].stop()
     cov = cov or os.environ.get("WITH_COVERAGE")
     if cov:
         try:
