@@ -376,7 +376,8 @@ def maybe_enable_coverage():
 
         @atexit.register
         def cleanup():
-            cov.stop()
+            if cov.collector._collectors:
+                cov.stop()
             cov.save()
 
 
