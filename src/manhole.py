@@ -115,7 +115,7 @@ class Manhole(threading.Thread):
                     raise
                 continue
             finally:
-                del client
+                client = None
 
 class ManholeConnection(threading.Thread):
     def __init__(self, client, sigmask):

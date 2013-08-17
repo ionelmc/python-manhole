@@ -392,6 +392,14 @@ class ManholeTestCase(unittest.TestCase):
                 self._wait_for_strings(proc.read, 10, 'Waiting for new connection')
                 self.assertManholeRunning(proc, uds_path, oneshot=True)
 
+    def test_interrupt_on_accept(self):
+        with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_interrupt_on_accept') as proc:
+            with self._dump_on_error(proc.read):
+                self._wait_for_strings(proc.read, 10, '/tmp/manhole-')
+                uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
+                self._wait_for_strings(proc.read, 10, 'Waiting for new connection', 'Sending signal to manhole thread', 'Waiting for new connection')
+                self.assertManholeRunning(proc, uds_path)
+
 cov = None
 def maybe_enable_coverage():
     global cov
@@ -458,6 +466,29 @@ if __name__ == '__main__':
                 time.sleep(0.1)
         elif test_name == 'test_activate_on_with_oneshot_on':
             manhole.install(activate_on='USR2', oneshot_on='USR2')
+            for i in range(100):
+                time.sleep(0.1)
+        elif test_name == 'test_interrupt_on_accept':
+            def handle_usr2(_sig, _frame):
+                print('Got USR2')
+            signal.signal(signal.SIGUSR2, handle_usr2)
+
+            import ctypes
+            import ctypes.util
+            libpthread_path = ctypes.util.find_library("pthread")
+            if not libpthread_path:
+                raise ImportError
+            libpthread = ctypes.CDLL(libpthread_path)
+            if not hasattr(libpthread, "pthread_setname_np"):
+                raise ImportError
+            pthread_kill = libpthread.pthread_kill
+            pthread_kill.argtypes = [ctypes.c_void_p, ctypes.c_int]
+            pthread_kill.restype = ctypes.c_int
+            manhole.install(sigmask=None)
+            for i in range(15):
+                time.sleep(0.1)
+            print("Sending signal to manhole thread ...")
+            pthread_kill(manhole._INST.ident, signal.SIGUSR2)
             for i in range(100):
                 time.sleep(0.1)
         elif test_name == 'test_oneshot_on_usr2':
