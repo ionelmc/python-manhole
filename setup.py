@@ -22,7 +22,7 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: Unix',
-        'Operating System :: POSIX'
+        'Operating System :: POSIX',
         'Programming Language :: Python',
         'Topic :: Software Development :: Debuggers',
         'Topic :: Utilities',
