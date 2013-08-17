@@ -186,7 +186,7 @@ class ManholeTestCase(unittest.TestCase):
                     proc.reset()
                     self.assertManholeRunning(proc, uds_path)
 
-    def assertManholeRunning(self, proc, uds_path, oneshot=False):
+    def assertManholeRunning(self, proc, uds_path, oneshot=False, extra=None):
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         sock.settimeout(0.5)
         sock.connect(uds_path)
@@ -204,6 +204,8 @@ class ManholeTestCase(unittest.TestCase):
                     self._wait_for_strings(proc.read, 10,
                         'from PID:%s UID:%s' % (os.getpid(), os.getuid()),
                     )
+                    if extra:
+                        extra(sock)
                     sock.shutdown(socket.SHUT_RDWR)
         finally:
             sock.close()
@@ -353,6 +355,37 @@ class ManholeTestCase(unittest.TestCase):
             with self._dump_on_error(proc.read):
                 self._wait_for_strings(proc.read, 10, 'Not patching os.fork and os.forkpty. Oneshot activation is done by signal 12')
                 self.assertRaises(AssertionError, self._wait_for_strings, proc.read, 2, '/tmp/manhole-')
+                proc.signal(signal.SIGUSR2)
+                self._wait_for_strings(proc.read, 10, '/tmp/manhole-')
+                uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
+                self._wait_for_strings(proc.read, 10, 'Waiting for new connection')
+                self.assertManholeRunning(proc, uds_path, oneshot=True)
+
+    def test_fail_to_cry(self):
+        import manhole
+        verbose = manhole.VERBOSE
+        out = manhole._STDERR
+        try:
+            manhole.VERBOSE = True
+            fh = os.fdopen(os.dup(2), 'w')
+            fh.close()
+            manhole._STDERR = fh
+            manhole.cry('stuff')
+        finally:
+            manhole.VERBOSE = verbose
+            manhole._STDERR = out
+
+    def test_oneshot_on_usr2_error(self):
+        with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_oneshot_on_usr2') as proc:
+            with self._dump_on_error(proc.read):
+                self._wait_for_strings(proc.read, 10, 'Not patching os.fork and os.forkpty. Oneshot activation is done by signal 12')
+                self.assertRaises(AssertionError, self._wait_for_strings, proc.read, 2, '/tmp/manhole-')
+                proc.signal(signal.SIGUSR2)
+                self._wait_for_strings(proc.read, 10, '/tmp/manhole-')
+                uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
+                self._wait_for_strings(proc.read, 10, 'Waiting for new connection')
+                self.assertManholeRunning(proc, uds_path, oneshot=True, extra=lambda sock: sock.send(b"raise SystemExit()\n"))
+
                 proc.signal(signal.SIGUSR2)
                 self._wait_for_strings(proc.read, 10, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
