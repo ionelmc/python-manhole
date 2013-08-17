@@ -43,8 +43,11 @@ Features
 ========
 
 * Uses unix domain sockets, only root or same effective user can connect.
-* Current implementation runs a daemon thread that waits for connection.
-* Compatible with apps that fork, reinstalls the Manhole thread after fork - had to monkeypatch os.fork/os.forkpty for this.
+* Can run the connection in a thread or in a signal handler (see ``oneshot_on`` option).
+* Can start the thread listening for connections from a singla handler (see ``activate_on`` option)
+* Compatible with apps that fork, reinstalls the Manhole thread after fork - had to monkeypatch os.fork/os.forkpty for
+  this.
+* The thread is compatible with apps that use signalfd (will mask all signals for the Manhole threads).
 
 Options
 -------
@@ -55,11 +58,12 @@ Options
 * ``patch_fork`` - set it to ``False`` if you don't want your ``os.fork`` and ``os.forkpy`` monkeypatched
 * ``activate_on`` - set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you want the Manhole thread
   to start when this signal is sent. This is desireable in case you don't want the thread active all the time.
-* ``oneshot_on`` - set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you want the Manhole to listen
-  for connection in the signal handler. This is desireable in case you don't want threads at all.
+* ``oneshot_on`` - set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you want the Manhole to
+  listen for connection in the signal handler. This is desireable in case you don't want threads at all.
 * ``sigmask`` - will set the signal mask to the given list (using ``signalfd.sigprocmask``). No action is done if
-  ``signalfd`` is not importable. **NOTE**: This is done so that the Manhole thread doesn't *steal* any signals; Normally
-  that is fine cause Python will force all the signal handling to be run in the main thread but signalfd doesn't.
+  ``signalfd`` is not importable. **NOTE**: This is done so that the Manhole thread doesn't *steal* any signals;
+  Normally that is fine cause Python will force all the signal handling to be run in the main thread but signalfd
+  doesn't.
 
 What happens when you actually connect to the socket
 ----------------------------------------------------
@@ -73,7 +77,8 @@ What happens when you actually connect to the socket
 Whishlist
 ---------
 
-* Be compatible with eventlet/stackless (provide alternative implementation without thread) - currently ``oneshot_on`` should be usable for those. The are not tests done on eventlet/stackless for now.
+* Be compatible with eventlet/stackless (provide alternative implementation without thread) - currently ``oneshot_on``
+  should be usable for those. The are not tests done on eventlet/stackless for now.
 * More configurable (chose what sys.__std\*__/sys.std\* to patch on connect time)
 * Support windows ?!
 
@@ -90,12 +95,15 @@ Not sure yet ... so far Python 2.6, 2.7, 3.2, 3.3 and pypy are tested in Travis:
     :alt: Coverage Status
     :target: https://coveralls.io/r/ionelmc/python-manhole
 
-Coverage is wrong, must be a bug in coveralls, it should be at least 80%-90% depending whether you count branches or not.
+Coverage is wrong, must be a bug in coveralls, it should be at least 80%-90% depending whether you count branches or
+not.
 
 Similar projects
 ================
 
-* Twisted's `old manhole <http://twistedmatrix.com/documents/current/api/twisted.manhole.html>`__ and the `newer implementation <http://twistedmatrix.com/documents/current/api/twisted.conch.manhole.html>`__ (colors, serverside history).
+* Twisted's `old manhole <http://twistedmatrix.com/documents/current/api/twisted.manhole.html>`__ and the `newer
+  implementation <http://twistedmatrix.com/documents/current/api/twisted.conch.manhole.html>`__ (colors, serverside
+  history).
 * `wsgi-shell <https://github.com/GrahamDumpleton/wsgi-shell>`_ - spawns a thread.
 * `pyrasite <https://github.com/lmacken/pyrasite>`_ - uses gdb to inject code.
 * `pydbattach <https://github.com/albertz/pydbattach>`_ - uses gdb to inject code.
