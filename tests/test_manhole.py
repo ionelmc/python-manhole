@@ -403,19 +403,19 @@ class ManholeTestCase(unittest.TestCase):
 cov = None
 def maybe_enable_coverage():
     global cov
+    try:
+        from coverage.control import coverage
+        from coverage.collector import Collector
+    except ImportError:
+        cov = None
+        return
     if cov:
         cov.save()
         cov.stop()
-    from coverage.collector import Collector
     if Collector._collectors:
         Collector._collectors[-1].stop()
     cov = cov or os.environ.get("WITH_COVERAGE")
     if cov:
-        try:
-            from coverage.control import coverage
-        except ImportError:
-            cov = None
-            return
         cov = coverage(auto_data=True, data_suffix=True, timid=False, include=['src/*'])
         cov.start()
 
@@ -424,7 +424,6 @@ def maybe_enable_coverage():
             if cov.collector._collectors:
                 cov.stop()
             cov.save()
-
 
 def monkeypatch(mod, what):
     old = getattr(mod, what)
