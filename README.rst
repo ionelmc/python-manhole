@@ -12,7 +12,10 @@ Access to the socket is restricted to the application's effective user id or roo
     can run on telnet or ssh).
 
 
-Usage (you can put this in your django settings, wsgi app file, some module that's always imported early etc)::
+Usage
+=====
+
+You can put this in your django settings, wsgi app file, some module that's always imported early etc::
 
     import manhole
     manhole.install() # this will start the daemon thread
