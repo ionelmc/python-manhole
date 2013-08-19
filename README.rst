@@ -2,6 +2,22 @@
        python-manhole
 ===========================
 
+.. image:: https://secure.travis-ci.org/ionelmc/python-manhole.png
+    :alt: Build Status
+    :target: http://travis-ci.org/ionelmc/python-manhole
+
+.. image:: https://coveralls.io/repos/ionelmc/python-manhole/badge.png?branch=master
+    :alt: Coverage Status
+    :target: https://coveralls.io/r/ionelmc/python-manhole
+
+.. image:: https://pypip.in/d/manhole/badge.png
+    :alt: PYPI Package
+    :target: https://pypi.python.org/pypi/manhole
+
+.. image:: https://pypip.in/v/manhole/badge.png
+    :alt: PYPI Package
+    :target: https://pypi.python.org/pypi/manhole
+
 Manhole is a python daemon thread that will accept unix domain socket connections and present the
 stacktraces for all threads and an interactive prompt.
 
@@ -10,7 +26,6 @@ Access to the socket is restricted to the application's effective user id or roo
     This is just like Twisted's `manhole <http://twistedmatrix.com/documents/current/api/twisted.manhole.html>`__.
     It's simpler (no dependencies) and it only runs on Unix domain sockets (in contrast to Twisted's manhole which
     can run on telnet or ssh).
-
 
 Usage
 =====
@@ -88,18 +103,7 @@ Whishlist
 Requirements
 ============
 
-Not sure yet ... so far Python 2.6, 2.7, 3.2, 3.3 and pypy are tested in Travis:
-
-.. image:: https://secure.travis-ci.org/ionelmc/python-manhole.png
-    :alt: Build Status
-    :target: http://travis-ci.org/ionelmc/python-manhole
-
-.. image:: https://coveralls.io/repos/ionelmc/python-manhole/badge.png?branch=master
-    :alt: Coverage Status
-    :target: https://coveralls.io/r/ionelmc/python-manhole
-
-Coverage is wrong, must be a bug in coveralls, it should be at least 80%-90% depending whether you count branches or
-not.
+Python 2.6, 2.7, 3.2, 3.3 and PyPy are supported.
 
 Similar projects
 ================
