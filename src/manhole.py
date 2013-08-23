@@ -126,6 +126,7 @@ class ManholeConnection(threading.Thread):
         self.sigmask = sigmask
 
     def run(self):
+        cry('Started ManholeConnection thread. Checking credentials ...')
         if signalfd and self.sigmask:
             signalfd.sigprocmask(signalfd.SIG_BLOCK, self.sigmask)
         pthread_setname_np(self.ident, "Manhole ----")
