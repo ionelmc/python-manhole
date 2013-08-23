@@ -222,6 +222,8 @@ def _handle_oneshot(_signum, _frame):
         # we don't want to let any exception out, it might make the application missbehave
         cry("Manhole oneshot connection failed:")
         cry(traceback.format_exc())
+    finally:
+        _remove_manhole_uds()
 
 def _remove_manhole_uds():
     name = "/tmp/manhole-%s" % os.getpid()
