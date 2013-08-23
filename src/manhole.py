@@ -94,7 +94,7 @@ class Manhole(threading.Thread):
         if os.path.exists(name):
             os.unlink(name)
         sock.bind(name)
-        sock.listen(0)
+        sock.listen(5)
         cry("Manhole UDS path: "+name)
         return sock, pid
 
