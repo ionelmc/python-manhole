@@ -96,7 +96,7 @@ Whishlist
 ---------
 
 * Be compatible with eventlet/stackless (provide alternative implementation without thread) - currently ``oneshot_on``
-  should be usable for those. The are not tests done on eventlet/stackless for now.
+  should be usable for those. The are no tests done on eventlet/stackless for now.
 * More configurable (chose what sys.__std\*__/sys.std\* to patch on connect time)
 * Support windows ?!
 
