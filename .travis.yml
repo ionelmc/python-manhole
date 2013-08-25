@@ -78,7 +78,7 @@ before_install:
       source ~/virtualenv/pypy/bin/activate
     fi
     python --version
-    #sudo apt-get install strace
+    sudo apt-get install strace
     
  
 install: 
