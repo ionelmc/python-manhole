@@ -395,6 +395,7 @@ class ManholeTestCase(unittest.TestCase):
                 self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
                 self.assertManholeRunning(proc, uds_path, oneshot=True, extra=lambda sock: sock.send(b"raise SystemExit()\n"))
 
+                proc.reset()
                 proc.signal(signal.SIGUSR2)
                 self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
