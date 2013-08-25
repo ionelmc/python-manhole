@@ -91,7 +91,7 @@ script:
   - python --version
   - rm .coverage* || true
   - stat /lib/x86_64-linux-gnu/libgcc_s.so.1
-  - export LOG_NAME="$TRAVIS_PYTHON_VERSION-$TRAVIS_JOB_NUMBER-$TRAVIS_BUILD_ID.log"
+  - export LOG_NAME="$TRAVIS_JOB_NUMBER-$TRAVIS_PYTHON_VERSION-$TRAVIS_BUILD_ID.log"
   - |
     if [[ $WITH_COVERAGE == yes ]]; then
       strace -f -s 8000 -o "$LOG_NAME" coverage run --source=src --parallel-mode tests/test_manhole.py -v;
