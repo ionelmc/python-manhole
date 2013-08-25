@@ -178,7 +178,7 @@ class ManholeTestCase(unittest.TestCase):
         self.run_simple(10)
 
     def run_simple(self, count):
-        with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_simple') as proc:
+        with TestProcess(sys.executable, __file__, 'daemon', 'test_simple') as proc:
             with self._dump_on_error(proc.read):
                 self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
@@ -517,7 +517,7 @@ if __name__ == '__main__':
             signalfd.sigprocmask(signalfd.SIG_BLOCK, [signal.SIGCHLD])
             fd = signalfd.signalfd(0, [signal.SIGCHLD], signalfd.SFD_NONBLOCK|signalfd.SFD_CLOEXEC)
             for i in range(200):
-                print('Forking', i)
+                print('Forking %s:' % i)
                 pid = os.fork()
                 print(' - [%s/%s] forked' % (i, pid))
                 if pid:
