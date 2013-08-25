@@ -2,7 +2,7 @@
        python-manhole
 ===========================
 
-.. image:: https://secure.travis-ci.org/ionelmc/python-manhole.png
+.. image:: https://secure.travis-ci.org/ionelmc/python-manhole.png?branch=master
     :alt: Build Status
     :target: http://travis-ci.org/ionelmc/python-manhole
 
