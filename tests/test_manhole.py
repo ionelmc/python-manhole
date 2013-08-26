@@ -256,47 +256,47 @@ class ManholeTestCase(unittest.TestCase):
                     'Waiting for new connection'
                 )
 
-    #def test_with_fork(self):
-    #    with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_with_fork') as proc:
-    #        with self._dump_on_error(proc.read):
-    #            self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
-    #            uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
-    #            self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-    #            for _ in range(2):
-    #                proc.reset()
-    #                self.assertManholeRunning(proc, uds_path)
-    #
-    #            proc.reset()
-    #            self._wait_for_strings(proc.read, TIMEOUT, 'Fork detected')
-    #            self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
-    #            new_uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
-    #            self.assertNotEqual(uds_path, new_uds_path)
-    #
-    #            self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-    #            for _ in range(2):
-    #                proc.reset()
-    #                self.assertManholeRunning(proc, new_uds_path)
-    #if not hasattr(sys, 'pypy_version_info'):
-    #    def test_with_forkpty(self):
-    #        with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_with_forkpty') as proc:
-    #            with self._dump_on_error(proc.read):
-    #                self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
-    #                uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
-    #                self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-    #                for _ in range(2):
-    #                    proc.reset()
-    #                    self.assertManholeRunning(proc, uds_path)
-    #
-    #                proc.reset()
-    #                self._wait_for_strings(proc.read, TIMEOUT, 'Fork detected')
-    #                self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
-    #                new_uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
-    #                self.assertNotEqual(uds_path, new_uds_path)
-    #
-    #                self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-    #                for _ in range(2):
-    #                    proc.reset()
-    #                    self.assertManholeRunning(proc, new_uds_path)
+    def test_with_fork(self):
+        with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_with_fork') as proc:
+            with self._dump_on_error(proc.read):
+                self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+                uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
+                self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+                for _ in range(2):
+                    proc.reset()
+                    self.assertManholeRunning(proc, uds_path)
+
+                proc.reset()
+                self._wait_for_strings(proc.read, TIMEOUT, 'Fork detected')
+                self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+                new_uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
+                self.assertNotEqual(uds_path, new_uds_path)
+
+                self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+                for _ in range(2):
+                    proc.reset()
+                    self.assertManholeRunning(proc, new_uds_path)
+    if not hasattr(sys, 'pypy_version_info'):
+        def test_with_forkpty(self):
+            with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_with_forkpty') as proc:
+                with self._dump_on_error(proc.read):
+                    self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+                    uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
+                    self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+                    for _ in range(2):
+                        proc.reset()
+                        self.assertManholeRunning(proc, uds_path)
+
+                    proc.reset()
+                    self._wait_for_strings(proc.read, TIMEOUT, 'Fork detected')
+                    self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+                    new_uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
+                    self.assertNotEqual(uds_path, new_uds_path)
+
+                    self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+                    for _ in range(2):
+                        proc.reset()
+                        self.assertManholeRunning(proc, new_uds_path)
 
     def test_auth_fail(self):
         with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_auth_fail') as proc:
