@@ -118,3 +118,9 @@ Similar projects
 * `wsgi-shell <https://github.com/GrahamDumpleton/wsgi-shell>`_ - spawns a thread.
 * `pyrasite <https://github.com/lmacken/pyrasite>`_ - uses gdb to inject code.
 * `pydbattach <https://github.com/albertz/pydbattach>`_ - uses gdb to inject code.
+
+
+.. image:: https://d2weczhvl823v0.cloudfront.net/ionelmc/python-manhole/trend.png
+   :alt: Bitdeli badge
+   :target: https://bitdeli.com/free
+
