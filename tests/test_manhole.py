@@ -11,6 +11,7 @@ import logging
 import re
 import atexit
 import signal
+from contextlib import closing
 
 from process_tests import ProcessTestCase, TestProcess, TestSocket
 
