@@ -81,7 +81,8 @@ before_install:
     #sudo apt-get install strace
     
  
-install: 
+install:
+  - pip install process-tests
   - if [[ $WITH_SIGNALFD == yes ]]; then pip install python-signalfd; fi
   - if [[ $WITH_COVERAGE == yes ]]; then pip install coverage coveralls; fi
 

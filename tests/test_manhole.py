@@ -3,159 +3,20 @@ import unittest
 import os
 import select
 import sys
-import subprocess
 import traceback
 import socket
-import fcntl
 import errno
 import time
 import logging
 import re
 import atexit
 import signal
-from contextlib import contextmanager, closing
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from io import StringIO
+
+from process_tests import ProcessTestCase, TestProcess, TestSocket
 
 TIMEOUT = int(os.getenv('MANHOLE_TEST_TIMEOUT', 10))
 
-class BufferingBase(object):
-
-    BUFFSIZE = 8192
-    def __init__(self, fd):
-        self.buff = StringIO()
-        self.fd = fd
-
-    def read(self):
-        """
-        Read any available data fd. Does NOT block.
-        """
-        try:
-            while 1:
-                data = os.read(self.fd, self.BUFFSIZE)
-                if not data:
-                    break
-                self.buff.write(data.decode('utf8'))
-        except OSError as e:
-            if e.errno not in (
-                errno.EAGAIN, errno.EWOULDBLOCK,
-                errno.EINPROGRESS
-            ):
-                print("Failed to read from %s: %s" % (self.fd, e))
-        return self.buff.getvalue()
-
-    def reset(self):
-        self.buff = StringIO()
-
-class TestProcess(BufferingBase):
-    def __init__(self, *args):
-        self.proc = subprocess.Popen(
-            args,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            env=os.environ,
-            bufsize=1,
-        )
-        fd = self.proc.stdout.fileno()
-        flags = fcntl.fcntl(fd, fcntl.F_GETFL)
-        fcntl.fcntl(fd, fcntl.F_SETFL, flags | os.O_NONBLOCK)
-        super(TestProcess, self).__init__(fd)
-
-    @property
-    def is_alive(self):
-        return self.proc.poll() is None
-
-    def signal(self, sig):
-        self.proc.send_signal(sig)
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, exc_traceback):
-        try:
-            self.proc.send_signal(signal.SIGINT)
-            for _ in range(5):
-                time.sleep(0.2)
-                if self.proc.poll() is not None:
-                    self.proc.terminate()
-            for _ in range(10):
-                time.sleep(0.1)
-                if self.proc.poll() is not None:
-                    return
-            print('KILLED %s' % self, file=sys.stderr)
-            self.proc.kill()
-        except OSError as exc:
-            if exc.errno != errno.ESRCH:
-                raise
-        finally:
-            self.read()
-            if self.proc.stdout:
-                self.proc.stdout.close()
-            if self.proc.stderr:
-                self.proc.stderr.close()
-            if self.proc.stdin:
-                self.proc.stdin.close()
-            self.proc.wait() # reap the zombie
-
-class TestSocket(BufferingBase):
-    BUFFSIZE = 8192
-    def __init__(self, sock):
-        sock.setblocking(0)
-        self.sock = sock
-        super(TestSocket, self).__init__(sock.fileno())
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, exc_traceback):
-        try:
-            self.sock.close()
-        except OSError as exc:
-            if exc.errno not in (errno.EBADF, errno.EBADFD):
-                raise
-
-class ManholeTestCase(unittest.TestCase):
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
-
-    def _wait_for_strings(self, cb, seconds, *strings):
-        """
-        This checks that *string appear in cb(), IN THE GIVEN ORDER !
-        """
-        buff = '<UNINITIALIZED>'
-
-        for _ in range(int(seconds * 20)):
-            time.sleep(0.05)
-            buff = cb()
-            check_strings = list(strings)
-            check_strings.reverse()
-            for line in buff.splitlines():
-                if not check_strings:
-                    break
-                while check_strings and check_strings[-1] in line:
-                    check_strings.pop()
-            if not check_strings:
-                return
-
-        raise AssertionError("Waited %0.2fsecs but %s did not appear in output in the given order !" % (
-            seconds, strings
-        ))
-
-    @contextmanager
-    def _dump_on_error(self, cb):
-        try:
-            yield
-        except Exception:
-            print("*********** OUTPUT ***********")
-            print(cb())
-            print("******************************")
-            raise
-
+class ManholeTestCase(ProcessTestCase):
     def test_simple_r01(self):
         self.run_simple(1)
     def test_simple_r02(self):
@@ -179,10 +40,10 @@ class ManholeTestCase(unittest.TestCase):
 
     def run_simple(self, count):
         with TestProcess(sys.executable, __file__, 'daemon', 'test_simple') as proc:
-            with self._dump_on_error(proc.read):
-                self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+            with self.dump_on_error(proc.read):
+                self.wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
-                self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+                self.wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
                 for _ in range(count):
                     proc.reset()
                     self.assertManholeRunning(proc, uds_path)
@@ -201,16 +62,16 @@ class ManholeTestCase(unittest.TestCase):
                     raise
         try:
             with TestSocket(sock) as client:
-                with self._dump_on_error(client.read):
-                    self._wait_for_strings(client.read, TIMEOUT,
+                with self.dump_on_error(client.read):
+                    self.wait_for_strings(client.read, TIMEOUT,
                         "ProcessID",
                         "ThreadID",
                         ">>>",
                     )
                     sock.send(b"print('FOOBAR')\n")
-                    self._wait_for_strings(client.read, TIMEOUT, "FOOBAR")
+                    self.wait_for_strings(client.read, TIMEOUT, "FOOBAR")
 
-                    self._wait_for_strings(proc.read, TIMEOUT,
+                    self.wait_for_strings(proc.read, TIMEOUT,
                         'from PID:%s UID:%s' % (os.getpid(), os.getuid()),
                     )
                     if extra:
@@ -218,31 +79,31 @@ class ManholeTestCase(unittest.TestCase):
                     sock.shutdown(socket.SHUT_RDWR)
         finally:
             sock.close()
-        self._wait_for_strings(proc.read, TIMEOUT,
+        self.wait_for_strings(proc.read, TIMEOUT,
             'Cleaned up.',
             *[] if oneshot else ['Waiting for new connection']
         )
     def test_exit_with_grace(self):
         with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_simple') as proc:
-            with self._dump_on_error(proc.read):
-                self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+            with self.dump_on_error(proc.read):
+                self.wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
-                self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+                self.wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
 
                 sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
                 sock.settimeout(0.05)
                 sock.connect(uds_path)
                 with TestSocket(sock) as client:
-                    with self._dump_on_error(client.read):
-                        self._wait_for_strings(client.read, TIMEOUT,
+                    with self.dump_on_error(client.read):
+                        self.wait_for_strings(client.read, TIMEOUT,
                             "ThreadID",
                             "ProcessID",
                             ">>>",
                         )
                         sock.send(b"print('FOOBAR')\n")
-                        self._wait_for_strings(client.read, TIMEOUT, "FOOBAR")
+                        self.wait_for_strings(client.read, TIMEOUT, "FOOBAR")
 
-                        self._wait_for_strings(proc.read, TIMEOUT,
+                        self.wait_for_strings(proc.read, TIMEOUT,
                             'from PID:%s UID:%s' % (os.getpid(), os.getuid()),
                         )
                         sock.shutdown(socket.SHUT_WR)
@@ -250,7 +111,7 @@ class ManholeTestCase(unittest.TestCase):
                         sock.recv(1024)
                         sock.shutdown(socket.SHUT_RD)
                         sock.close()
-                self._wait_for_strings(proc.read, TIMEOUT,
+                self.wait_for_strings(proc.read, TIMEOUT,
                     'DONE.',
                     'Cleaned up.',
                     'Waiting for new connection'
@@ -258,52 +119,52 @@ class ManholeTestCase(unittest.TestCase):
 
     def test_with_fork(self):
         with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_with_fork') as proc:
-            with self._dump_on_error(proc.read):
-                self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+            with self.dump_on_error(proc.read):
+                self.wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
-                self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+                self.wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
                 for _ in range(2):
                     proc.reset()
                     self.assertManholeRunning(proc, uds_path)
 
                 proc.reset()
-                self._wait_for_strings(proc.read, TIMEOUT, 'Fork detected')
-                self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+                self.wait_for_strings(proc.read, TIMEOUT, 'Fork detected')
+                self.wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
                 new_uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
                 self.assertNotEqual(uds_path, new_uds_path)
 
-                self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+                self.wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
                 for _ in range(2):
                     proc.reset()
                     self.assertManholeRunning(proc, new_uds_path)
     if not hasattr(sys, 'pypy_version_info'):
         def test_with_forkpty(self):
             with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_with_forkpty') as proc:
-                with self._dump_on_error(proc.read):
-                    self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+                with self.dump_on_error(proc.read):
+                    self.wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
                     uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
-                    self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+                    self.wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
                     for _ in range(2):
                         proc.reset()
                         self.assertManholeRunning(proc, uds_path)
 
                     proc.reset()
-                    self._wait_for_strings(proc.read, TIMEOUT, 'Fork detected')
-                    self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+                    self.wait_for_strings(proc.read, TIMEOUT, 'Fork detected')
+                    self.wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
                     new_uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
                     self.assertNotEqual(uds_path, new_uds_path)
 
-                    self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+                    self.wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
                     for _ in range(2):
                         proc.reset()
                         self.assertManholeRunning(proc, new_uds_path)
 
     def test_auth_fail(self):
         with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_auth_fail') as proc:
-            with self._dump_on_error(proc.read):
-                self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+            with self.dump_on_error(proc.read):
+                self.wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
-                self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+                self.wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
                 with closing(socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)) as sock:
                     sock.settimeout(1)
                     sock.connect(uds_path)
@@ -311,7 +172,7 @@ class ManholeTestCase(unittest.TestCase):
                         self.assertEqual(b"", sock.recv(1024))
                     except socket.timeout:
                         pass
-                    self._wait_for_strings(proc.read, TIMEOUT,
+                    self.wait_for_strings(proc.read, TIMEOUT,
                         "SuspiciousClient: Can't accept client with PID:-1 UID:-1 GID:-1. It doesn't match the current EUID:",
                         'Waiting for new connection'
                     )
@@ -324,50 +185,50 @@ class ManholeTestCase(unittest.TestCase):
     else:
         def test_signalfd_weirdness(self):
             with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_signalfd_weirdness') as proc:
-                with self._dump_on_error(proc.read):
-                    self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+                with self.dump_on_error(proc.read):
+                    self.wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
                     uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
-                    self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-                    self._wait_for_strings(proc.read, 25 * TIMEOUT, *[
+                    self.wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+                    self.wait_for_strings(proc.read, 25 * TIMEOUT, *[
                         '[%s] read from signalfd:' % j for j in range(200)
                     ])
                     self.assertManholeRunning(proc, uds_path)
 
         def test_signalfd_weirdness_negative(self):
             with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_signalfd_weirdness_negative') as proc:
-                with self._dump_on_error(proc.read):
-                    self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+                with self.dump_on_error(proc.read):
+                    self.wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
                     uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
-                    self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-                    self._wait_for_strings(proc.read, TIMEOUT, 'reading from signalfd failed')
+                    self.wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+                    self.wait_for_strings(proc.read, TIMEOUT, 'reading from signalfd failed')
                     self.assertManholeRunning(proc, uds_path)
 
 
     def test_activate_on_usr2(self):
         with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_activate_on_usr2') as proc:
-            with self._dump_on_error(proc.read):
-                self._wait_for_strings(proc.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Activation is done by signal 12')
-                self.assertRaises(AssertionError, self._wait_for_strings, proc.read, TIMEOUT, '/tmp/manhole-')
+            with self.dump_on_error(proc.read):
+                self.wait_for_strings(proc.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Activation is done by signal 12')
+                self.assertRaises(AssertionError, self.wait_for_strings, proc.read, TIMEOUT, '/tmp/manhole-')
                 proc.signal(signal.SIGUSR2)
-                self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+                self.wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
-                self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+                self.wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
                 self.assertManholeRunning(proc, uds_path)
 
     def test_activate_on_with_oneshot_on(self):
         with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_activate_on_with_oneshot_on') as proc:
-            with self._dump_on_error(proc.read):
-                self._wait_for_strings(proc.read, TIMEOUT, "RuntimeError('You cannot do activation of the Manhole thread on the same signal that you want to do oneshot activation !')")
+            with self.dump_on_error(proc.read):
+                self.wait_for_strings(proc.read, TIMEOUT, "RuntimeError('You cannot do activation of the Manhole thread on the same signal that you want to do oneshot activation !')")
 
     def test_oneshot_on_usr2(self):
         with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_oneshot_on_usr2') as proc:
-            with self._dump_on_error(proc.read):
-                self._wait_for_strings(proc.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Oneshot activation is done by signal 12')
-                self.assertRaises(AssertionError, self._wait_for_strings, proc.read, TIMEOUT, '/tmp/manhole-')
+            with self.dump_on_error(proc.read):
+                self.wait_for_strings(proc.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Oneshot activation is done by signal 12')
+                self.assertRaises(AssertionError, self.wait_for_strings, proc.read, TIMEOUT, '/tmp/manhole-')
                 proc.signal(signal.SIGUSR2)
-                self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+                self.wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
-                self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+                self.wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
                 self.assertManholeRunning(proc, uds_path, oneshot=True)
 
     def test_fail_to_cry(self):
@@ -386,28 +247,28 @@ class ManholeTestCase(unittest.TestCase):
 
     def test_oneshot_on_usr2_error(self):
         with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_oneshot_on_usr2') as proc:
-            with self._dump_on_error(proc.read):
-                self._wait_for_strings(proc.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Oneshot activation is done by signal 12')
-                self.assertRaises(AssertionError, self._wait_for_strings, proc.read, TIMEOUT, '/tmp/manhole-')
+            with self.dump_on_error(proc.read):
+                self.wait_for_strings(proc.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Oneshot activation is done by signal 12')
+                self.assertRaises(AssertionError, self.wait_for_strings, proc.read, TIMEOUT, '/tmp/manhole-')
                 proc.signal(signal.SIGUSR2)
-                self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+                self.wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
-                self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+                self.wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
                 self.assertManholeRunning(proc, uds_path, oneshot=True, extra=lambda sock: sock.send(b"raise SystemExit()\n"))
 
                 proc.reset()
                 proc.signal(signal.SIGUSR2)
-                self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+                self.wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
-                self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+                self.wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
                 self.assertManholeRunning(proc, uds_path, oneshot=True)
 
     def test_interrupt_on_accept(self):
         with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_interrupt_on_accept') as proc:
-            with self._dump_on_error(proc.read):
-                self._wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+            with self.dump_on_error(proc.read):
+                self.wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
                 uds_path = re.findall("(/tmp/manhole-\d+)", proc.read())[0]
-                self._wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection', 'Sending signal to manhole thread', 'Waiting for new connection')
+                self.wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection', 'Sending signal to manhole thread', 'Waiting for new connection')
                 self.assertManholeRunning(proc, uds_path)
 
 cov = None
