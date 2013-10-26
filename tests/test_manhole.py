@@ -13,7 +13,7 @@ import atexit
 import signal
 from contextlib import closing
 
-from process_tests import ProcessTestCase, TestProcess, TestSocket
+from process_tests import ProcessTestCase, TestProcess, TestSocket, setup_coverage
 
 TIMEOUT = int(os.getenv('MANHOLE_TEST_TIMEOUT', 10))
 
@@ -272,44 +272,6 @@ class ManholeTestCase(ProcessTestCase):
                 self.wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection', 'Sending signal to manhole thread', 'Waiting for new connection')
                 self.assertManholeRunning(proc, uds_path)
 
-cov = None
-def maybe_enable_coverage():
-    global cov
-    try:
-        from coverage.control import coverage
-        from coverage.collector import Collector
-    except ImportError:
-        cov = None
-        return
-    if cov:
-        cov.save()
-        cov.stop()
-    if Collector._collectors:
-        Collector._collectors[-1].stop()
-    cov = cov or os.environ.get("WITH_COVERAGE")
-    if cov:
-        cov = coverage(auto_data=True, data_suffix=True, timid=False, include=['src/*'])
-        cov.start()
-
-        @atexit.register
-        def cleanup():
-            if cov.collector._collectors:
-                cov.stop()
-            cov.save()
-
-def monkeypatch(mod, what):
-    old = getattr(mod, what)
-    def decorator(func):
-        def patch():
-            ret = old()
-            try:
-                func(ret)
-            except:
-                traceback.print_exc()
-            return ret
-        setattr(mod, what, patch)
-    return decorator
-
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'daemon':
         logging.basicConfig(
@@ -318,20 +280,7 @@ if __name__ == '__main__':
         )
         test_name = sys.argv[2]
 
-        maybe_enable_coverage()
-
-        @monkeypatch(os, 'fork')
-        def patched_fork(pid):
-            if not pid:
-                maybe_enable_coverage()
-            return pid
-
-        @monkeypatch(os, 'forkpty')
-        def patched_forkpty(pid_fd):
-            pid, fd = pid_fd
-            if not pid:
-                maybe_enable_coverage()
-            return pid, fd
+        setup_coverage()
 
         import manhole
 
