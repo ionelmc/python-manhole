@@ -17,52 +17,52 @@ env:
     - RUN=02 WITH_COVERAGE=yes WITH_SIGNALFD=yes
     - RUN=03 WITH_COVERAGE=no  WITH_SIGNALFD=no
     - RUN=04 WITH_COVERAGE=yes WITH_SIGNALFD=no
-    #- RUN=05 WITH_COVERAGE=no
-    #- RUN=06 WITH_COVERAGE=yes
-    #- RUN=07 WITH_COVERAGE=no
-    #- RUN=08 WITH_COVERAGE=yes
-    #- RUN=09 WITH_COVERAGE=no
-    #- RUN=10 WITH_COVERAGE=yes
-    #- RUN=11 WITH_COVERAGE=no
-    #- RUN=12 WITH_COVERAGE=yes
-    #- RUN=13 WITH_COVERAGE=no
-    #- RUN=14 WITH_COVERAGE=yes
-    #- RUN=15 WITH_COVERAGE=no
-    #- RUN=16 WITH_COVERAGE=yes
-    #- RUN=17 WITH_COVERAGE=no
-    #- RUN=18 WITH_COVERAGE=yes
-    #- RUN=19 WITH_COVERAGE=no
-    #- RUN=20 WITH_COVERAGE=yes
-    #- RUN=21 WITH_COVERAGE=no
-    #- RUN=22 WITH_COVERAGE=yes
-    #- RUN=23 WITH_COVERAGE=no
-    #- RUN=24 WITH_COVERAGE=yes
-    #- RUN=25 WITH_COVERAGE=no
-    #- RUN=26 WITH_COVERAGE=yes
-    #- RUN=27 WITH_COVERAGE=no
-    #- RUN=28 WITH_COVERAGE=yes
-    #- RUN=29 WITH_COVERAGE=no
-    #- RUN=30 WITH_COVERAGE=yes
-    #- RUN=31 WITH_COVERAGE=no
-    #- RUN=32 WITH_COVERAGE=yes
-    #- RUN=33 WITH_COVERAGE=no
-    #- RUN=34 WITH_COVERAGE=yes
-    #- RUN=35 WITH_COVERAGE=no
-    #- RUN=36 WITH_COVERAGE=yes
-    #- RUN=37 WITH_COVERAGE=no
-    #- RUN=38 WITH_COVERAGE=yes
-    #- RUN=39 WITH_COVERAGE=no
-    #- RUN=40 WITH_COVERAGE=yes
-    #- RUN=41 WITH_COVERAGE=no
-    #- RUN=42 WITH_COVERAGE=yes
-    #- RUN=43 WITH_COVERAGE=no
-    #- RUN=44 WITH_COVERAGE=yes
-    #- RUN=45 WITH_COVERAGE=no
-    #- RUN=46 WITH_COVERAGE=yes
-    #- RUN=47 WITH_COVERAGE=no
-    #- RUN=48 WITH_COVERAGE=yes
-    #- RUN=49 WITH_COVERAGE=no
-    #- RUN=50 WITH_COVERAGE=yes
+    - RUN=05 WITH_COVERAGE=no  WITH_SIGNALFD=yes
+    - RUN=06 WITH_COVERAGE=yes WITH_SIGNALFD=yes
+    - RUN=07 WITH_COVERAGE=no  WITH_SIGNALFD=no
+    - RUN=08 WITH_COVERAGE=yes WITH_SIGNALFD=no
+    - RUN=09 WITH_COVERAGE=no  WITH_SIGNALFD=yes
+    - RUN=10 WITH_COVERAGE=yes WITH_SIGNALFD=yes
+    - RUN=11 WITH_COVERAGE=no  WITH_SIGNALFD=no
+    - RUN=12 WITH_COVERAGE=yes WITH_SIGNALFD=no
+    - RUN=13 WITH_COVERAGE=no  WITH_SIGNALFD=yes
+    - RUN=14 WITH_COVERAGE=yes WITH_SIGNALFD=yes
+    - RUN=15 WITH_COVERAGE=no  WITH_SIGNALFD=no
+    - RUN=16 WITH_COVERAGE=yes WITH_SIGNALFD=no
+    - RUN=17 WITH_COVERAGE=no  WITH_SIGNALFD=yes
+    - RUN=18 WITH_COVERAGE=yes WITH_SIGNALFD=yes
+    - RUN=19 WITH_COVERAGE=no  WITH_SIGNALFD=no
+    - RUN=20 WITH_COVERAGE=yes WITH_SIGNALFD=no
+    - RUN=21 WITH_COVERAGE=no  WITH_SIGNALFD=yes
+    - RUN=22 WITH_COVERAGE=yes WITH_SIGNALFD=yes
+    - RUN=23 WITH_COVERAGE=no  WITH_SIGNALFD=no
+    - RUN=24 WITH_COVERAGE=yes WITH_SIGNALFD=no
+    - RUN=25 WITH_COVERAGE=no  WITH_SIGNALFD=yes
+    - RUN=26 WITH_COVERAGE=yes WITH_SIGNALFD=yes
+    - RUN=27 WITH_COVERAGE=no  WITH_SIGNALFD=no
+    - RUN=28 WITH_COVERAGE=yes WITH_SIGNALFD=no
+    - RUN=29 WITH_COVERAGE=no  WITH_SIGNALFD=yes
+    - RUN=30 WITH_COVERAGE=yes WITH_SIGNALFD=yes
+    - RUN=31 WITH_COVERAGE=no  WITH_SIGNALFD=no
+    - RUN=32 WITH_COVERAGE=yes WITH_SIGNALFD=no
+    - RUN=33 WITH_COVERAGE=no  WITH_SIGNALFD=yes
+    - RUN=34 WITH_COVERAGE=yes WITH_SIGNALFD=yes
+    - RUN=35 WITH_COVERAGE=no  WITH_SIGNALFD=no
+    - RUN=36 WITH_COVERAGE=yes WITH_SIGNALFD=no
+    - RUN=37 WITH_COVERAGE=no  WITH_SIGNALFD=yes
+    - RUN=38 WITH_COVERAGE=yes WITH_SIGNALFD=yes
+    - RUN=39 WITH_COVERAGE=no  WITH_SIGNALFD=no
+    - RUN=40 WITH_COVERAGE=yes WITH_SIGNALFD=no
+    - RUN=41 WITH_COVERAGE=no  WITH_SIGNALFD=yes
+    - RUN=42 WITH_COVERAGE=yes WITH_SIGNALFD=yes
+    - RUN=43 WITH_COVERAGE=no  WITH_SIGNALFD=no
+    - RUN=44 WITH_COVERAGE=yes WITH_SIGNALFD=no
+    - RUN=45 WITH_COVERAGE=no  WITH_SIGNALFD=yes
+    - RUN=46 WITH_COVERAGE=yes WITH_SIGNALFD=yes
+    - RUN=47 WITH_COVERAGE=no  WITH_SIGNALFD=no
+    - RUN=48 WITH_COVERAGE=yes WITH_SIGNALFD=no
+    - RUN=49 WITH_COVERAGE=no  WITH_SIGNALFD=yes
+    - RUN=50 WITH_COVERAGE=yes WITH_SIGNALFD=yes
     
 before_install:
   - |
@@ -78,7 +78,9 @@ before_install:
       source ~/virtualenv/pypy/bin/activate
     fi
     python --version
-    #sudo apt-get install strace
+    uname -a
+    lsb_release -a
+    sudo apt-get install strace
     
  
 install: 
@@ -89,18 +91,16 @@ script:
   - python --version
   - rm .coverage* || true
   - stat /lib/x86_64-linux-gnu/libgcc_s.so.1
-  #- export LOG_NAME="$TRAVIS_PYTHON_VERSION-$TRAVIS_JOB_NUMBER-$TRAVIS_BUILD_ID.log"
+  - export LOG_NAME="$TRAVIS_PYTHON_VERSION-$TRAVIS_JOB_NUMBER-$TRAVIS_BUILD_ID.log"
   - |
     if [[ $WITH_COVERAGE == yes ]]; then
-      #strace -f -s 8000 -o "$LOG_NAME"
-      coverage run --source=src --parallel-mode tests/test_manhole.py -v;
+      strace -f -s 8000 -o "$LOG_NAME" coverage run --source=src --parallel-mode tests/test_manhole.py -v;
     else
-      #strace -f -s 8000 -o "$LOG_NAME"
-      python tests/test_manhole.py -v;
+      strace -f -s 8000 -o "$LOG_NAME" python tests/test_manhole.py -v;
     fi
 
-#after_failure:
-#  - curl -i -F "upfile=@$LOG_NAME" http://hostname/droopy/
+after_failure:
+  - curl -i -F "upfile=@$LOG_NAME" http://home.ionelmc.ro/
 after_success:
   - coverage combine || true
   - coverage report --show-missing --include='src/*' || true
