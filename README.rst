@@ -10,13 +10,10 @@
     :alt: Coverage Status
     :target: https://coveralls.io/r/ionelmc/python-manhole
 
-.. image:: https://pypip.in/d/manhole/badge.png
+.. image:: https://badge.fury.io/py/manhole.png
     :alt: PYPI Package
     :target: https://pypi.python.org/pypi/manhole
 
-.. image:: https://pypip.in/v/manhole/badge.png
-    :alt: PYPI Package
-    :target: https://pypi.python.org/pypi/manhole
 
 Manhole is a python daemon thread that will accept unix domain socket connections and present the
 stacktraces for all threads and an interactive prompt.
