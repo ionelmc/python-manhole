@@ -87,8 +87,8 @@ class Manhole(threading.Thread):
         self.sigmask = sigmask
 
     @staticmethod
-    def get_socket():
-        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    def get_socket(factory=None):
+        sock = (factory or socket.socket)(socket.AF_UNIX, socket.SOCK_STREAM)
         pid = os.getpid()
         name = "/tmp/manhole-%s" % pid
         if os.path.exists(name):
@@ -212,9 +212,9 @@ def run_repl():
         'traceback': traceback,
     }).interact()
 
-def _handle_oneshot(_signum, _frame):
+def _handle_oneshot(_signum, _frame, _socket=socket._socketobject):
     try:
-        sock, pid = Manhole.get_socket()
+        sock, pid = Manhole.get_socket(_socket)
         cry("Waiting for new connection (in pid:%s) ..." % pid)
         client, _ = sock.accept()
         ManholeConnection.check_credentials(client)
