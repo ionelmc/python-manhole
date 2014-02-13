@@ -18,11 +18,11 @@ except ImportError:
     signalfd = None
 try:
     string = basestring
-except NameError: # python 3
+except NameError:  # python 3
     string = str
 try:
     InterruptedError = InterruptedError
-except NameError: # python <= 3.2
+except NameError:  # python <= 3.2
     InterruptedError = OSError
 if hasattr(sys, 'setswitchinterval'):
     setinterval = sys.setswitchinterval
@@ -31,7 +31,8 @@ else:
     setinterval = sys.setcheckinterval
     getinterval = sys.getcheckinterval
 
-def get_original(qual_name):
+
+def _get_original(qual_name):
     mod, name = qual_name.split('.')
     original = getattr(__import__(mod), name)
 
@@ -48,13 +49,13 @@ def get_original(qual_name):
         pass
 
     return original
-_ORIGINAL_SOCKET = get_original('socket.socket')
-_ORIGINAL_FDOPEN = get_original('os.fdopen')
+_ORIGINAL_SOCKET = _get_original('socket.socket')
+_ORIGINAL_FDOPEN = _get_original('os.fdopen')
 try:
-    _ORIGINAL_ALLOCATE_LOCK = get_original('thread.allocate_lock')
-except ImportError:
-    _ORIGINAL_ALLOCATE_LOCK = get_original('_thread.allocate_lock')  # python3 ...
-_ORIGINAL_THREAD = get_original('threading.Thread')
+    _ORIGINAL_ALLOCATE_LOCK = _get_original('thread.allocate_lock')
+except ImportError:  # python 3
+    _ORIGINAL_ALLOCATE_LOCK = _get_original('_thread.allocate_lock')
+_ORIGINAL_THREAD = _get_original('threading.Thread')
 
 PY3 = sys.version_info[0] == 3
 VERBOSE = True
@@ -77,6 +78,7 @@ except ImportError:
 
 SO_PEERCRED = 17
 
+
 def cry(message):
     """
     Fail-ignorant logging function.
@@ -84,8 +86,9 @@ def cry(message):
     if VERBOSE:
         try:
             print("Manhole: "+message, file=_STDERR)
-        except: #pylint: disable=W0702
+        except:  # pylint: disable=W0702
             pass
+
 
 def get_peercred(sock):
     """Gets the (pid, uid, gid) for the client on the given *connected* socket."""
@@ -94,8 +97,10 @@ def get_peercred(sock):
         socket.SOL_SOCKET, SO_PEERCRED, struct.calcsize('3i')
     ))
 
+
 class SuspiciousClient(Exception):
     pass
+
 
 class Manhole(_ORIGINAL_THREAD):
     """
@@ -138,6 +143,7 @@ class Manhole(_ORIGINAL_THREAD):
                 continue
             finally:
                 client = None
+
 
 class ManholeConnection(_ORIGINAL_THREAD):
     def __init__(self, client, sigmask):
@@ -224,6 +230,7 @@ class ManholeConnection(_ORIGINAL_THREAD):
             cry("ManholeConnection thread failed:")
             cry(traceback.format_exc())
 
+
 def run_repl():
     dump_stacktraces()
     code.InteractiveConsole({
@@ -234,6 +241,7 @@ def run_repl():
         'traceback': traceback,
     }).interact()
 
+
 def _handle_oneshot(_signum, _frame):
     try:
         sock, pid = Manhole.get_socket()
@@ -241,12 +249,13 @@ def _handle_oneshot(_signum, _frame):
         client, _ = sock.accept()
         ManholeConnection.check_credentials(client)
         ManholeConnection.handle(client)
-    except: # pylint: disable=W0702
+    except:  # pylint: disable=W0702
         # we don't want to let any exception out, it might make the application missbehave
         cry("Manhole oneshot connection failed:")
         cry(traceback.format_exc())
     finally:
         _remove_manhole_uds()
+
 
 def _remove_manhole_uds():
     name = "/tmp/manhole-%s" % os.getpid()
@@ -256,6 +265,7 @@ def _remove_manhole_uds():
 _INST_LOCK = _ORIGINAL_ALLOCATE_LOCK()
 _STDERR = _INST = _ORIGINAL_OS_FORK = _ORIGINAL_OS_FORKPTY = _SHOULD_RESTART = None
 
+
 def _patched_fork():
     """Fork a child process."""
     pid = _ORIGINAL_OS_FORK()
@@ -263,6 +273,7 @@ def _patched_fork():
         cry('Fork detected. Reinstalling Manhole.')
         reinstall()
     return pid
+
 
 def _patched_forkpty():
     """Fork a new process with a new pseudo-terminal as controlling tty."""
@@ -272,6 +283,7 @@ def _patched_forkpty():
         reinstall()
     return pid, master_fd
 
+
 def _patch_os_fork_functions():
     global _ORIGINAL_OS_FORK, _ORIGINAL_OS_FORKPTY #pylint: disable=W0603
     if not _ORIGINAL_OS_FORK:
@@ -279,6 +291,7 @@ def _patch_os_fork_functions():
     if not _ORIGINAL_OS_FORKPTY:
         _ORIGINAL_OS_FORKPTY, os.forkpty = os.forkpty, _patched_forkpty
     cry("Patched %s and %s." % (_ORIGINAL_OS_FORK, _ORIGINAL_OS_FORKPTY))
+
 
 def _activate_on_signal(_signum, _frame):
     assert _INST, "Manhole wasn't installed !"
@@ -288,8 +301,10 @@ ALL_SIGNALS = [
     getattr(signal, sig) for sig in dir(signal)
     if sig.startswith('SIG') and '_' not in sig
 ]
+
+
 def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS, oneshot_on=None):
-    global _STDERR, _INST, _SHOULD_RESTART, VERBOSE #pylint: disable=W0603
+    global _STDERR, _INST, _SHOULD_RESTART, VERBOSE  #pylint: disable=W0603
     with _INST_LOCK:
         VERBOSE = verbose
         _STDERR = sys.__stderr__
@@ -318,8 +333,9 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
                 elif oneshot_on:
                     cry("Not patching os.fork and os.forkpty. Oneshot activation is done by signal %s" % oneshot_on)
 
+
 def reinstall():
-    global _INST #pylint: disable=W0603
+    global _INST  # pylint: disable=W0603
     assert _INST
     with _INST_LOCK:
         if not _INST.is_alive():
@@ -327,9 +343,10 @@ def reinstall():
             if _SHOULD_RESTART:
                 _INST.start()
 
+
 def dump_stacktraces():
     lines = []
-    for thread_id, stack in sys._current_frames().items(): #pylint: disable=W0212
+    for thread_id, stack in sys._current_frames().items():  # pylint: disable=W0212
         lines.append("\n######### ProcessID=%s, ThreadID=%s #########" % (
             os.getpid(), thread_id
         ))
@@ -340,34 +357,3 @@ def dump_stacktraces():
     lines.append("#############################################\n\n")
 
     print('\n'.join(lines), file=sys.stderr)
-
-
-if __name__ == '__main__': #pragma: no cover
-    from logging import basicConfig, DEBUG
-    basicConfig(level=DEBUG)
-    install(verbose=True)#, oneshot_on='USR2')
-    try:
-        import faulthandler
-        faulthandler.enable()
-    except ImportError:
-        pass
-
-    print()
-
-    import time
-    from itertools import cycle
-    for i, _i in enumerate(cycle([None])):
-        if i == 3:
-            print()
-            print('FORKING ----------------')
-            print()
-            cpid = os.fork()
-            #if cpid:
-            #    os.waitpid(pid, 0)
-        time.sleep(1)
-        #if i == 3:
-        #    if cpid:
-        #        time.sleep(1000)
-        #    else:
-        #        run_repl()
-        #
