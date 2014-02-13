@@ -168,10 +168,8 @@ class ManholeConnection(_ORIGINAL_THREAD):
         euid = os.geteuid()
         client_name = "PID:%s UID:%s GID:%s" % (pid, uid, gid)
         if uid not in (0, euid):
-            raise SuspiciousClient(
-                "Can't accept client with %s. "
-                "It doesn't match the current EUID:%s or ROOT." % (
-                    client_name, euid
+            raise SuspiciousClient("Can't accept client with %s. It doesn't match the current EUID:%s or ROOT." % (
+                client_name, euid
             ))
 
         cry("Accepted connection %s from %s" % (client, client_name))
@@ -206,11 +204,11 @@ class ManholeConnection(_ORIGINAL_THREAD):
                 cry("DONE.")
             finally:
                 try:
-                    setinterval(2147483647) # change the switch/check interval to something ridiculous
-                                            # we don't want to have other thread try to write to the
-                                            # redirected sys.__std*/sys.std* - it would fail horribly
-                    client.close() # close before it's too late. it may already be dead
-                    junk = [] # keep the old file objects alive for a bit
+                    setinterval(2147483647)  # change the switch/check interval to something ridiculous
+                                             # we don't want to have other thread try to write to the
+                                             # redirected sys.__std*/sys.std* - it would fail horribly
+                    client.close()  # close before it's too late. it may already be dead
+                    junk = []  # keep the old file objects alive for a bit
                     for name, fh in backup:
                         junk.append(getattr(sys, name))
                         setattr(sys, name, fh)
@@ -284,7 +282,7 @@ def _patched_forkpty():
 
 
 def _patch_os_fork_functions():
-    global _ORIGINAL_OS_FORK, _ORIGINAL_OS_FORKPTY #pylint: disable=W0603
+    global _ORIGINAL_OS_FORK, _ORIGINAL_OS_FORKPTY  # pylint: disable=W0603
     if not _ORIGINAL_OS_FORK:
         _ORIGINAL_OS_FORK, os.fork = os.fork, _patched_fork
     if not _ORIGINAL_OS_FORKPTY:
@@ -303,7 +301,7 @@ ALL_SIGNALS = [
 
 
 def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS, oneshot_on=None):
-    global _STDERR, _INST, _SHOULD_RESTART, VERBOSE  #pylint: disable=W0603
+    global _STDERR, _INST, _SHOULD_RESTART, VERBOSE   # pylint: disable=W0603
     with _INST_LOCK:
         VERBOSE = verbose
         _STDERR = sys.__stderr__
