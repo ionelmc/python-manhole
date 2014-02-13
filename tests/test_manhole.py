@@ -285,13 +285,13 @@ if __name__ == '__main__':
         try:
             from gevent import monkey
             monkey.patch_all(thread=False)
-        except (ImportError, SyntaxError) as _:
+        except (ImportError, SyntaxError):
             pass
 
         try:
             import eventlet
             eventlet.monkey_patch()
-        except (ImportError, SyntaxError) as _:
+        except (ImportError, SyntaxError):
             pass
 
         import manhole

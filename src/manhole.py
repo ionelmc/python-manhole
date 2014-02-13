@@ -38,13 +38,13 @@ def _get_original(qual_name):
     try:
         from gevent.monkey import get_original
         original = get_original(mod, name)
-    except ImportError:
+    except (ImportError, SyntaxError):
         pass
 
     try:
         from eventlet.patcher import original
         original = getattr(original(mod), name)
-    except ImportError:
+    except (ImportError, SyntaxError):
         pass
 
     return original
