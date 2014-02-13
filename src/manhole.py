@@ -59,6 +59,7 @@ _ORIGINAL_EVENT = _get_original('threading.Event')
 _ORIGINAL__ACTIVE = _get_original('threading._active')
 
 PY3 = sys.version_info[0] == 3
+PY26 = sys.version_info[:2] == (2, 6)
 VERBOSE = True
 START_TIMEOUT = None
 
@@ -120,7 +121,8 @@ class Manhole(_ORIGINAL_THREAD):
 
     def start(self):
         super(Manhole, self).start()
-        self.serious.wait(self.start_timeout)
+        if not self.serious.wait(self.start_timeout) and not PY26:
+            cry("WARNING: Waited %s seconds but Manhole thread didn't start yet :(" % self.start_timeout)
 
     @staticmethod
     def get_socket():
