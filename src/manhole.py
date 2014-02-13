@@ -2,7 +2,6 @@ from __future__ import print_function
 from logging import getLogger
 logger = getLogger(__name__)
 
-import threading
 import traceback
 import socket
 import struct
