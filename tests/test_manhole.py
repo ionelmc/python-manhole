@@ -282,6 +282,18 @@ if __name__ == '__main__':
 
         setup_coverage()
 
+        try:
+            from gevent import monkey
+            monkey.patch_all()
+        except ImportError:
+            pass
+
+        try:
+            import eventlet
+            eventlet.monkey_patch()
+        except ImportError:
+            pass
+
         import manhole
 
         if test_name == 'test_activate_on_usr2':
