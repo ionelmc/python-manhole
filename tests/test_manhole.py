@@ -357,7 +357,7 @@ if __name__ == '__main__':
                                 print(' - [%s/%s] reading from signalfd failed with errno %s' % (i, pid, exc.errno))
                         else:
                             print(' - [%s/%s] reading from signalfd failed - not ready !' % (i, pid))
-                            if 'negative' in test_name:
+                            if 'negative' not in test_name:
                                 time.sleep(TIMEOUT)
                         if errors:
                             raise RuntimeError("fd has error")
