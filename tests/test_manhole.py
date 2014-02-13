@@ -290,7 +290,7 @@ if __name__ == '__main__':
 
         try:
             import eventlet
-            eventlet.monkey_patch()
+            eventlet.monkey_patch(thread=False)
         except (ImportError, SyntaxError):
             pass
 
