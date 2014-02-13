@@ -284,7 +284,7 @@ if __name__ == '__main__':
 
         try:
             from gevent import monkey
-            monkey.patch_all()
+            monkey.patch_all(thread=False)
         except ImportError:
             pass
 
