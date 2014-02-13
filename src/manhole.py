@@ -55,10 +55,12 @@ try:
 except ImportError:  # python 3
     _ORIGINAL_ALLOCATE_LOCK = _get_original('_thread.allocate_lock')
 _ORIGINAL_THREAD = _get_original('threading.Thread')
+_ORIGINAL_EVENT = _get_original('threading.Event')
 _ORIGINAL__ACTIVE = _get_original('threading._active')
 
 PY3 = sys.version_info[0] == 3
 VERBOSE = True
+START_TIMEOUT = None
 
 try:
     import ctypes
@@ -107,11 +109,18 @@ class Manhole(_ORIGINAL_THREAD):
     Thread that runs the infamous "Manhole".
     """
 
-    def __init__(self, sigmask):
+    def __init__(self, sigmask, start_timeout):
         super(Manhole, self).__init__()
         self.daemon = True
         self.name = "Manhole"
         self.sigmask = sigmask
+        self.serious = _ORIGINAL_EVENT()
+        self.start_timeout = start_timeout  # time to wait for the manhole to get serious (to have a complete start)
+                                            # see: http://emptysqua.re/blog/dawn-of-the-thread/
+
+    def start(self):
+        super(Manhole, self).start()
+        self.serious.wait(self.start_timeout)
 
     @staticmethod
     def get_socket():
@@ -126,6 +135,7 @@ class Manhole(_ORIGINAL_THREAD):
         return sock, pid
 
     def run(self):
+        self.serious.set()
         if signalfd and self.sigmask:
             signalfd.sigprocmask(signalfd.SIG_BLOCK, self.sigmask)
         pthread_setname_np(self.ident, self.name)
@@ -301,13 +311,14 @@ ALL_SIGNALS = [
 ]
 
 
-def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS, oneshot_on=None):
-    global _STDERR, _INST, _SHOULD_RESTART, VERBOSE   # pylint: disable=W0603
+def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS, oneshot_on=None, start_timeout=0.5):
+    global _STDERR, _INST, _SHOULD_RESTART, VERBOSE, START_TIMEOUT  # pylint: disable=W0603
     with _INST_LOCK:
         VERBOSE = verbose
+        START_TIMEOUT = start_timeout
         _STDERR = sys.__stderr__
         if not _INST:
-            _INST = Manhole(sigmask)
+            _INST = Manhole(sigmask, start_timeout)
             if oneshot_on is not None:
                 oneshot_on = getattr(signal, 'SIG'+oneshot_on) if isinstance(oneshot_on, string) else oneshot_on
                 signal.signal(oneshot_on, _handle_oneshot)
@@ -337,7 +348,7 @@ def reinstall():
     assert _INST
     with _INST_LOCK:
         if not (_INST.is_alive() and _INST in _ORIGINAL__ACTIVE):
-            _INST = Manhole(_INST.sigmask)
+            _INST = Manhole(_INST.sigmask, START_TIMEOUT)
             if _SHOULD_RESTART:
                 _INST.start()
 
