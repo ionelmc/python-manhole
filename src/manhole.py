@@ -88,7 +88,7 @@ def cry(message):
     """
     if VERBOSE:
         try:
-            print("Manhole: "+message, file=_STDERR)
+            _STDERR.write("Manhole: %s\n" % message)
         except:  # pylint: disable=W0702
             pass
 
