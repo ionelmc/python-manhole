@@ -2,10 +2,6 @@ from __future__ import print_function
 from logging import getLogger
 logger = getLogger(__name__)
 
-try:
-    import thread
-except ImportError: # python 3
-    import _thread as thread
 import threading
 import traceback
 import socket
@@ -34,6 +30,32 @@ if hasattr(sys, 'setswitchinterval'):
 else:
     setinterval = sys.setcheckinterval
     getinterval = sys.getcheckinterval
+
+def get_original(qual_name):
+    mod, name = qual_name.split('.')
+    original = getattr(__import__(mod), name)
+
+    try:
+        from gevent.monkey import get_original
+        original = get_original(mod, name)
+    except ImportError:
+        pass
+
+    try:
+        from eventlet.patcher import original
+        original = getattr(original(mod), name)
+    except ImportError:
+        pass
+
+    return original
+_ORIGINAL_SOCKET = get_original('socket.socket')
+_ORIGINAL_FDOPEN = get_original('os.fdopen')
+try:
+    _ORIGINAL_ALLOCATE_LOCK = get_original('thread.allocate_lock')
+except ImportError:
+    _ORIGINAL_ALLOCATE_LOCK = get_original('_thread.allocate_lock')  # python3 ...
+_ORIGINAL_THREAD = get_original('threading.Thread')
+
 PY3 = sys.version_info[0] == 3
 VERBOSE = True
 
@@ -75,7 +97,7 @@ def get_peercred(sock):
 class SuspiciousClient(Exception):
     pass
 
-class Manhole(threading.Thread):
+class Manhole(_ORIGINAL_THREAD):
     """
     Thread that runs the infamous "Manhole".
     """
@@ -87,8 +109,8 @@ class Manhole(threading.Thread):
         self.sigmask = sigmask
 
     @staticmethod
-    def get_socket(factory=None):
-        sock = (factory or socket.socket)(socket.AF_UNIX, socket.SOCK_STREAM)
+    def get_socket():
+        sock = _ORIGINAL_SOCKET(socket.AF_UNIX, socket.SOCK_STREAM)
         pid = os.getpid()
         name = "/tmp/manhole-%s" % pid
         if os.path.exists(name):
@@ -117,7 +139,7 @@ class Manhole(threading.Thread):
             finally:
                 client = None
 
-class ManholeConnection(threading.Thread):
+class ManholeConnection(_ORIGINAL_THREAD):
     def __init__(self, client, sigmask):
         super(ManholeConnection, self).__init__()
         self.daemon = False
@@ -174,7 +196,7 @@ class ManholeConnection(threading.Thread):
                 ):
                     for name in names:
                         backup.append((name, getattr(sys, name)))
-                        setattr(sys, name, os.fdopen(client_fd, mode, 1 if PY3 else 0))
+                        setattr(sys, name, _ORIGINAL_FDOPEN(client_fd, mode, 1 if PY3 else 0))
                 run_repl()
                 cry("DONE.")
             finally:
@@ -212,9 +234,9 @@ def run_repl():
         'traceback': traceback,
     }).interact()
 
-def _handle_oneshot(_signum, _frame, _socket=socket._socketobject):
+def _handle_oneshot(_signum, _frame):
     try:
-        sock, pid = Manhole.get_socket(_socket)
+        sock, pid = Manhole.get_socket()
         cry("Waiting for new connection (in pid:%s) ..." % pid)
         client, _ = sock.accept()
         ManholeConnection.check_credentials(client)
@@ -231,7 +253,7 @@ def _remove_manhole_uds():
     if os.path.exists(name):
         os.unlink(name)
 
-_INST_LOCK = thread.allocate_lock()
+_INST_LOCK = _ORIGINAL_ALLOCATE_LOCK()
 _STDERR = _INST = _ORIGINAL_OS_FORK = _ORIGINAL_OS_FORKPTY = _SHOULD_RESTART = None
 
 def _patched_fork():
