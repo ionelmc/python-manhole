@@ -55,6 +55,7 @@ try:
 except ImportError:  # python 3
     _ORIGINAL_ALLOCATE_LOCK = _get_original('_thread.allocate_lock')
 _ORIGINAL_THREAD = _get_original('threading.Thread')
+_ORIGINAL__ACTIVE = _get_original('threading._active')
 
 PY3 = sys.version_info[0] == 3
 VERBOSE = True
@@ -335,7 +336,7 @@ def reinstall():
     global _INST  # pylint: disable=W0603
     assert _INST
     with _INST_LOCK:
-        if not _INST.is_alive():
+        if not (_INST.is_alive() and _INST in _ORIGINAL__ACTIVE):
             _INST = Manhole(_INST.sigmask)
             if _SHOULD_RESTART:
                 _INST.start()
