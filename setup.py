@@ -5,7 +5,7 @@ import os
 
 setup(
     name = "manhole",
-    version = "0.5.2",
+    version = "0.6.0",
     url = 'https://github.com/ionelmc/python-manhole',
     download_url = '',
     license = 'BSD',
