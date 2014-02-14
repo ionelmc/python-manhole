@@ -15,14 +15,16 @@
     :target: https://pypi.python.org/pypi/manhole
 
 
-Manhole is a python daemon thread that will accept unix domain socket connections and present the
-stacktraces for all threads and an interactive prompt.
+Manhole is in-process service that will accept unix domain socket connections and present the
+stacktraces for all threads and an interactive prompt. It can either work as a python daemon
+thread waiting for connections at all times *or* a signal handler (stopping your application and
+waiting for a connection).
 
 Access to the socket is restricted to the application's effective user id or root.
 
-    This is just like Twisted's `manhole <http://twistedmatrix.com/documents/current/api/twisted.manhole.html>`__.
-    It's simpler (no dependencies) and it only runs on Unix domain sockets (in contrast to Twisted's manhole which
-    can run on telnet or ssh).
+This is just like Twisted's `manhole <http://twistedmatrix.com/documents/current/api/twisted.manhole.html>`__.
+It's simpler (no dependencies), it only runs on Unix domain sockets (in contrast to Twisted's manhole which
+can run on telnet or ssh) and it integrates well with various types of applications.
 
 Usage
 =====
@@ -43,6 +45,8 @@ Now in a shell you can do either of these::
     netcat -U /tmp/manhole-1234
     socat - unix-connect:/tmp/manhole-1234
     socat readline unix-connect:/tmp/manhole-1234
+
+Socat with readline is best (history, editing etc).
 
 Sample output::
 
@@ -66,7 +70,7 @@ Features
 * Can start the thread listening for connections from a singla handler (see ``activate_on`` option)
 * Compatible with apps that fork, reinstalls the Manhole thread after fork - had to monkeypatch os.fork/os.forkpty for
   this.
-* Compatible with gevent and eventlet with some limitations - you either:
+* Compatible with gevent and eventlet with some limitations - you need to either:
 
   * Use ``oneshot_on``, *or*
   * Disable thread monkeypatching (eg: ``gevent.monkey.patch_all(thread=False)``, ``eventlet.monkey_patch(thread=False)``
