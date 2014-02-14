@@ -66,6 +66,11 @@ Features
 * Can start the thread listening for connections from a singla handler (see ``activate_on`` option)
 * Compatible with apps that fork, reinstalls the Manhole thread after fork - had to monkeypatch os.fork/os.forkpty for
   this.
+* Compatible with gevent and eventlet with some limitations - you either:
+
+  * Use ``oneshot_on``, *or*
+  * Disable thread monkeypatching (eg: ``gevent.monkey.patch_all(thread=False)``, ``eventlet.monkey_patch(thread=False)``
+
 * The thread is compatible with apps that use signalfd (will mask all signals for the Manhole threads).
 
 Options
@@ -96,8 +101,6 @@ What happens when you actually connect to the socket
 Whishlist
 ---------
 
-* Be compatible with eventlet/stackless (provide alternative implementation without thread) - currently ``oneshot_on``
-  should be usable for those. The are no tests done on eventlet/stackless for now.
 * More configurable (chose what sys.__std\*__/sys.std\* to patch on connect time)
 * Support windows ?!
 
@@ -120,4 +123,3 @@ Similar projects
 .. image:: https://d2weczhvl823v0.cloudfront.net/ionelmc/python-manhole/trend.png
    :alt: Bitdeli badge
    :target: https://bitdeli.com/free
-
