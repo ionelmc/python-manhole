@@ -272,6 +272,21 @@ class ManholeTestCase(ProcessTestCase):
                 self.wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection', 'Sending signal to manhole thread', 'Waiting for new connection')
                 self.assertManholeRunning(proc, uds_path)
 
+
+def setup_greenthreads(patch_threads=False):
+    try:
+        from gevent import monkey
+        monkey.patch_all(thread=False)
+    except (ImportError, SyntaxError):
+        pass
+
+    try:
+        import eventlet
+        eventlet.monkey_patch(thread=False)
+    except (ImportError, SyntaxError):
+        pass
+
+
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'daemon':
         logging.basicConfig(
@@ -282,19 +297,12 @@ if __name__ == '__main__':
 
         setup_coverage()
 
-        try:
-            from gevent import monkey
-            monkey.patch_all(thread=False)
-        except (ImportError, SyntaxError):
-            pass
-
-        try:
-            import eventlet
-            eventlet.monkey_patch(thread=False)
-        except (ImportError, SyntaxError):
-            pass
-
-        import manhole
+        if os.getenv('PATCH_THREAD', False):
+            import manhole
+            setup_greenthreads(True)
+        else:
+            setup_greenthreads(True)
+            import manhole
 
         if test_name == 'test_activate_on_usr2':
             manhole.install(activate_on='USR2')
