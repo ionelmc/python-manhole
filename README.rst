@@ -67,7 +67,7 @@ Features
 
 * Uses unix domain sockets, only root or same effective user can connect.
 * Can run the connection in a thread or in a signal handler (see ``oneshot_on`` option).
-* Can start the thread listening for connections from a singla handler (see ``activate_on`` option)
+* Can start the thread listening for connections from a signal handler (see ``activate_on`` option)
 * Compatible with apps that fork, reinstalls the Manhole thread after fork - had to monkeypatch os.fork/os.forkpty for
   this.
 * Compatible with gevent and eventlet with some limitations - you need to either:
