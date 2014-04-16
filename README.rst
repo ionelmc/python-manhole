@@ -2,18 +2,21 @@
        python-manhole
 ===========================
 
-.. image:: https://secure.travis-ci.org/ionelmc/python-manhole.png?branch=master
+.. image:: http://img.shields.io/travis/ionelmc/python-manhole.png
     :alt: Build Status
-    :target: http://travis-ci.org/ionelmc/python-manhole
+    :target: https://travis-ci.org/ionelmc/python-manhole
 
-.. image:: https://coveralls.io/repos/ionelmc/python-manhole/badge.png?branch=master
+.. image:: http://img.shields.io/coveralls/ionelmc/python-manhole.png
     :alt: Coverage Status
     :target: https://coveralls.io/r/ionelmc/python-manhole
 
-.. image:: https://badge.fury.io/py/manhole.png
+.. image:: http://img.shields.io/pypi/v/manhole.png
     :alt: PYPI Package
     :target: https://pypi.python.org/pypi/manhole
 
+.. image:: http://img.shields.io/pypi/dm/manhole.png
+    :alt: PYPI Package
+    :target: https://pypi.python.org/pypi/manhole
 
 Manhole is in-process service that will accept unix domain socket connections and present the
 stacktraces for all threads and an interactive prompt. It can either work as a python daemon
