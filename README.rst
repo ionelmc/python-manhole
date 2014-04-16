@@ -126,3 +126,7 @@ Similar projects
 * `wsgi-shell <https://github.com/GrahamDumpleton/wsgi-shell>`_ - spawns a thread.
 * `pyrasite <https://github.com/lmacken/pyrasite>`_ - uses gdb to inject code.
 * `pydbattach <https://github.com/albertz/pydbattach>`_ - uses gdb to inject code.
+* `pystuck <https://github.com/alonho/pystuck>`_ - very similar, uses `rpyc <https://github.com/tomerfiliba/rpyc>`_ for
+  communication.
+* `pyringe <https://github.com/google/pyringe>`_ - uses gdb to injects code, more reliable, but relies on `dbg` python
+  builds unfortunatelly.
