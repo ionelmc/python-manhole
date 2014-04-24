@@ -11,6 +11,8 @@ import atexit
 import code
 import signal
 import errno
+import platform
+
 try:
     import signalfd
 except ImportError:
@@ -79,6 +81,10 @@ try:
 except ImportError:
     pthread_setname_np = lambda ident, name: None
 
+# OS X getsockopt(2) defines (may work for BSD too?)
+SOL_LOCAL = 0
+LOCAL_PEERCRED = 1
+
 SO_PEERCRED = 17
 
 
@@ -96,9 +102,14 @@ def cry(message):
 def get_peercred(sock):
     """Gets the (pid, uid, gid) for the client on the given *connected* socket."""
 
-    return struct.unpack('3i', sock.getsockopt(
-        socket.SOL_SOCKET, SO_PEERCRED, struct.calcsize('3i')
-    ))
+    if platform.system() == 'Darwin':
+        return struct.unpack('3i', sock.getsockopt(
+            SOL_LOCAL, LOCAL_PEERCRED, struct.calcsize('3i')
+        ))
+    else:
+        return struct.unpack('3i', sock.getsockopt(
+            socket.SOL_SOCKET, SO_PEERCRED, struct.calcsize('3i')
+        ))
 
 
 class SuspiciousClient(Exception):
@@ -178,6 +189,7 @@ class ManholeConnection(_ORIGINAL_THREAD):
     @staticmethod
     def check_credentials(client):
         pid, uid, gid = get_peercred(client)
+
         euid = os.geteuid()
         client_name = "PID:%s UID:%s GID:%s" % (pid, uid, gid)
         if uid not in (0, euid):
@@ -191,8 +203,11 @@ class ManholeConnection(_ORIGINAL_THREAD):
     @staticmethod
     def handle(client):
         client.settimeout(None)
-        client.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 0)
-        client.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 0)
+
+        if platform.system() != 'Darwin':
+            client.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 0)
+            client.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 0)
+
         backup = []
         old_interval = getinterval()
         try:
