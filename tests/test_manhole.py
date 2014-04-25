@@ -208,7 +208,7 @@ class ManholeTestCase(ProcessTestCase):
     def test_activate_on_usr2(self):
         with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_activate_on_usr2') as proc:
             with self.dump_on_error(proc.read):
-                self.wait_for_strings(proc.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Activation is done by signal 12')
+                self.wait_for_strings(proc.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Activation is done by signal')
                 self.assertRaises(AssertionError, self.wait_for_strings, proc.read, TIMEOUT, '/tmp/manhole-')
                 proc.signal(signal.SIGUSR2)
                 self.wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
@@ -224,7 +224,7 @@ class ManholeTestCase(ProcessTestCase):
     def test_oneshot_on_usr2(self):
         with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_oneshot_on_usr2') as proc:
             with self.dump_on_error(proc.read):
-                self.wait_for_strings(proc.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Oneshot activation is done by signal 12')
+                self.wait_for_strings(proc.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
                 self.assertRaises(AssertionError, self.wait_for_strings, proc.read, TIMEOUT, '/tmp/manhole-')
                 proc.signal(signal.SIGUSR2)
                 self.wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
@@ -249,7 +249,7 @@ class ManholeTestCase(ProcessTestCase):
     def test_oneshot_on_usr2_error(self):
         with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_oneshot_on_usr2') as proc:
             with self.dump_on_error(proc.read):
-                self.wait_for_strings(proc.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Oneshot activation is done by signal 12')
+                self.wait_for_strings(proc.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
                 self.assertRaises(AssertionError, self.wait_for_strings, proc.read, TIMEOUT, '/tmp/manhole-')
                 proc.signal(signal.SIGUSR2)
                 self.wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
