@@ -73,7 +73,7 @@ class ManholeTestCase(ProcessTestCase):
                     self.wait_for_strings(client.read, TIMEOUT, "FOOBAR")
 
                     self.wait_for_strings(proc.read, TIMEOUT,
-                        'from PID:%s UID:%s' % (os.getpid(), os.getuid()),
+                        'UID:%s' % os.getuid(),
                     )
                     if extra:
                         extra(sock)
@@ -105,7 +105,7 @@ class ManholeTestCase(ProcessTestCase):
                         self.wait_for_strings(client.read, TIMEOUT, "FOOBAR")
 
                         self.wait_for_strings(proc.read, TIMEOUT,
-                            'from PID:%s UID:%s' % (os.getpid(), os.getuid()),
+                            'UID:%s' % os.getuid(),
                         )
                         sock.shutdown(socket.SHUT_WR)
                         select.select([sock], [], [], 5)
