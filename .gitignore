@@ -10,3 +10,4 @@ pip-log.txt
 .tox/
 .coverage*
 .ve/
+.bootstrap/
