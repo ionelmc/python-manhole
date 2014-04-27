@@ -33,13 +33,6 @@ install:
   - pip install tox
 script:
   - tox -v
-after_success:
-  - |
-    if [[ $WITH_COVERAGE == yes ]]; then
-      .tox/$TOXENV/bin/coverage combine
-      .tox/$TOXENV/bin/coverage report
-      .tox/$TOXENV/bin/coveralls
-    fi
 notifications:
   email:
     on_success: never
