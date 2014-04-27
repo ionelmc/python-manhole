@@ -1,0 +1,83 @@
+[tox]
+envlist =
+    clean,
+{% for env in envs|sort %}{% if 'nocover' not in env %}
+    {{ env }},
+{% endif %}{% endfor %}
+    report
+
+[pytest]
+addopts =
+    -rxEfs
+    --strict
+    --ignore docs/conf.py
+    --ignore setup.py
+    --doctest-modules
+    --doctest-glob \*.rst
+    --tb short
+    --cov-report term-missing
+
+[testenv]
+setenv =
+    PYTHONPATH = {toxinidir}/tests
+    PYTHONUNBUFFERED=x
+deps =
+    coverage
+    process-tests
+    pytest
+    pytest-cov
+    pytest-greendots
+    pytest-capturelog
+commands =
+    {posargs:py.test --cov manhole}
+
+[testenv:coveralls]
+deps =
+    coveralls
+usedevelop = true
+commands =
+    coverage combine
+    coverage report
+    coveralls
+
+[testenv:report]
+basepython = python3.3
+commands =
+    coverage combine
+    coverage report
+usedevelop = true
+deps = coverage
+
+[testenv:clean]
+commands = coverage erase
+usedevelop = true
+deps = coverage
+
+{% for env, config in envs|dictsort %}
+[testenv:{{ env }}]
+basepython = {{ config.python }}
+{% if config.cover or config.env %}
+setenv =
+    PYTHONPATH={toxinidir}/tests
+    PYTHONUNBUFFERED=x
+{% endif %}
+{% if config.cover %}
+    WITH_COVERAGE=x
+{% endif %}
+{% if config.env %}
+    {{ config.env }}
+{% endif %}
+{% if config.deps %}
+deps =
+    {[testenv]deps}
+{% for dep in config.deps %}
+    {{ dep }}
+{% endfor %}
+{% endif %}
+{% if not config.cover %}
+commands =
+    {posargs:py.test}
+{% endif %}
+
+
+{% endfor %}

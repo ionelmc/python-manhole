@@ -1,0 +1,46 @@
+language: python
+python: 2.7
+env:
+  global:
+    MANHOLE_TEST_TIMEOUT=30
+  matrix:
+{% for env, config in envs|dictsort %}
+    - TOXENV={{ env }}{% if config.cover %},coveralls{% endif %}
+
+{% endfor %}
+before_install:
+  - |
+    case $TOXENV in
+      pypy*)
+        deactivate
+        sudo apt-add-repository --yes ppa:pypy/ppa
+        sudo apt-get update
+        sudo apt-get install pypy
+        source ~/virtualenv/pypy/bin/activate
+      ;;
+      3.4*))
+        sudo apt-get update
+        sudo apt-get install python3.4-dev
+        source ~/virtualenv/python3.4
+        virtualenv ~/virtualenv/python3.4 --python=$(which python3.4)
+        source ~/virtualenv/python3.4/bin/activate
+      ;;
+    esac
+    python --version
+    uname -a
+    lsb_release -a 
+install:
+  - pip install tox
+script:
+  - tox -v
+after_success:
+  - |
+    if [[ $WITH_COVERAGE == yes ]]; then
+      .tox/$TOXENV/bin/coverage combine
+      .tox/$TOXENV/bin/coverage report
+      .tox/$TOXENV/bin/coveralls
+    fi
+notifications:
+  email:
+    on_success: never
+    on_failure: always
