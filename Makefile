@@ -1,14 +1,14 @@
+.PHONY: test all
+
 .bootstrap:
 	virtualenv .bootstrap
 	.bootstrap/bin/pip install jinja2
 
-configure: .bootstrap tox.ini .travis.yml
+tox.ini: .bootstrap
 	.bootstrap/bin/python configure.py
 
-test: configure
+test: tox.ini
 	tox
 
-all: test
-
 clean:
-    rm tox.ini .travis.yml
+	rm -f tox.ini .travis.yml

@@ -52,7 +52,7 @@ def assertManholeRunning(proc, uds_path, oneshot=False, extra=None):
 
 
 @mark.parametrize("count", range(1, 11))
-def run_simple(count):
+def test_simple(count):
     with TestProcess(sys.executable, __file__, 'daemon', 'test_simple') as proc:
         with dump_on_error(proc.read):
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')

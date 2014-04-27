@@ -29,7 +29,7 @@ deps =
     pytest-greendots
     pytest-capturelog
 commands =
-    {posargs:py.test --cov manhole}
+    {posargs:py.test --cov manhole -vv}
 
 [testenv:coveralls]
 deps =
@@ -76,7 +76,7 @@ deps =
 {% endif %}
 {% if not config.cover %}
 commands =
-    {posargs:py.test}
+    {posargs:py.test -vv}
 {% endif %}
 
 
