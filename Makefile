@@ -5,7 +5,7 @@
 	.bootstrap/bin/pip install jinja2
 
 tox.ini: .bootstrap
-	.bootstrap/bin/python configure.py
+	.bootstrap/bin/python confenvs.py
 
 test: tox.ini
 	tox
