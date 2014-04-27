@@ -10,6 +10,7 @@ envs = ['PATCH_THREAD=x', '']
 skips = list(chain(
     # disable py3/pypy with eventlet/gevent
     product(['3.2', '3.3', '3.4', 'pypy'], [dep for dep in deps if 'eventlet' in dep or 'gevent' in dep], covers, envs),
+    product(pythons, [dep for dep in deps if not ('eventlet' in dep or 'gevent' in dep)], covers, envs[:1]),
 ))
 tox = {}
 for python, dep, cover, env in product(pythons, deps, covers, envs):
