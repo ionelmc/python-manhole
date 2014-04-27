@@ -3,6 +3,7 @@ python: 2.7
 env:
   global:
     MANHOLE_TEST_TIMEOUT=30
+    LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
   matrix:
 {% for env, config in envs|dictsort %}
     - TOXENV={{ env }}{% if config.cover %},coveralls{% endif %}
@@ -28,7 +29,7 @@ before_install:
     esac
     python --version
     uname -a
-    lsb_release -a 
+    lsb_release -a
 install:
   - pip install tox
 script:
