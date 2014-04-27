@@ -110,8 +110,14 @@ class ManholeTestCase(ProcessTestCase):
                         sock.shutdown(socket.SHUT_WR)
                         select.select([sock], [], [], 5)
                         sock.recv(1024)
-                        sock.shutdown(socket.SHUT_RD)
-                        sock.close()
+                        try:
+                            sock.shutdown(socket.SHUT_RD)
+                        except Exception as exc:
+                            print("Failed to SHUT_RD: %s" % exc)
+                        try:
+                            sock.close()
+                        except Exception as exc:
+                            print("Failed to close socket: %s" % exc)
                 self.wait_for_strings(proc.read, TIMEOUT,
                     'DONE.',
                     'Cleaned up.',
