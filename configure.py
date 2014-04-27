@@ -25,5 +25,6 @@ for python, dep, cover, env in product(pythons, deps, covers, envs):
             'cover': cover,
             'env': env,
         }
-open('tox.ini', 'w').write(jinja.get_template('tox.tmpl').render(envs=tox))
-open('.travis.yml', 'w').write(jinja.get_template('.travis.tmpl').render(envs=tox))
+
+open('tox.ini', 'w').write(jinja.get_template('tox.tmpl.ini').render(envs=tox))
+open('.travis.yml', 'w').write(jinja.get_template('.travis.tmpl.yml').render(envs=tox))
