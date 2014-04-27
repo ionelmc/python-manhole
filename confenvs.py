@@ -8,12 +8,12 @@ deps = ['python-signalfd', 'python-signalfd gevent', 'python-signalfd eventlet',
 covers = [True, False]
 envs = ['PATCH_THREAD=x', '']
 skips = list(chain(
-    product(['pypy'], [dep for dep in deps if 'eventlet' in dep or 'gevent' in dep], covers, envs),
-    product(pythons, [dep for dep in deps if 'eventlet' not in dep or 'gevent' not in dep], covers, envs),
+    # disable py3/pypy with eventlet/gevent
+    product(['3.2', '3.3', '3.4', 'pypy'], [dep for dep in deps if 'eventlet' in dep or 'gevent' in dep], covers, envs),
 ))
 tox = {}
 for python, dep, cover, env in product(pythons, deps, covers, envs):
-    if (python, dep, cover) not in skips:
+    if (python, dep, cover, env) not in skips:
         tox['-'.join(filter(None, (
             python,
             '-'.join(dep.replace('python-', '').split()),
