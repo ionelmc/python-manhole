@@ -40,3 +40,15 @@ Not many rules for sending changes:
     And then, e.g.::
     
         tox -e 2.7
+
+Technical details about the tests
+---------------------------------
+
+The test matrix for tox and travis is generated with ``generate.py``. If you want to regenerate it::
+
+    make clean
+    make
+
+Or just regenerate it and run everything::
+
+    make clean test
