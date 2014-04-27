@@ -114,8 +114,8 @@ Whishlist
 Requirements
 ============
 
-:OS: Linux
-:Runtime: Python 2.6, 2.7, 3.2, 3.3 or PyPy
+:OS: Linux, OS X
+:Runtime: Python 2.6, 2.7, 3.2, 3.3, 3.4 or PyPy
 
 Similar projects
 ================
