@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import atexit
 import errno
+import imp
 import logging
 import os
 import re
@@ -24,7 +25,14 @@ from pytest import raises
 TIMEOUT = int(os.getenv('MANHOLE_TEST_TIMEOUT', 10))
 
 
-def assertManholeRunning(proc, uds_path, oneshot=False, extra=None):
+def is_module_available(mod):
+    try:
+        return imp.find_module(mod)
+    except ImportError:
+        return False
+
+
+def assert_manhole_running(proc, uds_path, oneshot=False, extra=None):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     sock.settimeout(0.5)
     for i in range(TIMEOUT):
@@ -60,7 +68,7 @@ def test_simple(count):
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
             for _ in range(count):
                 proc.reset()
-                assertManholeRunning(proc, uds_path)
+                assert_manhole_running(proc, uds_path)
 
 
 def test_exit_with_grace():
@@ -102,7 +110,7 @@ def test_with_fork():
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
             for _ in range(2):
                 proc.reset()
-                assertManholeRunning(proc, uds_path)
+                assert_manhole_running(proc, uds_path)
 
             proc.reset()
             wait_for_strings(proc.read, TIMEOUT, 'Fork detected')
@@ -113,7 +121,7 @@ def test_with_fork():
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
             for _ in range(2):
                 proc.reset()
-                assertManholeRunning(proc, new_uds_path)
+                assert_manhole_running(proc, new_uds_path)
 
 
 if not hasattr(sys, 'pypy_version_info'):
@@ -125,7 +133,7 @@ if not hasattr(sys, 'pypy_version_info'):
                 wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
                 for _ in range(2):
                     proc.reset()
-                    assertManholeRunning(proc, uds_path)
+                    assert_manhole_running(proc, uds_path)
 
                 proc.reset()
                 wait_for_strings(proc.read, TIMEOUT, 'Fork detected')
@@ -136,7 +144,7 @@ if not hasattr(sys, 'pypy_version_info'):
                 wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
                 for _ in range(2):
                     proc.reset()
-                    assertManholeRunning(proc, new_uds_path)
+                    assert_manhole_running(proc, new_uds_path)
 
 
 def test_auth_fail():
@@ -173,17 +181,17 @@ else:
                 wait_for_strings(proc.read, 25 * TIMEOUT, *[
                     '[%s] read from signalfd:' % j for j in range(200)
                 ])
-                assertManholeRunning(proc, uds_path)
+                assert_manhole_running(proc, uds_path)
 
-
-    def test_signalfd_weirdness_negative():
-        with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_signalfd_weirdness_negative') as proc:
-            with dump_on_error(proc.read):
-                wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
-                uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
-                wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-                wait_for_strings(proc.read, TIMEOUT, 'reading from signalfd failed')
-                assertManholeRunning(proc, uds_path)
+    if not is_module_available('gevent') and not is_module_available('eventlet'):
+        def test_signalfd_weirdness_negative():
+            with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_signalfd_weirdness_negative') as proc:
+                with dump_on_error(proc.read):
+                    wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+                    uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
+                    wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+                    wait_for_strings(proc.read, TIMEOUT, 'reading from signalfd failed')
+                    assert_manhole_running(proc, uds_path)
 
 
 def test_activate_on_usr2():
@@ -195,7 +203,7 @@ def test_activate_on_usr2():
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-            assertManholeRunning(proc, uds_path)
+            assert_manhole_running(proc, uds_path)
 
 
 def test_activate_on_with_oneshot_on():
@@ -213,7 +221,7 @@ def test_oneshot_on_usr2():
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-            assertManholeRunning(proc, uds_path, oneshot=True)
+            assert_manhole_running(proc, uds_path, oneshot=True)
 
 
 def test_fail_to_cry():
@@ -240,14 +248,14 @@ def test_oneshot_on_usr2_error():
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-            assertManholeRunning(proc, uds_path, oneshot=True, extra=lambda sock: sock.send(b"raise SystemExit()\n"))
+            assert_manhole_running(proc, uds_path, oneshot=True, extra=lambda sock: sock.send(b"raise SystemExit()\n"))
 
             proc.reset()
             proc.signal(signal.SIGUSR2)
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-            assertManholeRunning(proc, uds_path, oneshot=True)
+            assert_manhole_running(proc, uds_path, oneshot=True)
 
 
 def test_interrupt_on_accept():
@@ -256,7 +264,7 @@ def test_interrupt_on_accept():
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection', 'Sending signal to manhole thread', 'Waiting for new connection')
-            assertManholeRunning(proc, uds_path)
+            assert_manhole_running(proc, uds_path)
 
 
 def setup_greenthreads(patch_threads=False):
