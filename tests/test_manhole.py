@@ -366,7 +366,7 @@ if __name__ == '__main__':
                 else:
                     print(' - [%s/%s] exiting' % (i, pid))
                     os._exit(0)
-            time.sleep(TIMEOUT)
+            time.sleep(TIMEOUT * 10)
         else:
             manhole.install()
             if test_name == 'test_simple':
