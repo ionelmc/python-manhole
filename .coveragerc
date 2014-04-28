@@ -1,0 +1,11 @@
+[paths]
+source =
+    src/manhole
+    */manhole
+
+[run]
+source = */manhole
+parallel = true
+[report]
+show_missing = true
+precision = 2
