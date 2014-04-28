@@ -134,6 +134,10 @@ Similar projects
 Changelog
 =========
 
+* 0.6.2:
+
+    * Fix OS X regression.
+
 * 0.6.1:
 
     * Support for OS X (contributed by Saulius Menkevičius)

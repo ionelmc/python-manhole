@@ -204,7 +204,8 @@ class ManholeConnection(_ORIGINAL_THREAD):
     def handle(client):
         client.settimeout(None)
 
-        client.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 0)
+        # disable this till we have evidence that it's needed
+        #client.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 0)
         # Note: setting SO_RCVBUF on UDS has no effect, see: http://man7.org/linux/man-pages/man7/unix.7.html
 
         backup = []
