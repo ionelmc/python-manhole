@@ -130,3 +130,10 @@ Similar projects
   communication.
 * `pyringe <https://github.com/google/pyringe>`_ - uses gdb to injects code, more reliable, but relies on `dbg` python
   builds unfortunatelly.
+
+Changelog
+=========
+
+* 0.6.1:
+
+    * Support for OS X (contributed by Saulius Menkevičius)
