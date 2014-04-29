@@ -370,6 +370,7 @@ if __name__ == '__main__':
             time.sleep(TIMEOUT * 10)
         else:
             manhole.install()
+            time.sleep(0.3)  # give the manhole a bit enough time to start
             if test_name == 'test_simple':
                 time.sleep(TIMEOUT * 10)
             elif test_name == 'test_with_forkpty':
