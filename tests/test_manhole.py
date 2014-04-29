@@ -338,6 +338,7 @@ if __name__ == '__main__':
                 manhole.install(sigmask=None)
             else:
                 manhole.install(sigmask=[signal.SIGCHLD])
+            time.sleep(0.3)  # give the manhole a bit enough time to start
             print('Starting ...')
             import signalfd
             signalfd.sigprocmask(signalfd.SIG_BLOCK, [signal.SIGCHLD])
