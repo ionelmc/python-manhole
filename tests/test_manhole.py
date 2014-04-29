@@ -368,6 +368,10 @@ if __name__ == '__main__':
                     print(' - [%s/%s] exiting' % (i, pid))
                     os._exit(0)
             time.sleep(TIMEOUT * 10)
+        elif test_name == 'test_auth_fail':
+            manhole.get_peercred = lambda _: (-1, -1, -1)
+            manhole.install()
+            time.sleep(TIMEOUT * 10)
         else:
             manhole.install()
             time.sleep(0.3)  # give the manhole a bit enough time to start
@@ -409,9 +413,6 @@ if __name__ == '__main__':
                     os.waitpid(pid, 0)
                 else:
                     time.sleep(TIMEOUT * 10)
-            elif test_name == 'test_auth_fail':
-                manhole.get_peercred = lambda _: (-1, -1, -1)
-                time.sleep(TIMEOUT * 10)
             else:
                 raise RuntimeError('Invalid test spec.')
         print('DIED.')
