@@ -4,9 +4,10 @@ source =
     */manhole
 
 [run]
-source = */manhole
+source = src
 parallel = true
 
 [report]
 show_missing = true
+include = src/*
 precision = 2

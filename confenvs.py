@@ -6,7 +6,7 @@ jinja = Environment(loader=FileSystemLoader('.'), trim_blocks=True, lstrip_block
 pythons = ['2.7', '2.6', '3.2', '3.3', '3.4', 'pypy']
 deps = ['python-signalfd', 'python-signalfd gevent', 'python-signalfd eventlet', 'eventlet', 'gevent', '']
 covers = [True, False]
-envs = ['PATCH_THREAD=x', '']
+envs = ['PATCH_THREAD=yes', '']
 skips = list(chain(
     # disable py3/pypy with eventlet/gevent
     product(['3.2', '3.3', '3.4', 'pypy'], [dep for dep in deps if 'eventlet' in dep or 'gevent' in dep], covers, envs),

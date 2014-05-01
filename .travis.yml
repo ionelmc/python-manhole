@@ -8,42 +8,42 @@ env:
     - TOXENV=2.6,coveralls
     - TOXENV=2.6-eventlet,coveralls
     - TOXENV=2.6-eventlet-nocover
-    - TOXENV=2.6-eventlet-nocover-patchthread
-    - TOXENV=2.6-eventlet-patchthread,coveralls
+    - TOXENV=2.6-eventlet-nocover-patchthread=yes
+    - TOXENV=2.6-eventlet-patchthread=yes,coveralls
     - TOXENV=2.6-gevent,coveralls
     - TOXENV=2.6-gevent-nocover
-    - TOXENV=2.6-gevent-nocover-patchthread
-    - TOXENV=2.6-gevent-patchthread,coveralls
+    - TOXENV=2.6-gevent-nocover-patchthread=yes
+    - TOXENV=2.6-gevent-patchthread=yes,coveralls
     - TOXENV=2.6-nocover
     - TOXENV=2.6-signalfd,coveralls
     - TOXENV=2.6-signalfd-eventlet,coveralls
     - TOXENV=2.6-signalfd-eventlet-nocover
-    - TOXENV=2.6-signalfd-eventlet-nocover-patchthread
-    - TOXENV=2.6-signalfd-eventlet-patchthread,coveralls
+    - TOXENV=2.6-signalfd-eventlet-nocover-patchthread=yes
+    - TOXENV=2.6-signalfd-eventlet-patchthread=yes,coveralls
     - TOXENV=2.6-signalfd-gevent,coveralls
     - TOXENV=2.6-signalfd-gevent-nocover
-    - TOXENV=2.6-signalfd-gevent-nocover-patchthread
-    - TOXENV=2.6-signalfd-gevent-patchthread,coveralls
+    - TOXENV=2.6-signalfd-gevent-nocover-patchthread=yes
+    - TOXENV=2.6-signalfd-gevent-patchthread=yes,coveralls
     - TOXENV=2.6-signalfd-nocover
     - TOXENV=2.7,coveralls
     - TOXENV=2.7-eventlet,coveralls
     - TOXENV=2.7-eventlet-nocover
-    - TOXENV=2.7-eventlet-nocover-patchthread
-    - TOXENV=2.7-eventlet-patchthread,coveralls
+    - TOXENV=2.7-eventlet-nocover-patchthread=yes
+    - TOXENV=2.7-eventlet-patchthread=yes,coveralls
     - TOXENV=2.7-gevent,coveralls
     - TOXENV=2.7-gevent-nocover
-    - TOXENV=2.7-gevent-nocover-patchthread
-    - TOXENV=2.7-gevent-patchthread,coveralls
+    - TOXENV=2.7-gevent-nocover-patchthread=yes
+    - TOXENV=2.7-gevent-patchthread=yes,coveralls
     - TOXENV=2.7-nocover
     - TOXENV=2.7-signalfd,coveralls
     - TOXENV=2.7-signalfd-eventlet,coveralls
     - TOXENV=2.7-signalfd-eventlet-nocover
-    - TOXENV=2.7-signalfd-eventlet-nocover-patchthread
-    - TOXENV=2.7-signalfd-eventlet-patchthread,coveralls
+    - TOXENV=2.7-signalfd-eventlet-nocover-patchthread=yes
+    - TOXENV=2.7-signalfd-eventlet-patchthread=yes,coveralls
     - TOXENV=2.7-signalfd-gevent,coveralls
     - TOXENV=2.7-signalfd-gevent-nocover
-    - TOXENV=2.7-signalfd-gevent-nocover-patchthread
-    - TOXENV=2.7-signalfd-gevent-patchthread,coveralls
+    - TOXENV=2.7-signalfd-gevent-nocover-patchthread=yes
+    - TOXENV=2.7-signalfd-gevent-patchthread=yes,coveralls
     - TOXENV=2.7-signalfd-nocover
     - TOXENV=3.2,coveralls
     - TOXENV=3.2-nocover

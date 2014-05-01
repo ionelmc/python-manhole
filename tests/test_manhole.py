@@ -59,7 +59,7 @@ def assert_manhole_running(proc, uds_path, oneshot=False, extra=None):
     wait_for_strings(proc.read, TIMEOUT, 'Cleaned up.', *[] if oneshot else ['Waiting for new connection'])
 
 
-@mark.parametrize("count", range(1, 11))
+@mark.parametrize("count", range(1, 21))
 def test_simple(count):
     with TestProcess(sys.executable, __file__, 'daemon', 'test_simple') as proc:
         with dump_on_error(proc.read):
