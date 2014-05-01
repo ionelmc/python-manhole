@@ -19,7 +19,7 @@ for python, dep, cover, env in product(pythons, deps, covers, envs):
             python,
             '-'.join(dep.replace('python-', '').split()),
             '' if cover else 'nocover',
-            env and env.lower().replace('_', '').rstrip('=x'),
+            env and env.lower().replace('_', '').rstrip('=yes'),
         )))] = {
             'python': 'python' + python if 'py' not in python else python,
             'deps': dep.split(),
