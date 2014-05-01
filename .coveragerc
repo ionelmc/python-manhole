@@ -1,10 +1,4 @@
-[paths]
-source =
-    src/manhole
-    */manhole
-
 [run]
-source = src
 parallel = true
 
 [report]
