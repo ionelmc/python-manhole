@@ -5,24 +5,14 @@ env:
     MANHOLE_TEST_TIMEOUT=30
     LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
   matrix:
-{% for env, config in envs|dictsort %}
+{% for env, config in tox_environments|dictsort %}
     - TOXENV={{ env }}{% if config.cover %},coveralls{% endif %}
 
 {% endfor %}
 before_install:
-  - |
-    case $TOXENV in
-      pypy*)
-        deactivate
-        sudo apt-add-repository --yes ppa:pypy/ppa
-        sudo apt-get update
-        sudo apt-get install pypy
-        source ~/virtualenv/pypy/bin/activate
-      ;;
-    esac
-    python --version
-    uname -a
-    lsb_release -a
+  - python --version
+  - uname -a
+  - lsb_release -a
 install:
   - pip install tox
 script:

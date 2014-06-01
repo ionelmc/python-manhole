@@ -8,73 +8,63 @@ env:
     - TOXENV=2.6,coveralls
     - TOXENV=2.6-eventlet,coveralls
     - TOXENV=2.6-eventlet-nocover
-    - TOXENV=2.6-eventlet-nocover-patchthread
-    - TOXENV=2.6-eventlet-patchthread,coveralls
+    - TOXENV=2.6-eventlet-nocover-patchthread=yes
+    - TOXENV=2.6-eventlet-patchthread=yes,coveralls
     - TOXENV=2.6-gevent,coveralls
     - TOXENV=2.6-gevent-nocover
-    - TOXENV=2.6-gevent-nocover-patchthread
-    - TOXENV=2.6-gevent-patchthread,coveralls
+    - TOXENV=2.6-gevent-nocover-patchthread=yes
+    - TOXENV=2.6-gevent-patchthread=yes,coveralls
     - TOXENV=2.6-nocover
-    - TOXENV=2.6-signalfd,coveralls
-    - TOXENV=2.6-signalfd-eventlet,coveralls
-    - TOXENV=2.6-signalfd-eventlet-nocover
-    - TOXENV=2.6-signalfd-eventlet-nocover-patchthread
-    - TOXENV=2.6-signalfd-eventlet-patchthread,coveralls
-    - TOXENV=2.6-signalfd-gevent,coveralls
-    - TOXENV=2.6-signalfd-gevent-nocover
-    - TOXENV=2.6-signalfd-gevent-nocover-patchthread
-    - TOXENV=2.6-signalfd-gevent-patchthread,coveralls
-    - TOXENV=2.6-signalfd-nocover
+    - TOXENV=2.6-python-signalfd,coveralls
+    - TOXENV=2.6-python-signalfd-eventlet,coveralls
+    - TOXENV=2.6-python-signalfd-eventlet-nocover
+    - TOXENV=2.6-python-signalfd-eventlet-nocover-patchthread=yes
+    - TOXENV=2.6-python-signalfd-eventlet-patchthread=yes,coveralls
+    - TOXENV=2.6-python-signalfd-gevent,coveralls
+    - TOXENV=2.6-python-signalfd-gevent-nocover
+    - TOXENV=2.6-python-signalfd-gevent-nocover-patchthread=yes
+    - TOXENV=2.6-python-signalfd-gevent-patchthread=yes,coveralls
+    - TOXENV=2.6-python-signalfd-nocover
     - TOXENV=2.7,coveralls
     - TOXENV=2.7-eventlet,coveralls
     - TOXENV=2.7-eventlet-nocover
-    - TOXENV=2.7-eventlet-nocover-patchthread
-    - TOXENV=2.7-eventlet-patchthread,coveralls
+    - TOXENV=2.7-eventlet-nocover-patchthread=yes
+    - TOXENV=2.7-eventlet-patchthread=yes,coveralls
     - TOXENV=2.7-gevent,coveralls
     - TOXENV=2.7-gevent-nocover
-    - TOXENV=2.7-gevent-nocover-patchthread
-    - TOXENV=2.7-gevent-patchthread,coveralls
+    - TOXENV=2.7-gevent-nocover-patchthread=yes
+    - TOXENV=2.7-gevent-patchthread=yes,coveralls
     - TOXENV=2.7-nocover
-    - TOXENV=2.7-signalfd,coveralls
-    - TOXENV=2.7-signalfd-eventlet,coveralls
-    - TOXENV=2.7-signalfd-eventlet-nocover
-    - TOXENV=2.7-signalfd-eventlet-nocover-patchthread
-    - TOXENV=2.7-signalfd-eventlet-patchthread,coveralls
-    - TOXENV=2.7-signalfd-gevent,coveralls
-    - TOXENV=2.7-signalfd-gevent-nocover
-    - TOXENV=2.7-signalfd-gevent-nocover-patchthread
-    - TOXENV=2.7-signalfd-gevent-patchthread,coveralls
-    - TOXENV=2.7-signalfd-nocover
+    - TOXENV=2.7-python-signalfd,coveralls
+    - TOXENV=2.7-python-signalfd-eventlet,coveralls
+    - TOXENV=2.7-python-signalfd-eventlet-nocover
+    - TOXENV=2.7-python-signalfd-eventlet-nocover-patchthread=yes
+    - TOXENV=2.7-python-signalfd-eventlet-patchthread=yes,coveralls
+    - TOXENV=2.7-python-signalfd-gevent,coveralls
+    - TOXENV=2.7-python-signalfd-gevent-nocover
+    - TOXENV=2.7-python-signalfd-gevent-nocover-patchthread=yes
+    - TOXENV=2.7-python-signalfd-gevent-patchthread=yes,coveralls
+    - TOXENV=2.7-python-signalfd-nocover
     - TOXENV=3.2,coveralls
     - TOXENV=3.2-nocover
-    - TOXENV=3.2-signalfd,coveralls
-    - TOXENV=3.2-signalfd-nocover
+    - TOXENV=3.2-python-signalfd,coveralls
+    - TOXENV=3.2-python-signalfd-nocover
     - TOXENV=3.3,coveralls
     - TOXENV=3.3-nocover
-    - TOXENV=3.3-signalfd,coveralls
-    - TOXENV=3.3-signalfd-nocover
+    - TOXENV=3.3-python-signalfd,coveralls
+    - TOXENV=3.3-python-signalfd-nocover
     - TOXENV=3.4,coveralls
     - TOXENV=3.4-nocover
-    - TOXENV=3.4-signalfd,coveralls
-    - TOXENV=3.4-signalfd-nocover
+    - TOXENV=3.4-python-signalfd,coveralls
+    - TOXENV=3.4-python-signalfd-nocover
     - TOXENV=pypy,coveralls
     - TOXENV=pypy-nocover
-    - TOXENV=pypy-signalfd,coveralls
-    - TOXENV=pypy-signalfd-nocover
+    - TOXENV=pypy-python-signalfd,coveralls
+    - TOXENV=pypy-python-signalfd-nocover
 before_install:
-  - |
-    case $TOXENV in
-      pypy*)
-        deactivate
-        sudo apt-add-repository --yes ppa:pypy/ppa
-        sudo apt-get update
-        sudo apt-get install pypy
-        source ~/virtualenv/pypy/bin/activate
-      ;;
-    esac
-    python --version
-    uname -a
-    lsb_release -a
+  - python --version
+  - uname -a
+  - lsb_release -a
 install:
   - pip install tox
 script:
