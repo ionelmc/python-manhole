@@ -127,8 +127,9 @@ class Manhole(_ORIGINAL_THREAD):
         self.name = "Manhole"
         self.sigmask = sigmask
         self.serious = _ORIGINAL_EVENT()
-        self.start_timeout = start_timeout  # time to wait for the manhole to get serious (to have a complete start)
-                                            # see: http://emptysqua.re/blog/dawn-of-the-thread/
+        # time to wait for the manhole to get serious (to have a complete start)
+        # see: http://emptysqua.re/blog/dawn-of-the-thread/
+        self.start_timeout = start_timeout
 
     def start(self):
         super(Manhole, self).start()
@@ -204,9 +205,9 @@ class ManholeConnection(_ORIGINAL_THREAD):
     def handle(client):
         client.settimeout(None)
 
-        # disable this till we have evidence that it's needed
-        #client.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 0)
-        # Note: setting SO_RCVBUF on UDS has no effect, see: http://man7.org/linux/man-pages/man7/unix.7.html
+        # # disable this till we have evidence that it's needed
+        # client.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 0)
+        # # Note: setting SO_RCVBUF on UDS has no effect, see: http://man7.org/linux/man-pages/man7/unix.7.html
 
         backup = []
         old_interval = getinterval()
@@ -232,9 +233,10 @@ class ManholeConnection(_ORIGINAL_THREAD):
                 cry("DONE.")
             finally:
                 try:
-                    setinterval(2147483647)  # change the switch/check interval to something ridiculous
-                                             # we don't want to have other thread try to write to the
-                                             # redirected sys.__std*/sys.std* - it would fail horribly
+                    # Change the switch/check interval to something ridiculous. We don't want to have other thread try
+                    # to write to the redirected sys.__std*/sys.std* - it would fail horribly.
+                    setinterval(2147483647)
+
                     client.close()  # close before it's too late. it may already be dead
                     junk = []  # keep the old file objects alive for a bit
                     for name, fh in backup:
