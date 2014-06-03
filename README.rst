@@ -128,8 +128,10 @@ Similar projects
 * `pydbattach <https://github.com/albertz/pydbattach>`_ - uses gdb to inject code.
 * `pystuck <https://github.com/alonho/pystuck>`_ - very similar, uses `rpyc <https://github.com/tomerfiliba/rpyc>`_ for
   communication.
-* `pyringe <https://github.com/google/pyringe>`_ - uses gdb to injects code, more reliable, but relies on `dbg` python
+* `pyringe <https://github.com/google/pyringe>`_ - uses gdb to inject code, more reliable, but relies on `dbg` python
   builds unfortunatelly.
+* `pdb-clone <https://pypi.python.org/pypi/pdb-clone>`_ - uses gdb to inject code, with a `different strategy
+  <https://code.google.com/p/pdb-clone/wiki/RemoteDebugging>`_.
 
 Changelog
 =========
