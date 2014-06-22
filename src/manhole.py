@@ -349,7 +349,8 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
             else:
                 activate_on = getattr(signal, 'SIG'+activate_on) if isinstance(activate_on, string) else activate_on
                 if activate_on == oneshot_on:
-                    raise RuntimeError('You cannot do activation of the Manhole thread on the same signal that you want to do oneshot activation !')
+                    raise RuntimeError('You cannot do activation of the Manhole thread on the same signal '
+                                       'that you want to do oneshot activation !')
                 signal.signal(activate_on, _activate_on_signal)
         atexit.register(_remove_manhole_uds)
         if patch_fork:
