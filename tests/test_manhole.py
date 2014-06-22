@@ -209,7 +209,7 @@ def test_activate_on_usr2():
 def test_activate_on_with_oneshot_on():
     with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_activate_on_with_oneshot_on') as proc:
         with dump_on_error(proc.read):
-            wait_for_strings(proc.read, TIMEOUT, "RuntimeError('You cannot do activation of the Manhole thread on the same signal that you want to do oneshot activation !')")
+            wait_for_strings(proc.read, TIMEOUT, "You cannot do activation of the Manhole thread on the same signal that you want to do oneshot activation !")
 
 
 def test_oneshot_on_usr2():
