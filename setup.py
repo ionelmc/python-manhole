@@ -1,7 +1,21 @@
 # -*- encoding: utf8 -*-
+import glob
+import io
+import re
+from os.path import basename
+from os.path import dirname
+from os.path import join
+from os.path import splitext
+
+from setuptools import find_packages
 from setuptools import setup
 
-import os
+
+def read(*names, **kwargs):
+    return io.open(
+        join(dirname(__file__), *names),
+        encoding=kwargs.get("encoding", "utf8")
+    ).read()
 
 setup(
     name="manhole",
@@ -10,11 +24,12 @@ setup(
     download_url='',
     license='BSD',
     description="Inpection manhole for python applications. Connection is done via unix domain sockets.",
-    long_description=open(os.path.join(os.path.dirname(__file__), 'README.rst')).read(),
+    long_description=read('README.rst'),
     author='Ionel Cristian Mărieș',
     author_email='contact@ionelmc.ro',
-    package_dir={'': 'src'},
-    py_modules=['manhole'],
+    packages=find_packages("src"),
+    package_dir={"": "src"},
+    py_modules=[splitext(basename(i))[0] for i in glob.glob("src/*.py")],
     include_package_data=True,
     zip_safe=False,
     classifiers=[

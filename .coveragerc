@@ -1,7 +1,11 @@
+[paths]
+source = src
+
 [run]
+source = src
 parallel = true
 
 [report]
 show_missing = true
-include = src/*
 precision = 2
+omit = *migrations*

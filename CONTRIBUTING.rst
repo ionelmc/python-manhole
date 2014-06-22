@@ -27,28 +27,23 @@ Fixing bugs or adding features
 Not many rules for sending changes:
 
 * Just make the pull request.
-* Try to run as many tests as possible if your test environment is different 
-  than `travis <https://travis-ci.org/ionelmc/python-manhole>`_ (it should be 
+* Try to run as many tests as possible if your test environment is different
+  than `travis <https://travis-ci.org/ionelmc/python-manhole>`_ (it should be
   some sort of Ubuntu 12.04):
-  
+
     Install `tox <https://testrun.org/tox/latest/>`_ and run `tox` to get the all tests running.
-    
+
     There are very many test configurations - to only run one, find out whatever test you want to run with::
-    
+
         tox --listenvs
-    
+
     And then, e.g.::
-    
+
         tox -e 2.7
 
 Technical details about the tests
 ---------------------------------
 
-The test matrix for tox and travis is generated with ``generate.py``. If you want to regenerate it::
+The test matrix for tox and travis is generated with ``bootstrap.py``. If you want to regenerate it::
 
-    make clean
-    make
-
-Or just regenerate it and run everything::
-
-    make clean test
+    ./bootstrap.py
