@@ -64,6 +64,7 @@ PY3 = sys.version_info[0] == 3
 PY26 = sys.version_info[:2] == (2, 6)
 VERBOSE = True
 START_TIMEOUT = None
+SOCKET_PATH = None
 
 try:
     import ctypes
@@ -139,14 +140,13 @@ class Manhole(_ORIGINAL_THREAD):
     @staticmethod
     def get_socket():
         sock = _ORIGINAL_SOCKET(socket.AF_UNIX, socket.SOCK_STREAM)
-        pid = os.getpid()
-        name = "/tmp/manhole-%s" % pid
+        name = _manhole_uds_name()
         if os.path.exists(name):
             os.unlink(name)
         sock.bind(name)
         sock.listen(5)
         cry("Manhole UDS path: "+name)
-        return sock, pid
+        return sock
 
     def run(self):
         self.serious.set()
@@ -154,9 +154,9 @@ class Manhole(_ORIGINAL_THREAD):
             signalfd.sigprocmask(signalfd.SIG_BLOCK, self.sigmask)
         pthread_setname_np(self.ident, self.name)
 
-        sock, pid = self.get_socket()
+        sock = self.get_socket()
         while True:
-            cry("Waiting for new connection (in pid:%s) ..." % pid)
+            cry("Waiting for new connection (in pid:%s) ..." % os.getpid())
             try:
                 client = ManholeConnection(sock.accept()[0], self.sigmask)
                 client.start()
@@ -271,8 +271,8 @@ def run_repl():
 
 def _handle_oneshot(_signum, _frame):
     try:
-        sock, pid = Manhole.get_socket()
-        cry("Waiting for new connection (in pid:%s) ..." % pid)
+        sock = Manhole.get_socket()
+        cry("Waiting for new connection (in pid:%s) ..." % os.getpid())
         client, _ = sock.accept()
         ManholeConnection.check_credentials(client)
         ManholeConnection.handle(client)
@@ -285,9 +285,16 @@ def _handle_oneshot(_signum, _frame):
 
 
 def _remove_manhole_uds():
-    name = "/tmp/manhole-%s" % os.getpid()
+    name = _manhole_uds_name()
     if os.path.exists(name):
         os.unlink(name)
+
+
+def _manhole_uds_name():
+    if SOCKET_PATH is None:
+        return "/tmp/manhole-%s" % os.getpid()
+    return SOCKET_PATH
+
 
 _INST_LOCK = _ORIGINAL_ALLOCATE_LOCK()
 _STDERR = _INST = _ORIGINAL_OS_FORK = _ORIGINAL_OS_FORKPTY = _SHOULD_RESTART = None
@@ -330,11 +337,12 @@ ALL_SIGNALS = [
 ]
 
 
-def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS, oneshot_on=None, start_timeout=0.5):
-    global _STDERR, _INST, _SHOULD_RESTART, VERBOSE, START_TIMEOUT  # pylint: disable=W0603
+def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS, oneshot_on=None, start_timeout=0.5, socket_path=None):
+    global _STDERR, _INST, _SHOULD_RESTART, VERBOSE, START_TIMEOUT, SOCKET_PATH  # pylint: disable=W0603
     with _INST_LOCK:
         VERBOSE = verbose
         START_TIMEOUT = start_timeout
+        SOCKET_PATH = socket_path
         _STDERR = sys.__stderr__
         if not _INST:
             _INST = Manhole(sigmask, start_timeout)
