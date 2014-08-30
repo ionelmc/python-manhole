@@ -52,6 +52,9 @@ setup(
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
     ],
+    keywords=[
+        'debugging', 'manhole', 'thread', 'socket', 'unix domain socket'
+    ],
     install_requires=[
     ]
 )
