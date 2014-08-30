@@ -33,30 +33,31 @@ def is_module_available(mod):
         return False
 
 
-def assert_manhole_running(proc, uds_path, oneshot=False, extra=None):
+def connect_to_manhole(uds_path):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     sock.settimeout(0.5)
     for i in range(TIMEOUT):
         try:
             sock.connect(uds_path)
-            break
+            return sock
         except Exception as exc:
             print('Failed to connect to %s: %s' % (uds_path, exc))
-            time.sleep(1)
             if i + 1 == TIMEOUT:
+                sock.close()
                 raise
-    try:
-        with TestSocket(sock) as client:
-            with dump_on_error(client.read):
-                wait_for_strings(client.read, TIMEOUT, "ProcessID", "ThreadID", ">>>")
-                sock.send(b"print('FOOBAR')\n")
-                wait_for_strings(client.read, TIMEOUT, "FOOBAR")
-                wait_for_strings(proc.read, TIMEOUT, 'UID:%s' % os.getuid())
-                if extra:
-                    extra(sock)
-                sock.shutdown(socket.SHUT_RDWR)
-    finally:
-        sock.close()
+            time.sleep(1)
+
+
+def assert_manhole_running(proc, uds_path, oneshot=False, extra=None):
+    sock = connect_to_manhole(uds_path)
+    with TestSocket(sock) as client:
+        with dump_on_error(client.read):
+            wait_for_strings(client.read, TIMEOUT, "ProcessID", "ThreadID", ">>>")
+            sock.send(b"print('FOOBAR')\n")
+            wait_for_strings(client.read, TIMEOUT, "FOOBAR")
+            wait_for_strings(proc.read, TIMEOUT, 'UID:%s' % os.getuid())
+            if extra:
+                extra(sock)
     wait_for_strings(proc.read, TIMEOUT, 'Cleaned up.', *[] if oneshot else ['Waiting for new connection'])
 
 
