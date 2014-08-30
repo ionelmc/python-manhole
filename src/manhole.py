@@ -160,10 +160,15 @@ class Manhole(_ORIGINAL_THREAD):
         while True:
             cry("Waiting for new connection (in pid:%s) ..." % os.getpid())
             try:
-                ManholeConnection(sock.accept()[0], self.sigmask).start()
+                client = ManholeConnection(sock.accept()[0], self.sigmask)
+                client.start()
+                client.join()
             except (InterruptedError, socket.error) as e:
                 if e.errno != errno.EINTR:
                     raise
+                continue
+            finally:
+                client = None
 
 
 class ManholeConnection(_ORIGINAL_THREAD):

@@ -6,7 +6,6 @@ Changelog
 ------------------
 
 * Add ``socket_path`` option (contributed by `Nir Soffer <https://github.com/nirs>`_).
-* Allow multiple concurrent connections (available for normal usage and `activate_on`).
 
 0.6.2 (2014-04-28)
 ------------------
