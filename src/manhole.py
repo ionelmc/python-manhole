@@ -13,6 +13,8 @@ import signal
 import errno
 import platform
 
+__version__ = '0.6.2'
+
 try:
     import signalfd
 except ImportError:
