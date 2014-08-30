@@ -58,7 +58,7 @@ def assert_manhole_running(proc, uds_path, oneshot=False, extra=None):
             wait_for_strings(proc.read, TIMEOUT, 'UID:%s' % os.getuid())
             if extra:
                 extra(sock)
-    wait_for_strings(proc.read, TIMEOUT, 'Cleaned up.', *[] if oneshot else ['Waiting for new connection'])
+    wait_for_strings(proc.read, TIMEOUT, *['Cleaned up.'] if oneshot else ['Waiting for new connection', 'Cleaned up.'])
 
 
 @mark.parametrize("count", range(1, 21))
@@ -125,7 +125,7 @@ def test_exit_with_grace():
                         sock.close()
                     except Exception as exc:
                         print("Failed to close socket: %s" % exc)
-            wait_for_strings(proc.read, TIMEOUT, 'DONE.', 'Cleaned up.', 'Waiting for new connection')
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection', 'DONE.', 'Cleaned up.')
 
 
 def test_with_fork():
@@ -189,7 +189,6 @@ def test_auth_fail():
                 wait_for_strings(
                     proc.read, TIMEOUT,
                     "SuspiciousClient: Can't accept client with PID:-1 UID:-1 GID:-1. It doesn't match the current EUID:",
-                    'Waiting for new connection'
                 )
                 proc.proc.send_signal(signal.SIGINT)
 
