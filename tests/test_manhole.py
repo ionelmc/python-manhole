@@ -23,6 +23,7 @@ from pytest import mark
 from pytest import raises
 
 TIMEOUT = int(os.getenv('MANHOLE_TEST_TIMEOUT', 10))
+SOCKET_PATH = '/tmp/manhole-socket'
 
 
 def is_module_available(mod):
@@ -69,6 +70,14 @@ def test_simple(count):
             for _ in range(count):
                 proc.reset()
                 assert_manhole_running(proc, uds_path)
+
+
+def test_socket_path():
+    with TestProcess(sys.executable, __file__, 'daemon', 'test_socket_path') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+            proc.reset()
+            assert_manhole_running(proc, SOCKET_PATH)
 
 
 def test_exit_with_grace():
@@ -371,6 +380,9 @@ if __name__ == '__main__':
         elif test_name == 'test_auth_fail':
             manhole.get_peercred = lambda _: (-1, -1, -1)
             manhole.install()
+            time.sleep(TIMEOUT * 10)
+        elif test_name == 'test_socket_path':
+            manhole.install(socket_path=SOCKET_PATH)
             time.sleep(TIMEOUT * 10)
         else:
             manhole.install()
