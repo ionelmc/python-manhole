@@ -83,7 +83,11 @@ Features
 Options
 -------
 
-``manhole.install(verbose=True, patch_fork=True, activate_on=None, sigmask=manhole.ALL_SIGNALS, oneshot_on=None)``
+::
+
+    manhole.install(
+        verbose=True, patch_fork=True, activate_on=None, oneshot_on=None,
+        sigmask=manhole.ALL_SIGNALS, socket_path=None)
 
 * ``verbose`` - set it to ``False`` to squelch the stderr ouput
 * ``patch_fork`` - set it to ``False`` if you don't want your ``os.fork`` and ``os.forkpy`` monkeypatched
@@ -95,6 +99,8 @@ Options
   ``signalfd`` is not importable. **NOTE**: This is done so that the Manhole thread doesn't *steal* any signals;
   Normally that is fine cause Python will force all the signal handling to be run in the main thread but signalfd
   doesn't.
+* ``socket_path`` - Use a specifc path for the unix domain socket (instead of ``/tmp/manhole-<pid>``). This disables
+  ``patch_fork`` as children cannot resuse the same path.
 
 What happens when you actually connect to the socket
 ----------------------------------------------------
@@ -132,14 +138,3 @@ Similar projects
   builds unfortunatelly.
 * `pdb-clone <https://pypi.python.org/pypi/pdb-clone>`_ - uses gdb to inject code, with a `different strategy
   <https://code.google.com/p/pdb-clone/wiki/RemoteDebugging>`_.
-
-Changelog
-=========
-
-* 0.6.2:
-
-    * Fix OS X regression.
-
-* 0.6.1:
-
-    * Support for OS X (contributed by Saulius Menkevičius)
