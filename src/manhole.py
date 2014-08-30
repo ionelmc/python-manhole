@@ -362,13 +362,15 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
                 signal.signal(activate_on, _activate_on_signal)
         atexit.register(_remove_manhole_uds)
         if patch_fork:
-            if activate_on is None and oneshot_on is None:
+            if activate_on is None and oneshot_on is None and socket_path is None:
                 _patch_os_fork_functions()
             else:
                 if activate_on:
                     cry("Not patching os.fork and os.forkpty. Activation is done by signal %s" % activate_on)
                 elif oneshot_on:
                     cry("Not patching os.fork and os.forkpty. Oneshot activation is done by signal %s" % oneshot_on)
+                elif socket_path:
+                    cry("Not patching os.fork and os.forkpty. Using user socket path %s" % socket_path)
 
 
 def reinstall():

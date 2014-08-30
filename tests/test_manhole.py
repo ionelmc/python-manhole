@@ -81,6 +81,22 @@ def test_socket_path():
             assert_manhole_running(proc, SOCKET_PATH)
 
 
+def test_socket_path_with_fork():
+    with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_socket_path_with_fork') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Using user socket path')
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+            sock = connect_to_manhole(SOCKET_PATH)
+            with TestSocket(sock) as client:
+                with dump_on_error(client.read):
+                    wait_for_strings(client.read, TIMEOUT, "ProcessID", "ThreadID", ">>>")
+                    sock.send(b"print('BEFORE FORK')\n")
+                    wait_for_strings(client.read, TIMEOUT, "BEFORE FORK")
+                    time.sleep(2)
+                    sock.send(b"print('AFTER FORK')\n")
+                    wait_for_strings(client.read, TIMEOUT, "AFTER FORK")
+
+
 def test_exit_with_grace():
     with TestProcess(sys.executable, '-u', __file__, 'daemon', 'test_simple') as proc:
         with dump_on_error(proc.read):
@@ -291,6 +307,23 @@ def setup_greenthreads(patch_threads=False):
         pass
 
 
+def do_fork():
+    pid = os.fork()
+    if pid:
+        @atexit.register
+        def cleanup():
+            try:
+                os.kill(pid, signal.SIGINT)
+                time.sleep(0.2)
+                os.kill(pid, signal.SIGTERM)
+            except OSError as e:
+                if e.errno != errno.ESRCH:
+                    raise
+        os.waitpid(pid, 0)
+    else:
+        time.sleep(TIMEOUT * 10)
+
+
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'daemon':
         logging.basicConfig(
@@ -385,6 +418,10 @@ if __name__ == '__main__':
         elif test_name == 'test_socket_path':
             manhole.install(socket_path=SOCKET_PATH)
             time.sleep(TIMEOUT * 10)
+        elif test_name == 'test_socket_path_with_fork':
+            manhole.install(socket_path=SOCKET_PATH)
+            time.sleep(1)
+            do_fork()
         else:
             manhole.install()
             time.sleep(0.3)  # give the manhole a bit enough time to start
@@ -412,20 +449,7 @@ if __name__ == '__main__':
                     time.sleep(TIMEOUT * 10)
             elif test_name == 'test_with_fork':
                 time.sleep(1)
-                pid = os.fork()
-                if pid:
-                    @atexit.register
-                    def cleanup():
-                        try:
-                            os.kill(pid, signal.SIGINT)
-                            time.sleep(0.2)
-                            os.kill(pid, signal.SIGTERM)
-                        except OSError as e:
-                            if e.errno != errno.ESRCH:
-                                raise
-                    os.waitpid(pid, 0)
-                else:
-                    time.sleep(TIMEOUT * 10)
+                do_fork()
             else:
                 raise RuntimeError('Invalid test spec.')
         print('DIED.')
