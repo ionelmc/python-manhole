@@ -167,8 +167,8 @@ class Manhole(_ORIGINAL_THREAD):
         """
         Runs the manhole loop. Only accepts one connection at a time because:
 
-        * This thread is a daemon thread (exits when main thread exists)
-        * The connection need exclusive access to stderr and stdout so it can redirect outputs
+        * This thread is a daemon thread (exits when main thread exists).
+        * The connection need exclusive access to stdin, stderr and stdout so it can redirect inputs and outputs.
         """
         self.serious.set()
         if signalfd and self.sigmask:
