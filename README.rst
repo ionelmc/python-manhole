@@ -29,6 +29,8 @@ This is just like Twisted's `manhole <http://twistedmatrix.com/documents/current
 It's simpler (no dependencies), it only runs on Unix domain sockets (in contrast to Twisted's manhole which
 can run on telnet or ssh) and it integrates well with various types of applications.
 
+:Documentation: http://python-manhole.readthedocs.org/en/latest/
+
 Usage
 =====
 
