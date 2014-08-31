@@ -5,7 +5,8 @@ Changelog
 1.0.0 (2014-08-30)
 ------------------
 
-* Add ``socket_path`` option (contributed by `Nir Soffer <https://github.com/nirs>`_).
+* Add ``socket_path`` install option (contributed by `Nir Soffer <https://github.com/nirs>`_).
+* Add ``reinstall_bind_delay`` install option.
 
 0.6.2 (2014-04-28)
 ------------------

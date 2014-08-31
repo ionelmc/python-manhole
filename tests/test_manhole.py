@@ -73,6 +73,13 @@ def test_simple(count):
                 assert_manhole_running(proc, uds_path)
 
 
+def test_fork_exec():
+    for i in range(500):
+        with TestProcess(sys.executable, __file__, 'daemon', 'test_fork_exec') as proc:
+            with dump_on_error(proc.read):
+                wait_for_strings(proc.read, TIMEOUT/10, 'SUCCESS')
+
+
 def test_socket_path():
     with TestProcess(sys.executable, __file__, 'daemon', 'test_socket_path') as proc:
         with dump_on_error(proc.read):
@@ -345,6 +352,15 @@ if __name__ == '__main__':
             manhole.install(activate_on='USR2')
             for i in range(TIMEOUT * 100):
                 time.sleep(0.1)
+        elif test_name == 'test_fork_exec':
+            import subprocess
+            manhole.install()
+            p = subprocess.Popen(['sleep', '1'])
+            path = '/tmp/manhole-%d' % p.pid
+            if os.path.exists(path):
+                print('FAIL:', path, 'exists !')
+            else:
+                print('SUCCESS')
         elif test_name == 'test_activate_on_with_oneshot_on':
             manhole.install(activate_on='USR2', oneshot_on='USR2')
             for i in range(TIMEOUT * 100):

@@ -61,12 +61,14 @@ except ImportError:  # python 3
 _ORIGINAL_THREAD = _get_original('threading.Thread')
 _ORIGINAL_EVENT = _get_original('threading.Event')
 _ORIGINAL__ACTIVE = _get_original('threading._active')
+_ORIGINAL_SLEEP = _get_original('time.sleep')
 
 PY3 = sys.version_info[0] == 3
 PY26 = sys.version_info[:2] == (2, 6)
 VERBOSE = True
 START_TIMEOUT = None
 SOCKET_PATH = None
+REINSTALL_BIND_DELAY = None
 
 try:
     import ctypes
@@ -124,7 +126,7 @@ class Manhole(_ORIGINAL_THREAD):
     Thread that runs the infamous "Manhole".
     """
 
-    def __init__(self, sigmask, start_timeout):
+    def __init__(self, sigmask, start_timeout, bind_delay=None):
         super(Manhole, self).__init__()
         self.daemon = True
         self.name = "Manhole"
@@ -133,6 +135,7 @@ class Manhole(_ORIGINAL_THREAD):
         # time to wait for the manhole to get serious (to have a complete start)
         # see: http://emptysqua.re/blog/dawn-of-the-thread/
         self.start_timeout = start_timeout
+        self.bind_delay = bind_delay
 
     def start(self):
         super(Manhole, self).start()
@@ -155,6 +158,10 @@ class Manhole(_ORIGINAL_THREAD):
         if signalfd and self.sigmask:
             signalfd.sigprocmask(signalfd.SIG_BLOCK, self.sigmask)
         pthread_setname_np(self.ident, self.name)
+
+        if self.bind_delay:
+            cry("Delaying UDS binding %s seconds ..." % self.bind_delay)
+            _ORIGINAL_SLEEP(self.bind_delay)
 
         sock = self.get_socket()
         while True:
@@ -339,10 +346,13 @@ ALL_SIGNALS = [
 ]
 
 
-def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS, oneshot_on=None, start_timeout=0.5, socket_path=None):
-    global _STDERR, _INST, _SHOULD_RESTART, VERBOSE, START_TIMEOUT, SOCKET_PATH  # pylint: disable=W0603
+def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS, oneshot_on=None, start_timeout=0.5,
+            socket_path=None, reinstall_bind_delay=0.5):
+    global _STDERR, _INST, _SHOULD_RESTART  # pylint: disable=W0603
+    global VERBOSE, START_TIMEOUT, SOCKET_PATH, REINSTALL_BIND_DELAY  # pylint: disable=W0603
     with _INST_LOCK:
         VERBOSE = verbose
+        REINSTALL_BIND_DELAY = reinstall_bind_delay
         START_TIMEOUT = start_timeout
         SOCKET_PATH = socket_path
         _STDERR = sys.__stderr__
@@ -380,7 +390,7 @@ def reinstall():
     assert _INST
     with _INST_LOCK:
         if not (_INST.is_alive() and _INST in _ORIGINAL__ACTIVE):
-            _INST = Manhole(_INST.sigmask, START_TIMEOUT)
+            _INST = Manhole(_INST.sigmask, START_TIMEOUT, bind_delay=REINSTALL_BIND_DELAY)
             if _SHOULD_RESTART:
                 _INST.start()
 
