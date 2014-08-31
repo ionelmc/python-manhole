@@ -123,12 +123,16 @@ class SuspiciousClient(Exception):
 
 class Manhole(_ORIGINAL_THREAD):
     """
-    Thread that runs the infamous "Manhole".
+    Thread that runs the infamous "Manhole". This thread is a `daemon` thread - it will exit if the main thread
+    exits.
+
+    On connect, a different, non-daemon thread will be started - so that the process won't exit while there's a
+    connection to the manole.
 
     Args:
         sigmask (list of singal numbers): Signals to block in this thread.
-        start_timeout (float): Seconds to wait for the thread to start. Emits a message if the thread is not running when
-            calling ``start()``.
+        start_timeout (float): Seconds to wait for the thread to start. Emits a message if the thread is not running
+            when calling ``start()``.
         bind_delay (float): Seconds to delay socket binding. Default: `no delay`.
     """
 
@@ -192,8 +196,8 @@ class Manhole(_ORIGINAL_THREAD):
 
 class ManholeConnection(_ORIGINAL_THREAD):
     """
-    Manhole thread that handles the connection. This thread is a `daemon` thread - it won't exit if the main thread
-    exits.
+    Manhole thread that handles the connection. This thread is a normal thread (non-daemon) - it won't exit if the
+    main thread exits.
     """
     def __init__(self, client, sigmask):
         super(ManholeConnection, self).__init__()
@@ -434,7 +438,7 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
 
 def reinstall():
     """
-    Reinstalls the manhole. Checks if the read is running. If not, it starts it again.
+    Reinstalls the manhole. Checks if the tread is running. If not, it starts it again.
     """
     global _INST  # pylint: disable=W0603
     assert _INST
