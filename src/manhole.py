@@ -124,6 +124,12 @@ class SuspiciousClient(Exception):
 class Manhole(_ORIGINAL_THREAD):
     """
     Thread that runs the infamous "Manhole".
+
+    Args:
+        sigmask (list of singal numbers): Signals to block in this thread.
+        start_timeout (float): Seconds to wait for the thread to start. Emits a message if the thread is not running when
+            calling ``start()``.
+        bind_delay (float): Seconds to delay socket binding. Default: `no delay`.
     """
 
     def __init__(self, sigmask, start_timeout, bind_delay=None):
@@ -154,6 +160,12 @@ class Manhole(_ORIGINAL_THREAD):
         return sock
 
     def run(self):
+        """
+        Runs the manhole loop. Only accepts one connection at a time because:
+
+        * This thread is a daemon thread (exits when main thread exists)
+        * The connection need exclusive access to stderr and stdout so it can redirect outputs
+        """
         self.serious.set()
         if signalfd and self.sigmask:
             signalfd.sigprocmask(signalfd.SIG_BLOCK, self.sigmask)
@@ -179,6 +191,10 @@ class Manhole(_ORIGINAL_THREAD):
 
 
 class ManholeConnection(_ORIGINAL_THREAD):
+    """
+    Manhole thread that handles the connection. This thread is a `daemon` thread - it won't exit if the main thread
+    exits.
+    """
     def __init__(self, client, sigmask):
         super(ManholeConnection, self).__init__()
         self.daemon = False
@@ -198,6 +214,9 @@ class ManholeConnection(_ORIGINAL_THREAD):
 
     @staticmethod
     def check_credentials(client):
+        """
+        Checks credentials for given socket.
+        """
         pid, uid, gid = get_peercred(client)
 
         euid = os.geteuid()
@@ -212,6 +231,10 @@ class ManholeConnection(_ORIGINAL_THREAD):
 
     @staticmethod
     def handle(client):
+        """
+        Handles connection. This is a static method so it can be used without a thread (eg: from a signal handler -
+        `oneshot_on`).
+        """
         client.settimeout(None)
 
         # # disable this till we have evidence that it's needed
@@ -268,6 +291,9 @@ class ManholeConnection(_ORIGINAL_THREAD):
 
 
 def run_repl():
+    """
+    Dumps stacktraces and runs an interactive prompt (REPL).
+    """
     dump_stacktraces()
     code.InteractiveConsole({
         'dump_stacktraces': dump_stacktraces,
@@ -348,6 +374,27 @@ ALL_SIGNALS = [
 
 def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS, oneshot_on=None, start_timeout=0.5,
             socket_path=None, reinstall_bind_delay=0.5):
+    """
+    Installs the manhole.
+
+    Args:
+        verbose(bool): Set it to ``False`` to squelch the stderr ouput
+        patch_fork(bool): set it to ``False`` if you don't want your ``os.fork`` and ``os.forkpy`` monkeypatched
+        activate_on(int or signal name): set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you
+            want the Manhole thread to start when this signal is sent. This is desireable in case you don't want the
+            thread active all the time.
+        oneshot_on(int or signal name): set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you want
+            the Manhole to listen for connection in the signal handler. This is desireable in case you don't want
+            threads at all.
+        sigmask(list of ints or signal names): will set the signal mask to the given list (using
+            ``signalfd.sigprocmask``). No action is done if ``signalfd`` is not importable.
+            **NOTE**: This is done so that the Manhole thread doesn't *steal* any signals; Normally that is fine cause
+            Python will force all the signal handling to be run in the main thread but signalfd doesn't.
+        socket_path(str): Use a specifc path for the unix domain socket (instead of ``/tmp/manhole-<pid>``). This
+            disables ``patch_fork`` as children cannot resuse the same path.
+        reinstall_bind_delay(float): Delay the unix domain socket creation *reinstall_bind_delay* seconds. This alleviates
+            cleanup failures when using fork+exec patterns.
+    """
     global _STDERR, _INST, _SHOULD_RESTART  # pylint: disable=W0603
     global VERBOSE, START_TIMEOUT, SOCKET_PATH, REINSTALL_BIND_DELAY  # pylint: disable=W0603
     with _INST_LOCK:
@@ -386,6 +433,9 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
 
 
 def reinstall():
+    """
+    Reinstalls the manhole. Checks if the read is running. If not, it starts it again.
+    """
     global _INST  # pylint: disable=W0603
     assert _INST
     with _INST_LOCK:
@@ -396,6 +446,9 @@ def reinstall():
 
 
 def dump_stacktraces():
+    """
+    Dumps thread ids and tracebacks to stdout.
+    """
     lines = []
     for thread_id, stack in sys._current_frames().items():  # pylint: disable=W0212
         lines.append("\n######### ProcessID=%s, ThreadID=%s #########" % (
