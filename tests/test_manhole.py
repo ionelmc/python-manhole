@@ -355,7 +355,7 @@ if __name__ == '__main__':
         elif test_name == 'test_fork_exec':
             import subprocess
             manhole.install()
-            p = subprocess.Popen(['sleep', '0'])
+            p = subprocess.Popen(['true'])
             path = '/tmp/manhole-%d' % p.pid
             if os.path.exists(path):
                 print('FAIL:', path, 'exists !')
