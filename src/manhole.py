@@ -438,7 +438,7 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
 
 def reinstall():
     """
-    Reinstalls the manhole. Checks if the tread is running. If not, it starts it again.
+    Reinstalls the manhole. Checks if the thread is running. If not, it starts it again.
     """
     global _INST  # pylint: disable=W0603
     assert _INST
