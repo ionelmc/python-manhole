@@ -355,7 +355,7 @@ if __name__ == '__main__':
             import subprocess
             manhole.install()
             for i in range(500):
-                p = subprocess.Popen(['sleep', '0'])
+                p = subprocess.Popen(['true'])
                 p.wait()
                 path = '/tmp/manhole-%d' % p.pid
                 if os.path.exists(path):
