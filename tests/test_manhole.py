@@ -74,10 +74,9 @@ def test_simple(count):
 
 
 def test_fork_exec():
-    for i in range(500):
-        with TestProcess(sys.executable, __file__, 'daemon', 'test_fork_exec') as proc:
-            with dump_on_error(proc.read):
-                wait_for_strings(proc.read, TIMEOUT/10, 'SUCCESS')
+    with TestProcess(sys.executable, __file__, 'daemon', 'test_fork_exec') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, 'SUCCESS')
 
 
 def test_socket_path():
@@ -355,12 +354,14 @@ if __name__ == '__main__':
         elif test_name == 'test_fork_exec':
             import subprocess
             manhole.install()
-            p = subprocess.Popen(['sleep', '0'])
-            path = '/tmp/manhole-%d' % p.pid
-            if os.path.exists(path):
-                print('FAIL:', path, 'exists !')
-            else:
-                print('SUCCESS')
+            for i in range(500):
+                p = subprocess.Popen(['sleep', '0'])
+                p.wait()
+                path = '/tmp/manhole-%d' % p.pid
+                if os.path.exists(path):
+                    os.unlink(path)
+                    raise AssertionError(path + ' exists !')
+            print('SUCCESS')
         elif test_name == 'test_activate_on_with_oneshot_on':
             manhole.install(activate_on='USR2', oneshot_on='USR2')
             for i in range(TIMEOUT * 100):
