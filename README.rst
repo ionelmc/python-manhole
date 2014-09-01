@@ -114,13 +114,6 @@ What happens when you actually connect to the socket
 3. Stacktraces for each thread are written to the UDS
 4. REPL is started so you can fiddle with the process
 
-
-Whishlist
----------
-
-* More configurable (chose what sys.__std\*__/sys.std\* to patch on connect time)
-* Support windows ?!
-
 Requirements
 ============
 
