@@ -136,7 +136,7 @@ class Manhole(_ORIGINAL_THREAD):
         bind_delay (float): Seconds to delay socket binding. Default: `no delay`.
     """
 
-    def __init__(self, sigmask, start_timeout, bind_delay=None):
+    def __init__(self, sigmask, start_timeout, bind_delay=None, locals=None):
         super(Manhole, self).__init__()
         self.daemon = True
         self.name = "Manhole"
@@ -146,6 +146,7 @@ class Manhole(_ORIGINAL_THREAD):
         # see: http://emptysqua.re/blog/dawn-of-the-thread/
         self.start_timeout = start_timeout
         self.bind_delay = bind_delay
+        self.locals = locals
 
     def start(self):
         super(Manhole, self).start()
@@ -183,7 +184,7 @@ class Manhole(_ORIGINAL_THREAD):
         while True:
             cry("Waiting for new connection (in pid:%s) ..." % os.getpid())
             try:
-                client = ManholeConnection(sock.accept()[0], self.sigmask)
+                client = ManholeConnection(sock.accept()[0], self.sigmask, self.locals)
                 client.start()
                 client.join()
             except (InterruptedError, socket.error) as e:
@@ -199,12 +200,13 @@ class ManholeConnection(_ORIGINAL_THREAD):
     Manhole thread that handles the connection. This thread is a normal thread (non-daemon) - it won't exit if the
     main thread exits.
     """
-    def __init__(self, client, sigmask):
+    def __init__(self, client, sigmask, locals):
         super(ManholeConnection, self).__init__()
         self.daemon = False
         self.client = client
         self.name = "ManholeConnection"
         self.sigmask = sigmask
+        self.locals = locals
 
     def run(self):
         cry('Started ManholeConnection thread. Checking credentials ...')
@@ -214,7 +216,7 @@ class ManholeConnection(_ORIGINAL_THREAD):
 
         pid, _, _ = self.check_credentials(self.client)
         pthread_setname_np(self.ident, "Manhole %s" % pid)
-        self.handle(self.client)
+        self.handle(self.client, self.locals)
 
     @staticmethod
     def check_credentials(client):
@@ -234,7 +236,7 @@ class ManholeConnection(_ORIGINAL_THREAD):
         return pid, uid, gid
 
     @staticmethod
-    def handle(client):
+    def handle(client, locals):
         """
         Handles connection. This is a static method so it can be used without a thread (eg: from a signal handler -
         `oneshot_on`).
@@ -265,7 +267,7 @@ class ManholeConnection(_ORIGINAL_THREAD):
                     for name in names:
                         backup.append((name, getattr(sys, name)))
                         setattr(sys, name, _ORIGINAL_FDOPEN(client_fd, mode, 1 if PY3 else 0))
-                run_repl()
+                run_repl(locals)
                 cry("DONE.")
             finally:
                 try:
@@ -294,27 +296,31 @@ class ManholeConnection(_ORIGINAL_THREAD):
             cry(traceback.format_exc())
 
 
-def run_repl():
+def run_repl(locals):
     """
     Dumps stacktraces and runs an interactive prompt (REPL).
     """
     dump_stacktraces()
-    code.InteractiveConsole({
+    namespace = {
         'dump_stacktraces': dump_stacktraces,
         'sys': sys,
         'os': os,
         'socket': socket,
         'traceback': traceback,
-    }).interact()
+    }
+    if locals:
+        namespace.update(locals)
+    code.InteractiveConsole(namespace).interact()
 
 
 def _handle_oneshot(_signum, _frame):
+    assert _INST, "Manhole wasn't installed !"
     try:
         sock = Manhole.get_socket()
         cry("Waiting for new connection (in pid:%s) ..." % os.getpid())
         client, _ = sock.accept()
         ManholeConnection.check_credentials(client)
-        ManholeConnection.handle(client)
+        ManholeConnection.handle(client, _INST.locals)
     except:  # pylint: disable=W0702
         # we don't want to let any exception out, it might make the application missbehave
         cry("Manhole oneshot connection failed:")
@@ -377,7 +383,7 @@ ALL_SIGNALS = [
 
 
 def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS, oneshot_on=None, start_timeout=0.5,
-            socket_path=None, reinstall_bind_delay=0.5):
+            socket_path=None, reinstall_bind_delay=0.5, locals=None):
     """
     Installs the manhole.
 
@@ -398,6 +404,7 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
             disables ``patch_fork`` as children cannot resuse the same path.
         reinstall_bind_delay(float): Delay the unix domain socket creation *reinstall_bind_delay* seconds. This alleviates
             cleanup failures when using fork+exec patterns.
+        locals(dict): names to add to manhole interactive shell locals.
     """
     global _STDERR, _INST, _SHOULD_RESTART  # pylint: disable=W0603
     global VERBOSE, START_TIMEOUT, SOCKET_PATH, REINSTALL_BIND_DELAY  # pylint: disable=W0603
@@ -408,7 +415,7 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
         SOCKET_PATH = socket_path
         _STDERR = sys.__stderr__
         if not _INST:
-            _INST = Manhole(sigmask, start_timeout)
+            _INST = Manhole(sigmask, start_timeout, locals=locals)
             if oneshot_on is not None:
                 oneshot_on = getattr(signal, 'SIG'+oneshot_on) if isinstance(oneshot_on, string) else oneshot_on
                 signal.signal(oneshot_on, _handle_oneshot)

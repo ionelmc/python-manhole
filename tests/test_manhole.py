@@ -72,6 +72,19 @@ def test_simple():
                 assert_manhole_running(proc, uds_path)
 
 
+def test_locals():
+    with TestProcess(sys.executable, __file__, 'daemon', 'test_locals') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+            sock = connect_to_manhole(SOCKET_PATH)
+            with TestSocket(sock) as client:
+                with dump_on_error(client.read):
+                    wait_for_strings(client.read, 1, ">>>")
+                    sock.send(b"from __future__ import print_function\n"
+                              b"print(k1, k2)\n")
+                    wait_for_strings(client.read, 1, "v1 v2")
+
+
 def test_fork_exec():
     with TestProcess(sys.executable, __file__, 'daemon', 'test_fork_exec') as proc:
         with dump_on_error(proc.read):
@@ -438,6 +451,10 @@ if __name__ == '__main__':
             manhole.install(socket_path=SOCKET_PATH)
             time.sleep(1)
             do_fork()
+        elif test_name == 'test_locals':
+            manhole.install(socket_path=SOCKET_PATH,
+                            locals={'k1': 'v1', 'k2': 'v2'})
+            time.sleep(1)
         else:
             manhole.install()
             time.sleep(0.3)  # give the manhole a bit enough time to start
