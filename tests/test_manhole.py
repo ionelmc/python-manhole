@@ -72,6 +72,34 @@ def test_simple():
                 assert_manhole_running(proc, uds_path)
 
 
+def test_locals():
+    with TestProcess(sys.executable, __file__, 'daemon', 'test_locals') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+            check_locals(SOCKET_PATH)
+
+
+def test_locals_after_fork():
+    with TestProcess(sys.executable, __file__, 'daemon', 'test_locals_after_fork') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, 'Fork detected')
+            proc.reset()
+            wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+            child_uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+            check_locals(child_uds_path)
+
+
+def check_locals(uds_path):
+    sock = connect_to_manhole(uds_path)
+    with TestSocket(sock) as client:
+        with dump_on_error(client.read):
+            wait_for_strings(client.read, 1, ">>>")
+            sock.send(b"from __future__ import print_function\n"
+                      b"print(k1, k2)\n")
+            wait_for_strings(client.read, 1, "v1 v2")
+
+
 def test_fork_exec():
     with TestProcess(sys.executable, __file__, 'daemon', 'test_fork_exec') as proc:
         with dump_on_error(proc.read):
@@ -437,6 +465,13 @@ if __name__ == '__main__':
         elif test_name == 'test_socket_path_with_fork':
             manhole.install(socket_path=SOCKET_PATH)
             time.sleep(1)
+            do_fork()
+        elif test_name == 'test_locals':
+            manhole.install(socket_path=SOCKET_PATH,
+                            locals={'k1': 'v1', 'k2': 'v2'})
+            time.sleep(1)
+        elif test_name == 'test_locals_after_fork':
+            manhole.install(locals={'k1': 'v1', 'k2': 'v2'})
             do_fork()
         else:
             manhole.install()
