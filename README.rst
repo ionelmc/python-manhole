@@ -103,7 +103,7 @@ Options
   doesn't.
 * ``socket_path`` - Use a specifc path for the unix domain socket (instead of ``/tmp/manhole-<pid>``). This disables
   ``patch_fork`` as children cannot resuse the same path.
-* ``reinstall_bind_delay`` - Delay the unix domain socket creation *reinstall_bind_delay* seconds. This alleviates
+* ``reinstall_delay`` - Delay the manhole reinstallation after fork *reinstall_delay* seconds. This alleviates
   cleanup failures when using fork+exec patterns.
 
 What happens when you actually connect to the socket
