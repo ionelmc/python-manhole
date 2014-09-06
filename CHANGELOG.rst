@@ -7,6 +7,7 @@ Changelog
 
 * Add ``socket_path`` install option (contributed by `Nir Soffer <https://github.com/nirs>`_).
 * Add ``reinstall_bind_delay`` install option.
+* Add ``locals`` install option (contributed by `Nir Soffer <https://github.com/nirs>`_).
 
 0.6.2 (2014-04-28)
 ------------------
