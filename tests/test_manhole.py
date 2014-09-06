@@ -26,6 +26,17 @@ TIMEOUT = int(os.getenv('MANHOLE_TEST_TIMEOUT', 10))
 SOCKET_PATH = '/tmp/manhole-socket'
 
 
+def handle_sigterm(signo, frame):
+    # Simulate real termination
+    print("Terminated")
+    sys.exit(128 + signo)
+
+
+# Handling sigterm ensure that atexit functions are called, and we do not leave
+# leftover /tmp/manhole-pid sockets.
+signal.signal(signal.SIGTERM, handle_sigterm)
+
+
 def is_module_available(mod):
     try:
         return imp.find_module(mod)
