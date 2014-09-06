@@ -93,13 +93,13 @@ LOCAL_PEERCRED = 1
 SO_PEERCRED = 17
 
 
-def cry(message):
+def cry(message, time=_get_original('time.time')):
     """
     Fail-ignorant logging function.
     """
     if VERBOSE:
         try:
-            _STDERR.write("Manhole: %s\n" % message)
+            _STDERR.write("Manhole[%.4f]: %s\n" % (time(), message))
         except:  # pylint: disable=W0702
             pass
 
