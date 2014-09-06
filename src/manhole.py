@@ -11,7 +11,6 @@ import atexit
 import code
 import signal
 import errno
-import platform
 
 __version__ = '0.6.2'
 
@@ -86,12 +85,6 @@ try:
 except ImportError:
     pthread_setname_np = lambda ident, name: None
 
-# OS X getsockopt(2) defines (may work for BSD too?)
-SOL_LOCAL = 0
-LOCAL_PEERCRED = 1
-
-SO_PEERCRED = 17
-
 
 def cry(message, time=_get_original('time.time')):
     """
@@ -104,17 +97,19 @@ def cry(message, time=_get_original('time.time')):
             pass
 
 
+if sys.platform == 'darwin' or sys.platform.startswith("freebsd"):
+    _PEERCRED_LEVEL = getattr(socket, 'SOL_LOCAL', 0)
+    _PEERCRED_OPTION = getattr(socket, 'LOCAL_PEERCRED', 1)
+else:
+    _PEERCRED_LEVEL = socket.SOL_SOCKET
+    # TODO: Is this missing on some platforms?
+    _PEERCRED_OPTION = getattr(socket, 'SO_PEERCRED', 17)
+
+
 def get_peercred(sock):
     """Gets the (pid, uid, gid) for the client on the given *connected* socket."""
-
-    if platform.system() == 'Darwin':
-        return struct.unpack('3i', sock.getsockopt(
-            SOL_LOCAL, LOCAL_PEERCRED, struct.calcsize('3i')
-        ))
-    else:
-        return struct.unpack('3i', sock.getsockopt(
-            socket.SOL_SOCKET, SO_PEERCRED, struct.calcsize('3i')
-        ))
+    buf = sock.getsockopt(_PEERCRED_LEVEL, _PEERCRED_OPTION, struct.calcsize('3i'))
+    return struct.unpack('3i', buf)
 
 
 class SuspiciousClient(Exception):
