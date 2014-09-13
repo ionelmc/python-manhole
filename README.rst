@@ -116,6 +116,24 @@ What happens when you actually connect to the socket
 3. Stacktraces for each thread are written to the UDS
 4. REPL is started so you can fiddle with the process
 
+Known issues
+============
+
+SIGTERM and socket cleanup
+--------------------------
+
+By default Python doesn't call the ``atexit`` callbacks with the default SIGTERM handling. This makes manhole leave stray
+socket files around. If this is undesirable you should install a custom SIGTERM handler so ``atexit`` is properly invoked.
+Example::
+
+    import signal
+    import sys
+
+    def handle_sigterm(signo, frame):
+        sys.exit(128 + signo)  # this will raise SystemExit and cause atexit to be called
+
+    signal.signal(signal.SIGTERM, handle_sigterm)
+
 Requirements
 ============
 
