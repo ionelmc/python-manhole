@@ -65,9 +65,6 @@ _ORIGINAL_SLEEP = _get_original('time.sleep')
 PY3 = sys.version_info[0] == 3
 PY26 = sys.version_info[:2] == (2, 6)
 VERBOSE = True
-START_TIMEOUT = None
-SOCKET_PATH = None
-REINSTALL_BIND_DELAY = None
 
 try:
     import ctypes
@@ -129,11 +126,13 @@ class Manhole(_ORIGINAL_THREAD):
         start_timeout (float): Seconds to wait for the thread to start. Emits a message if the thread is not running
             when calling ``start()``.
         bind_delay (float): Seconds to delay socket binding. Default: `no delay`.
+        daemon_connection (bool): The connection thread is daemonic (dies on app exit). Default: ``False``.
     """
 
-    def __init__(self, sigmask, start_timeout, bind_delay=None, locals=None):
+    def __init__(self, sigmask, start_timeout, bind_delay=None, locals=None, daemon_connection=False):
         super(Manhole, self).__init__()
         self.daemon = True
+        self.daemon_connection = daemon_connection
         self.name = "Manhole"
         self.sigmask = sigmask
         self.serious = _ORIGINAL_EVENT()
@@ -142,6 +141,15 @@ class Manhole(_ORIGINAL_THREAD):
         self.start_timeout = start_timeout
         self.bind_delay = bind_delay
         self.locals = locals
+
+    def clone(self, **kwargs):
+        """
+        Make a fresh thread with the same options. This is usually used on dead threads.
+        """
+        return Manhole(
+            self.sigmask, self.start_timeout, locals=self.locals, daemon_connection=self.daemon_connection,
+            **kwargs
+        )
 
     def start(self):
         super(Manhole, self).start()
@@ -179,7 +187,7 @@ class Manhole(_ORIGINAL_THREAD):
         while True:
             cry("Waiting for new connection (in pid:%s) ..." % os.getpid())
             try:
-                client = ManholeConnection(sock.accept()[0], self.sigmask, self.locals)
+                client = ManholeConnection(sock.accept()[0], self.sigmask, self.locals, self.daemon_connection)
                 client.start()
                 client.join()
             except (InterruptedError, socket.error) as e:
@@ -195,9 +203,9 @@ class ManholeConnection(_ORIGINAL_THREAD):
     Manhole thread that handles the connection. This thread is a normal thread (non-daemon) - it won't exit if the
     main thread exits.
     """
-    def __init__(self, client, sigmask, locals):
+    def __init__(self, client, sigmask, locals, daemon=False):
         super(ManholeConnection, self).__init__()
-        self.daemon = False
+        self.daemon = daemon
         self.client = client
         self.name = "ManholeConnection"
         self.sigmask = sigmask
@@ -331,13 +339,15 @@ def _remove_manhole_uds():
 
 
 def _manhole_uds_name():
-    if SOCKET_PATH is None:
+    if _SOCKET_PATH is None:
         return "/tmp/manhole-%s" % os.getpid()
-    return SOCKET_PATH
+    return _SOCKET_PATH
 
 
 _INST_LOCK = _ORIGINAL_ALLOCATE_LOCK()
 _STDERR = _INST = _ORIGINAL_OS_FORK = _ORIGINAL_OS_FORKPTY = _SHOULD_RESTART = None
+_SOCKET_PATH = None
+_REINSTALL_BIND_DELAY = None
 
 
 def _patched_fork():
@@ -378,39 +388,39 @@ ALL_SIGNALS = [
 
 
 def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS, oneshot_on=None, start_timeout=0.5,
-            socket_path=None, reinstall_bind_delay=0.5, locals=None):
+            socket_path=None, reinstall_bind_delay=0.5, locals=None, daemon_connection=False):
     """
     Installs the manhole.
 
     Args:
-        verbose(bool): Set it to ``False`` to squelch the stderr ouput
-        patch_fork(bool): set it to ``False`` if you don't want your ``os.fork`` and ``os.forkpy`` monkeypatched
-        activate_on(int or signal name): set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you
+        verbose (bool): Set it to ``False`` to squelch the stderr ouput
+        patch_fork (bool): set it to ``False`` if you don't want your ``os.fork`` and ``os.forkpy`` monkeypatched
+        activate_on (int or signal name): set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you
             want the Manhole thread to start when this signal is sent. This is desireable in case you don't want the
             thread active all the time.
-        oneshot_on(int or signal name): set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you want
-            the Manhole to listen for connection in the signal handler. This is desireable in case you don't want
+        oneshot_on (int or signal name): set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you
+            want the Manhole to listen for connection in the signal handler. This is desireable in case you don't want
             threads at all.
-        sigmask(list of ints or signal names): will set the signal mask to the given list (using
+        sigmask (list of ints or signal names): will set the signal mask to the given list (using
             ``signalfd.sigprocmask``). No action is done if ``signalfd`` is not importable.
             **NOTE**: This is done so that the Manhole thread doesn't *steal* any signals; Normally that is fine cause
             Python will force all the signal handling to be run in the main thread but signalfd doesn't.
-        socket_path(str): Use a specifc path for the unix domain socket (instead of ``/tmp/manhole-<pid>``). This
+        socket_path (str): Use a specifc path for the unix domain socket (instead of ``/tmp/manhole-<pid>``). This
             disables ``patch_fork`` as children cannot resuse the same path.
-        reinstall_bind_delay(float): Delay the unix domain socket creation *reinstall_bind_delay* seconds. This alleviates
-            cleanup failures when using fork+exec patterns.
-        locals(dict): names to add to manhole interactive shell locals.
+        reinstall_bind_delay (float): Delay the unix domain socket creation *reinstall_bind_delay* seconds. This
+            alleviates cleanup failures when using fork+exec patterns.
+        locals (dict): Names to add to manhole interactive shell locals.
+        daemon_connection (bool): The connection thread is daemonic (dies on app exit). Default: ``False``.
     """
     global _STDERR, _INST, _SHOULD_RESTART  # pylint: disable=W0603
-    global VERBOSE, START_TIMEOUT, SOCKET_PATH, REINSTALL_BIND_DELAY  # pylint: disable=W0603
+    global VERBOSE, _REINSTALL_BIND_DELAY, _SOCKET_PATH  # pylint: disable=W0603
     with _INST_LOCK:
         VERBOSE = verbose
-        REINSTALL_BIND_DELAY = reinstall_bind_delay
-        START_TIMEOUT = start_timeout
-        SOCKET_PATH = socket_path
+        _SOCKET_PATH = socket_path
+        _REINSTALL_BIND_DELAY = reinstall_bind_delay
         _STDERR = sys.__stderr__
         if not _INST:
-            _INST = Manhole(sigmask, start_timeout, locals=locals)
+            _INST = Manhole(sigmask, start_timeout, locals=locals, daemon_connection=daemon_connection)
             if oneshot_on is not None:
                 oneshot_on = getattr(signal, 'SIG'+oneshot_on) if isinstance(oneshot_on, string) else oneshot_on
                 signal.signal(oneshot_on, _handle_oneshot)
@@ -446,7 +456,7 @@ def reinstall():
     assert _INST
     with _INST_LOCK:
         if not (_INST.is_alive() and _INST in _ORIGINAL__ACTIVE):
-            _INST = Manhole(_INST.sigmask, START_TIMEOUT, bind_delay=REINSTALL_BIND_DELAY, locals=_INST.locals)
+            _INST = _INST.clone(bind_delay=_REINSTALL_BIND_DELAY)
             if _SHOULD_RESTART:
                 _INST.start()
 

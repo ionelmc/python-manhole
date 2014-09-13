@@ -106,7 +106,8 @@ Options
   ``patch_fork`` as children cannot resuse the same path.
 * ``reinstall_bind_delay`` - Delay the unix domain socket creation *reinstall_bind_delay* seconds. This alleviates
   cleanup failures when using fork+exec patterns.
-* ``locals`` - names to add to manhole interactive shell locals.
+* ``locals`` - Names to add to manhole interactive shell locals.
+* ``daemon_connection`` - The connection thread is daemonic (dies on app exit). Default: ``False``.
 
 What happens when you actually connect to the socket
 ----------------------------------------------------
