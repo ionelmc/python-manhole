@@ -67,13 +67,14 @@ def test_simple():
                 proc.reset()
                 assert_manhole_running(proc, uds_path)
 
-
+@mark.skipif(is_module_available('eventlet'), reason="evenlet can't deal with extra threads at process exit")
 def test_daemon_connection():
     with TestProcess(sys.executable, HELPER, 'test_daemon_connection') as proc:
         with dump_on_error(proc.read):
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+
             def terminate_and_read(client):
                 proc.proc.send_signal(signal.SIGINT)
                 wait_for_strings(proc.read, TIMEOUT, 'Died with KeyboardInterrupt')
@@ -83,12 +84,14 @@ def test_daemon_connection():
             wait_for_strings(proc.read, TIMEOUT, 'In atexit handler')
 
 
+@mark.skipif(is_module_available('eventlet'), reason="evenlet can't deal with extra threads at process exit")
 def test_non_daemon_connection():
     with TestProcess(sys.executable, HELPER, 'test_simple') as proc:
         with dump_on_error(proc.read):
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+
             def terminate_and_read(client):
                 proc.proc.send_signal(signal.SIGINT)
                 wait_for_strings(proc.read, TIMEOUT, 'Died with KeyboardInterrupt')
@@ -211,27 +214,27 @@ def test_with_fork():
                 assert_manhole_running(proc, new_uds_path)
 
 
-if not hasattr(sys, 'pypy_version_info'):
-    def test_with_forkpty():
-        with TestProcess(sys.executable, '-u', HELPER, 'test_with_forkpty') as proc:
-            with dump_on_error(proc.read):
-                wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
-                uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
-                wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-                for _ in range(2):
-                    proc.reset()
-                    assert_manhole_running(proc, uds_path)
-
+@mark.skipif(hasattr(sys, 'pypy_version_info'), reason="pypy doesn't support forkpty")
+def test_with_forkpty():
+    with TestProcess(sys.executable, '-u', HELPER, 'test_with_forkpty') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+            uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+            for _ in range(2):
                 proc.reset()
-                wait_for_strings(proc.read, TIMEOUT, 'Fork detected')
-                wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
-                new_uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
-                assert uds_path != new_uds_path
+                assert_manhole_running(proc, uds_path)
 
-                wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-                for _ in range(2):
-                    proc.reset()
-                    assert_manhole_running(proc, new_uds_path)
+            proc.reset()
+            wait_for_strings(proc.read, TIMEOUT, 'Fork detected')
+            wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+            new_uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
+            assert uds_path != new_uds_path
+
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+            for _ in range(2):
+                proc.reset()
+                assert_manhole_running(proc, new_uds_path)
 
 
 def test_auth_fail():
@@ -254,31 +257,32 @@ def test_auth_fail():
                 )
                 proc.proc.send_signal(signal.SIGINT)
 
-try:
-    import signalfd
-except ImportError:
-    pass
-else:
-    def test_signalfd_weirdness():
-        with TestProcess(sys.executable, '-u', HELPER, 'test_signalfd_weirdness') as proc:
-            with dump_on_error(proc.read):
-                wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
-                uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
-                wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-                wait_for_strings(proc.read, 25 * TIMEOUT, *[
-                    '[%s] read from signalfd:' % j for j in range(200)
-                ])
-                assert_manhole_running(proc, uds_path)
 
-    if not is_module_available('gevent') and not is_module_available('eventlet'):
-        def test_signalfd_weirdness_negative():
-            with TestProcess(sys.executable, '-u', HELPER, 'test_signalfd_weirdness_negative') as proc:
-                with dump_on_error(proc.read):
-                    wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
-                    uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
-                    wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-                    wait_for_strings(proc.read, TIMEOUT, 'reading from signalfd failed')
-                    assert_manhole_running(proc, uds_path)
+@mark.skipif(not is_module_available('signalfd'), reason="signalfd not available")
+def test_signalfd_weirdness():
+    with TestProcess(sys.executable, '-u', HELPER, 'test_signalfd_weirdness') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+            uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+            wait_for_strings(proc.read, 25 * TIMEOUT, *[
+                '[%s] read from signalfd:' % j for j in range(200)
+            ])
+            assert_manhole_running(proc, uds_path)
+
+
+@mark.skipif(not is_module_available('signalfd') and (
+    is_module_available('gevent') or
+    is_module_available('eventlet')
+), reason="signalfd doesn't play well with gevent/eventlet")
+def test_signalfd_weirdness_negative():
+    with TestProcess(sys.executable, '-u', HELPER, 'test_signalfd_weirdness_negative') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+            uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+            wait_for_strings(proc.read, TIMEOUT, 'reading from signalfd failed')
+            assert_manhole_running(proc, uds_path)
 
 
 def test_activate_on_usr2():
