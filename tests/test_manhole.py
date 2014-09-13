@@ -53,7 +53,7 @@ def assert_manhole_running(proc, uds_path, oneshot=False, extra=None):
             wait_for_strings(client.read, TIMEOUT, "FOOBAR")
             wait_for_strings(proc.read, TIMEOUT, 'UID:%s' % os.getuid())
             if extra:
-                extra(sock)
+                extra(client)
     wait_for_strings(proc.read, TIMEOUT, 'Cleaned up.', *[] if oneshot else ['Waiting for new connection'])
 
 
@@ -74,12 +74,12 @@ def test_daemon_connection():
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-            def terminate_and_read(sock):
+            def terminate_and_read(client):
                 proc.proc.send_signal(signal.SIGINT)
-                sock.send(b'bogus()\n')
-                print('>>>', repr(sock.recv(1024)))
-                sock.send(b'bogus()\n')
-            raises(OSError, assert_manhole_running, proc, uds_path, extra=terminate_and_read)
+                wait_for_strings(proc.read, TIMEOUT, 'Died with KeyboardInterrupt')
+                client.sock.send(b'bogus()\n')
+                client.sock.send(b'bogus()\n')
+            raises((socket.error, OSError), assert_manhole_running, proc, uds_path, extra=terminate_and_read)
             wait_for_strings(proc.read, TIMEOUT, 'In atexit handler')
 
 
@@ -89,10 +89,13 @@ def test_non_daemon_connection():
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-            def terminate_and_read(sock):
+            def terminate_and_read(client):
                 proc.proc.send_signal(signal.SIGINT)
                 wait_for_strings(proc.read, TIMEOUT, 'Died with KeyboardInterrupt')
-                sock.send(b'bogus()\n')
+                client.sock.send(b'bogus()\n')
+                wait_for_strings(client.read, TIMEOUT, 'bogus')
+                client.sock.send(b'doofus()\n')
+                wait_for_strings(client.read, TIMEOUT, 'doofus')
             assert_manhole_running(proc, uds_path, extra=terminate_and_read, oneshot=True)
             wait_for_strings(proc.read, TIMEOUT, 'In atexit handler')
 
@@ -332,7 +335,8 @@ def test_oneshot_on_usr2_error():
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-            assert_manhole_running(proc, uds_path, oneshot=True, extra=lambda sock: sock.send(b"raise SystemExit()\n"))
+            assert_manhole_running(proc, uds_path, oneshot=True,
+                                   extra=lambda client: client.sock.send(b"raise SystemExit()\n"))
 
             proc.reset()
             proc.signal(signal.SIGUSR2)

@@ -168,7 +168,7 @@ if __name__ == '__main__':
             manhole.install(socket_path=SOCKET_PATH)
             time.sleep(TIMEOUT * 10)
         elif test_name == 'test_daemon_connection':
-            manhole.install(daemon_connection=False)
+            manhole.install(daemon_connection=True)
             time.sleep(TIMEOUT)
         elif test_name == 'test_socket_path_with_fork':
             manhole.install(socket_path=SOCKET_PATH)
