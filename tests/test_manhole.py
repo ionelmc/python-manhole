@@ -68,6 +68,35 @@ def test_simple():
                 assert_manhole_running(proc, uds_path)
 
 
+def test_daemon_connection():
+    with TestProcess(sys.executable, HELPER, 'test_daemon_connection') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+            uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+            def terminate_and_read(sock):
+                proc.proc.send_signal(signal.SIGINT)
+                sock.send(b'bogus()\n')
+                print('>>>', repr(sock.recv(1024)))
+                sock.send(b'bogus()\n')
+            raises(OSError, assert_manhole_running, proc, uds_path, extra=terminate_and_read)
+            wait_for_strings(proc.read, TIMEOUT, 'In atexit handler')
+
+
+def test_non_daemon_connection():
+    with TestProcess(sys.executable, HELPER, 'test_simple') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+            uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+            def terminate_and_read(sock):
+                proc.proc.send_signal(signal.SIGINT)
+                wait_for_strings(proc.read, TIMEOUT, 'Died with KeyboardInterrupt')
+                sock.send(b'bogus()\n')
+            assert_manhole_running(proc, uds_path, extra=terminate_and_read, oneshot=True)
+            wait_for_strings(proc.read, TIMEOUT, 'In atexit handler')
+
+
 def test_locals():
     with TestProcess(sys.executable, HELPER, 'test_locals') as proc:
         with dump_on_error(proc.read):
