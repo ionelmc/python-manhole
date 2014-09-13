@@ -271,10 +271,10 @@ def test_signalfd_weirdness():
             assert_manhole_running(proc, uds_path)
 
 
-@mark.skipif(not is_module_available('signalfd') and (
-    is_module_available('gevent') or
-    is_module_available('eventlet')
-), reason="signalfd doesn't play well with gevent/eventlet")
+@mark.skipif(not is_module_available('signalfd') or
+             is_module_available('gevent') or
+             is_module_available('eventlet'),
+             reason="signalfd doesn't play well with gevent/eventlet")
 def test_signalfd_weirdness_negative():
     with TestProcess(sys.executable, '-u', HELPER, 'test_signalfd_weirdness_negative') as proc:
         with dump_on_error(proc.read):
