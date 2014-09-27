@@ -161,6 +161,85 @@ def test_socket_path_with_fork():
                     wait_for_strings(client.read, TIMEOUT, "AFTER FORK")
 
 
+def test_redirect_stderr_default():
+    with TestProcess(sys.executable, HELPER, 'test_redirect_stderr_default') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+            sock = connect_to_manhole(SOCKET_PATH)
+            with TestSocket(sock) as client:
+                with dump_on_error(client.read):
+                    wait_for_strings(client.read, 1, ">>>")
+                    client.reset()
+                    sock.send(b"import sys\n"
+                              b"sys.stderr.write('OK')\n")
+                    wait_for_strings(client.read, 1, "OK")
+
+
+def test_redirect_stderr_default_dump_stacktraces():
+    with TestProcess(sys.executable, HELPER, 'test_redirect_stderr_default') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+            check_dump_stacktraces(SOCKET_PATH)
+
+
+def test_redirect_stderr_default_print_tracebacks():
+    with TestProcess(sys.executable, HELPER, 'test_redirect_stderr_default') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+            check_print_tracebacks(SOCKET_PATH)
+
+
+def test_redirect_stderr_disabled():
+    with TestProcess(sys.executable, HELPER, 'test_redirect_stderr_disabled') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+            sock = connect_to_manhole(SOCKET_PATH)
+            with TestSocket(sock) as client:
+                with dump_on_error(client.read):
+                    wait_for_strings(client.read, 1, ">>>")
+                    client.reset()
+                    sock.send(b"import sys\n"
+                              b"sys.stderr.write('STDERR')\n"
+                              b"sys.stdout.write('STDOUT')\n")
+                    wait_for_strings(client.read, 1, "STDOUT")
+                    assert 'STDERR' not in client.read()
+
+
+def test_redirect_stderr_disabled_dump_stacktraces():
+    with TestProcess(sys.executable, HELPER, 'test_redirect_stderr_disabled') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+            check_dump_stacktraces(SOCKET_PATH)
+
+
+def test_redirect_stderr_disabled_print_tracebacks():
+    with TestProcess(sys.executable, HELPER, 'test_redirect_stderr_disabled') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+            check_print_tracebacks(SOCKET_PATH)
+
+
+def check_dump_stacktraces(uds_path):
+    sock = connect_to_manhole(uds_path)
+    with TestSocket(sock) as client:
+        with dump_on_error(client.read):
+            wait_for_strings(client.read, 1, ">>>")
+            sock.send(b"dump_stacktraces()\n")
+            # Start of dump
+            wait_for_strings(client.read, 1, "#########", "ThreadID=", "#########")
+            # End of dump
+            wait_for_strings(client.read, 1, "#############################################", ">>>")
+
+
+def check_print_tracebacks(uds_path):
+    sock = connect_to_manhole(uds_path)
+    with TestSocket(sock) as client:
+        with dump_on_error(client.read):
+            wait_for_strings(client.read, 1, ">>>")
+            sock.send(b"NO_SUCH_NAME\n")
+            wait_for_strings(client.read, 1, "NameError: name 'NO_SUCH_NAME' is not defined", ">>>")
+
+
 def test_exit_with_grace():
     with TestProcess(sys.executable, '-u', HELPER, 'test_simple') as proc:
         with dump_on_error(proc.read):

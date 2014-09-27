@@ -252,21 +252,13 @@ class ManholeConnection(_ORIGINAL_THREAD):
 
         backup = []
         old_interval = getinterval()
+        patches = [('r', ('stdin', '__stdin__')), ('w', ('stdout', '__stdout__'))]
+        if _REDIRECT_STDERR:
+            patches.append(('w', ('stderr', '__stderr__')))
         try:
             try:
                 client_fd = client.fileno()
-                for mode, names in (
-                    ('w', (
-                        'stderr',
-                        'stdout',
-                        '__stderr__',
-                        '__stdout__'
-                    )),
-                    ('r', (
-                        'stdin',
-                        '__stdin__'
-                    ))
-                ):
+                for mode, names in patches:
                     for name in names:
                         backup.append((name, getattr(sys, name)))
                         setattr(sys, name, _ORIGINAL_FDOPEN(client_fd, mode, 1 if PY3 else 0))
@@ -299,6 +291,19 @@ class ManholeConnection(_ORIGINAL_THREAD):
             cry(traceback.format_exc())
 
 
+class ManholeConsole(code.InteractiveConsole):
+
+    def __init__(self, *args, **kw):
+        code.InteractiveConsole.__init__(self, *args, **kw)
+        if _REDIRECT_STDERR:
+            self.file = sys.stderr
+        else:
+            self.file = sys.stdout
+
+    def write(self, data):
+        self.file.write(data)
+
+
 def run_repl(locals):
     """
     Dumps stacktraces and runs an interactive prompt (REPL).
@@ -313,7 +318,7 @@ def run_repl(locals):
     }
     if locals:
         namespace.update(locals)
-    code.InteractiveConsole(namespace).interact()
+    ManholeConsole(namespace).interact()
 
 
 def _handle_oneshot(_signum, _frame):
@@ -348,6 +353,7 @@ _INST_LOCK = _ORIGINAL_ALLOCATE_LOCK()
 _STDERR = _INST = _ORIGINAL_OS_FORK = _ORIGINAL_OS_FORKPTY = _SHOULD_RESTART = None
 _SOCKET_PATH = None
 _REINSTALL_BIND_DELAY = None
+_REDIRECT_STDERR = True
 
 
 def _patched_fork():
@@ -388,7 +394,7 @@ ALL_SIGNALS = [
 
 
 def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS, oneshot_on=None, start_timeout=0.5,
-            socket_path=None, reinstall_bind_delay=0.5, locals=None, daemon_connection=False):
+            socket_path=None, reinstall_bind_delay=0.5, locals=None, daemon_connection=False, redirect_stderr=True):
     """
     Installs the manhole.
 
@@ -411,13 +417,15 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
             alleviates cleanup failures when using fork+exec patterns.
         locals (dict): Names to add to manhole interactive shell locals.
         daemon_connection (bool): The connection thread is daemonic (dies on app exit). Default: ``False``.
+        redirect_stderr (bool): Redirect output from stderr to manhole console. Default: ``True``.
     """
     global _STDERR, _INST, _SHOULD_RESTART  # pylint: disable=W0603
-    global VERBOSE, _REINSTALL_BIND_DELAY, _SOCKET_PATH  # pylint: disable=W0603
+    global VERBOSE, _REINSTALL_BIND_DELAY, _SOCKET_PATH, _REDIRECT_STDERR  # pylint: disable=W0603
     with _INST_LOCK:
         VERBOSE = verbose
         _SOCKET_PATH = socket_path
         _REINSTALL_BIND_DELAY = reinstall_bind_delay
+        _REDIRECT_STDERR = redirect_stderr
         _STDERR = sys.__stderr__
         if not _INST:
             _INST = Manhole(sigmask, start_timeout, locals=locals, daemon_connection=daemon_connection)
@@ -476,4 +484,4 @@ def dump_stacktraces():
                 lines.append("  %s" % (line.strip()))
     lines.append("#############################################\n\n")
 
-    print('\n'.join(lines), file=sys.stderr)
+    print('\n'.join(lines), file=sys.stderr if _REDIRECT_STDERR else sys.stdout)

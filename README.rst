@@ -108,6 +108,7 @@ Options
   cleanup failures when using fork+exec patterns.
 * ``locals`` - Names to add to manhole interactive shell locals.
 * ``daemon_connection`` - The connection thread is daemonic (dies on app exit). Default: ``False``.
+* ``redirect_stderr`` - Redirect output from stderr to manhole console. Default: ``True``.
 
 What happens when you actually connect to the socket
 ----------------------------------------------------
