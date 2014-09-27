@@ -237,7 +237,7 @@ def check_print_tracebacks(uds_path):
         with dump_on_error(client.read):
             wait_for_strings(client.read, 1, ">>>")
             sock.send(b"NO_SUCH_NAME\n")
-            wait_for_strings(client.read, 1, "NameError: name 'NO_SUCH_NAME' is not defined", ">>>")
+            wait_for_strings(client.read, 1, "NameError:", "name 'NO_SUCH_NAME' is not defined", ">>>")
 
 
 def test_exit_with_grace():
