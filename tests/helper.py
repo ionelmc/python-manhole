@@ -172,24 +172,24 @@ if __name__ == '__main__':
             time.sleep(TIMEOUT)
         elif test_name == 'test_socket_path_with_fork':
             manhole.install(socket_path=SOCKET_PATH)
-            time.sleep(1)
+            time.sleep(TIMEOUT)
             do_fork()
         elif test_name == 'test_locals':
             manhole.install(socket_path=SOCKET_PATH,
                             locals={'k1': 'v1', 'k2': 'v2'})
-            time.sleep(1)
+            time.sleep(TIMEOUT)
         elif test_name == 'test_locals_after_fork':
             manhole.install(locals={'k1': 'v1', 'k2': 'v2'})
             do_fork()
         elif test_name == 'test_redirect_stderr_default':
             manhole.install(socket_path=SOCKET_PATH)
-            time.sleep(1)
+            time.sleep(TIMEOUT)
         elif test_name == 'test_redirect_stderr_disabled':
             manhole.install(socket_path=SOCKET_PATH, redirect_stderr=False)
-            time.sleep(1)
+            time.sleep(TIMEOUT)
         elif test_name == 'test_sigmask':
             manhole.install(socket_path=SOCKET_PATH, sigmask=[signal.SIGUSR1])
-            time.sleep(1)
+            time.sleep(TIMEOUT)
         else:
             manhole.install()
             time.sleep(0.3)  # give the manhole a bit enough time to start
