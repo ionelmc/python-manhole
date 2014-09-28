@@ -10,6 +10,8 @@ env:
     - TOXENV={{ env }}{% if config.cover %},coveralls{% endif %}
 
 {% endfor %}
+    - TOXENV=docs
+
 before_install:
   - python --version
   - virtualenv --version
