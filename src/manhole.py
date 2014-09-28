@@ -187,7 +187,7 @@ class Manhole(_ORIGINAL_THREAD):
         while True:
             cry("Waiting for new connection (in pid:%s) ..." % os.getpid())
             try:
-                client = ManholeConnection(sock.accept()[0], self.sigmask, self.locals, self.daemon_connection)
+                client = ManholeConnection(sock.accept()[0], self.locals, self.daemon_connection)
                 client.start()
                 client.join()
             except (InterruptedError, socket.error) as e:
@@ -203,20 +203,16 @@ class ManholeConnection(_ORIGINAL_THREAD):
     Manhole thread that handles the connection. This thread is a normal thread (non-daemon) - it won't exit if the
     main thread exits.
     """
-    def __init__(self, client, sigmask, locals, daemon=False):
+    def __init__(self, client, locals, daemon=False):
         super(ManholeConnection, self).__init__()
         self.daemon = daemon
         self.client = client
         self.name = "ManholeConnection"
-        self.sigmask = sigmask
         self.locals = locals
 
     def run(self):
         cry('Started ManholeConnection thread. Checking credentials ...')
-        if signalfd and self.sigmask:
-            signalfd.sigprocmask(signalfd.SIG_BLOCK, self.sigmask)
         pthread_setname_np(self.ident, "Manhole ----")
-
         pid, _, _ = self.check_credentials(self.client)
         pthread_setname_np(self.ident, "Manhole %s" % pid)
         self.handle(self.client, self.locals)
