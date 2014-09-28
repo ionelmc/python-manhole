@@ -181,7 +181,7 @@ class Manhole(_ORIGINAL_THREAD):
 
         if self.bind_delay:
             cry("Delaying UDS binding %s seconds ..." % self.bind_delay)
-            _ORIGINAL_SLEEP(self.bind_delay)
+            #_ORIGINAL_SLEEP(self.bind_delay)
 
         sock = self.get_socket()
         while True:
