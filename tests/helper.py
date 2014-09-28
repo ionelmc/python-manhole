@@ -84,7 +84,7 @@ if __name__ == '__main__':
             for i in range(TIMEOUT * 100):
                 time.sleep(0.1)
         elif test_name == 'test_fork_exec':
-            manhole.install(reinstall_bind_delay=5)
+            manhole.install(reinstall_delay=5)
             print("Installed.")
             time.sleep(0.2)
             pid = os.fork()
