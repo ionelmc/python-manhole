@@ -89,7 +89,7 @@ Options
 
     manhole.install(
         verbose=True, patch_fork=True, activate_on=None, oneshot_on=None,
-        sigmask=manhole.ALL_SIGNALS, socket_path=None, reinstall_bind_delay=0.5,
+        sigmask=manhole.ALL_SIGNALS, socket_path=None, reinstall_delay=0.5,
         locals=None)
 
 * ``verbose`` - set it to ``False`` to squelch the stderr ouput
@@ -104,7 +104,7 @@ Options
   doesn't.
 * ``socket_path`` - Use a specifc path for the unix domain socket (instead of ``/tmp/manhole-<pid>``). This disables
   ``patch_fork`` as children cannot resuse the same path.
-* ``reinstall_bind_delay`` - Delay the unix domain socket creation *reinstall_bind_delay* seconds. This alleviates
+* ``reinstall_delay`` - Delay the unix domain socket creation *reinstall_delay* seconds. This alleviates
   cleanup failures when using fork+exec patterns.
 * ``locals`` - Names to add to manhole interactive shell locals.
 * ``daemon_connection`` - The connection thread is daemonic (dies on app exit). Default: ``False``.

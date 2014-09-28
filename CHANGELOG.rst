@@ -6,7 +6,7 @@ Changelog
 ------------------
 
 * Added ``socket_path`` install option (contributed by `Nir Soffer`_).
-* Added ``reinstall_bind_delay`` install option.
+* Added ``reinstall_delay`` install option.
 * Added ``locals`` install option (contributed by `Nir Soffer`_).
 * Added ``redirect_stderr`` install option (contributed by `Nir Soffer`_).
 * Lots of internals cleanup (contributed by `Nir Soffer`_).

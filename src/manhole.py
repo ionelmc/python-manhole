@@ -348,7 +348,7 @@ def _manhole_uds_name():
 _INST_LOCK = _ORIGINAL_ALLOCATE_LOCK()
 _STDERR = _INST = _ORIGINAL_OS_FORK = _ORIGINAL_OS_FORKPTY = _SHOULD_RESTART = None
 _SOCKET_PATH = None
-_REINSTALL_BIND_DELAY = None
+_REINSTALL_DELAY = None
 _REDIRECT_STDERR = True
 
 
@@ -390,7 +390,7 @@ ALL_SIGNALS = [
 
 
 def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS, oneshot_on=None, start_timeout=0.5,
-            socket_path=None, reinstall_bind_delay=0.5, locals=None, daemon_connection=False, redirect_stderr=True):
+            socket_path=None, reinstall_delay=0.5, locals=None, daemon_connection=False, redirect_stderr=True):
     """
     Installs the manhole.
 
@@ -409,18 +409,18 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
             Python will force all the signal handling to be run in the main thread but signalfd doesn't.
         socket_path (str): Use a specifc path for the unix domain socket (instead of ``/tmp/manhole-<pid>``). This
             disables ``patch_fork`` as children cannot resuse the same path.
-        reinstall_bind_delay (float): Delay the unix domain socket creation *reinstall_bind_delay* seconds. This
+        reinstall_delay (float): Delay the unix domain socket creation *reinstall_delay* seconds. This
             alleviates cleanup failures when using fork+exec patterns.
         locals (dict): Names to add to manhole interactive shell locals.
         daemon_connection (bool): The connection thread is daemonic (dies on app exit). Default: ``False``.
         redirect_stderr (bool): Redirect output from stderr to manhole console. Default: ``True``.
     """
     global _STDERR, _INST, _SHOULD_RESTART  # pylint: disable=W0603
-    global VERBOSE, _REINSTALL_BIND_DELAY, _SOCKET_PATH, _REDIRECT_STDERR  # pylint: disable=W0603
+    global VERBOSE, _REINSTALL_DELAY, _SOCKET_PATH, _REDIRECT_STDERR  # pylint: disable=W0603
     with _INST_LOCK:
         VERBOSE = verbose
         _SOCKET_PATH = socket_path
-        _REINSTALL_BIND_DELAY = reinstall_bind_delay
+        _REINSTALL_DELAY = reinstall_delay
         _REDIRECT_STDERR = redirect_stderr
         _STDERR = sys.__stderr__
         if not _INST:
@@ -460,7 +460,7 @@ def reinstall():
     assert _INST
     with _INST_LOCK:
         if not (_INST.is_alive() and _INST in _ORIGINAL__ACTIVE):
-            _INST = _INST.clone(bind_delay=_REINSTALL_BIND_DELAY)
+            _INST = _INST.clone(bind_delay=_REINSTALL_DELAY)
             if _SHOULD_RESTART:
                 _INST.start()
 
