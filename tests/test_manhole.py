@@ -436,3 +436,21 @@ def test_interrupt_on_accept():
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection', 'Sending signal to manhole thread', 'Waiting for new connection')
             assert_manhole_running(proc, uds_path)
+
+
+@mark.skipif(not is_module_available('signalfd'), reason="signalfd not available")
+def test_sigmask():
+    with TestProcess(sys.executable, HELPER, 'test_sigmask') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+            sock = connect_to_manhole(SOCKET_PATH)
+            with TestSocket(sock) as client:
+                with dump_on_error(client.read):
+                    wait_for_strings(client.read, 1, ">>>")
+                    client.reset()
+                    # Python 2.7 returns [10L], Python 3 returns [10]
+                    sock.send(b"from __future__ import print_function\n"
+                              b"import signalfd\n"
+                              b"mask = signalfd.sigprocmask(signalfd.SIG_BLOCK, [])\n"
+                              b"print([int(n) for n in mask])\n")
+                    wait_for_strings(client.read, 1, '%s' % [signal.SIGUSR1])

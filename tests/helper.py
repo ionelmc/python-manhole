@@ -187,6 +187,9 @@ if __name__ == '__main__':
         elif test_name == 'test_redirect_stderr_disabled':
             manhole.install(socket_path=SOCKET_PATH, redirect_stderr=False)
             time.sleep(1)
+        elif test_name == 'test_sigmask':
+            manhole.install(socket_path=SOCKET_PATH, sigmask=[signal.SIGUSR1])
+            time.sleep(1)
         else:
             manhole.install()
             time.sleep(0.3)  # give the manhole a bit enough time to start
