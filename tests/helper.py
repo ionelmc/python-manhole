@@ -84,15 +84,24 @@ if __name__ == '__main__':
             for i in range(TIMEOUT * 100):
                 time.sleep(0.1)
         elif test_name == 'test_fork_exec':
-            import subprocess
-            manhole.install()
-            for i in range(500):
-                p = subprocess.Popen(['true'])
-                p.wait()
-                path = '/tmp/manhole-%d' % p.pid
+            manhole.install(reinstall_bind_delay=5)
+            print("Installed.")
+            time.sleep(0.2)
+            pid = os.fork()
+            print("Forked, pid =", pid)
+            if pid:
+                os.waitpid(pid, 0)
+                path = '/tmp/manhole-%d' % pid
                 if os.path.exists(path):
                     os.unlink(path)
                     raise AssertionError(path + ' exists !')
+            else:
+                try:
+                    time.sleep(1)
+                    print("Exec-ing `true`")
+                    os.execvp('true', ['true'])
+                finally:
+                    os._exit(1)
             print('SUCCESS')
         elif test_name == 'test_activate_on_with_oneshot_on':
             manhole.install(activate_on='USR2', oneshot_on='USR2')
