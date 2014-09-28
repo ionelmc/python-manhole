@@ -86,7 +86,7 @@ if __name__ == '__main__':
         elif test_name == 'test_fork_exec':
             import subprocess
             manhole.install()
-            for i in range(500):
+            for i in range(50):
                 p = subprocess.Popen(['true'])
                 p.wait()
                 path = '/tmp/manhole-%d' % p.pid
