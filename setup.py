@@ -19,7 +19,7 @@ def read(*names, **kwargs):
 
 setup(
     name="manhole",
-    version="0.6.2",
+    version="1.0.0",
     license="BSD",
     description="Inpection manhole for python applications. Connection is done via unix domain sockets.",
     long_description="%s\n%s" % (read("README.rst"), re.sub(":obj:`~?(.*?)`", r"``\1``", read("CHANGELOG.rst"))),

@@ -12,7 +12,7 @@ import code
 import signal
 import errno
 
-__version__ = '0.6.2'
+__version__ = '1.0.0'
 
 try:
     import signalfd
