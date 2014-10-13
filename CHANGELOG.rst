@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.0.0 (2014-08-30)
+1.0.0 (2014-10-13)
 ------------------
 
 * Added ``socket_path`` install option (contributed by `Nir Soffer`_).
