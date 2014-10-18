@@ -67,6 +67,13 @@ def test_simple():
                 proc.reset()
                 assert_manhole_running(proc, uds_path)
 
+
+def test_install_once():
+    with TestProcess(sys.executable, HELPER, 'test_install_once') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, 'ALREADY_INSTALLED')
+
+
 @mark.skipif(is_module_available('eventlet'), reason="evenlet can't deal with extra threads at process exit")
 def test_daemon_connection():
     with TestProcess(sys.executable, HELPER, 'test_daemon_connection') as proc:

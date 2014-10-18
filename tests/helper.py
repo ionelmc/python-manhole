@@ -83,6 +83,14 @@ if __name__ == '__main__':
             manhole.install(activate_on='USR2')
             for i in range(TIMEOUT * 100):
                 time.sleep(0.1)
+        elif test_name == 'test_install_once':
+            manhole.install()
+            try:
+                manhole.install()
+            except manhole.AlreadyInstalled:
+                print('ALREADY_INSTALLED')
+            else:
+                raise AssertionError("Did not raise AlreadyInstalled")
         elif test_name == 'test_fork_exec':
             manhole.install(reinstall_delay=5)
             print("Installed.")
