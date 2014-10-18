@@ -66,6 +66,9 @@ PY3 = sys.version_info[0] == 3
 PY26 = sys.version_info[:2] == (2, 6)
 VERBOSE = True
 
+# Ensures that fork is not called while we hold sys.stderr internal lock.
+_CRY_LOCK = _ORIGINAL_ALLOCATE_LOCK()
+
 try:
     import ctypes
     import ctypes.util
@@ -89,7 +92,8 @@ def cry(message, time=_get_original('time.time')):
     """
     if VERBOSE:
         try:
-            _STDERR.write("Manhole[%.4f]: %s\n" % (time(), message))
+            with _CRY_LOCK:
+                _STDERR.write("Manhole[%.4f]: %s\n" % (time(), message))
         except:  # pylint: disable=W0702
             pass
 
@@ -354,7 +358,8 @@ _REDIRECT_STDERR = True
 
 def _patched_fork():
     """Fork a child process."""
-    pid = _ORIGINAL_OS_FORK()
+    with _CRY_LOCK:
+        pid = _ORIGINAL_OS_FORK()
     if not pid:
         cry('Fork detected. Reinstalling Manhole.')
         reinstall()
@@ -363,7 +368,8 @@ def _patched_fork():
 
 def _patched_forkpty():
     """Fork a new process with a new pseudo-terminal as controlling tty."""
-    pid, master_fd = _ORIGINAL_OS_FORKPTY()
+    with _CRY_LOCK:
+        pid, master_fd = _ORIGINAL_OS_FORKPTY()
     if not pid:
         cry('Fork detected. Reinstalling Manhole.')
         reinstall()
