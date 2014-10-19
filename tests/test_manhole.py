@@ -88,6 +88,7 @@ def test_daemon_connection():
                 for _ in range(5):
                     client.sock.send(b'bogus()\n')
                     time.sleep(0.05)
+                    print(repr(client.sock.recv(1024)))
             raises((socket.error, OSError), assert_manhole_running, proc, uds_path, extra=terminate_and_read)
             wait_for_strings(proc.read, TIMEOUT, 'In atexit handler')
 
