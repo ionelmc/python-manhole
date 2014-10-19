@@ -84,9 +84,10 @@ def test_daemon_connection():
 
             def terminate_and_read(client):
                 proc.proc.send_signal(signal.SIGINT)
-                wait_for_strings(proc.read, TIMEOUT, 'Died with KeyboardInterrupt')
-                client.sock.send(b'bogus()\n')
-                client.sock.send(b'bogus()\n')
+                wait_for_strings(proc.read, TIMEOUT, 'Died with KeyboardInterrupt', 'DIED.')
+                for _ in range(5):
+                    client.sock.send(b'bogus()\n')
+                    time.sleep(0.05)
             raises((socket.error, OSError), assert_manhole_running, proc, uds_path, extra=terminate_and_read)
             wait_for_strings(proc.read, TIMEOUT, 'In atexit handler')
 
