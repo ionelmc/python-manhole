@@ -109,6 +109,10 @@ def get_peercred(sock):
     return struct.unpack('3i', buf)
 
 
+class AlreadyInstalled(Exception):
+    pass
+
+
 class SuspiciousClient(Exception):
     pass
 
@@ -418,27 +422,28 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
     global _STDERR, _INST, _SHOULD_RESTART  # pylint: disable=W0603
     global VERBOSE, _REINSTALL_DELAY, _SOCKET_PATH, _REDIRECT_STDERR  # pylint: disable=W0603
     with _INST_LOCK:
+        if _INST:
+            raise AlreadyInstalled("Manhole already installed")
+        _INST = Manhole(sigmask, start_timeout, locals=locals, daemon_connection=daemon_connection)
         VERBOSE = verbose
         _SOCKET_PATH = socket_path
         _REINSTALL_DELAY = reinstall_delay
         _REDIRECT_STDERR = redirect_stderr
         _STDERR = sys.__stderr__
-        if not _INST:
-            _INST = Manhole(sigmask, start_timeout, locals=locals, daemon_connection=daemon_connection)
-            if oneshot_on is not None:
-                oneshot_on = getattr(signal, 'SIG'+oneshot_on) if isinstance(oneshot_on, string) else oneshot_on
-                signal.signal(oneshot_on, _handle_oneshot)
+        if oneshot_on is not None:
+            oneshot_on = getattr(signal, 'SIG'+oneshot_on) if isinstance(oneshot_on, string) else oneshot_on
+            signal.signal(oneshot_on, _handle_oneshot)
 
-            if activate_on is None:
-                if oneshot_on is None:
-                    _INST.start()
-                    _SHOULD_RESTART = True
-            else:
-                activate_on = getattr(signal, 'SIG'+activate_on) if isinstance(activate_on, string) else activate_on
-                if activate_on == oneshot_on:
-                    raise RuntimeError('You cannot do activation of the Manhole thread on the same signal '
-                                       'that you want to do oneshot activation !')
-                signal.signal(activate_on, _activate_on_signal)
+        if activate_on is None:
+            if oneshot_on is None:
+                _INST.start()
+                _SHOULD_RESTART = True
+        else:
+            activate_on = getattr(signal, 'SIG'+activate_on) if isinstance(activate_on, string) else activate_on
+            if activate_on == oneshot_on:
+                raise RuntimeError('You cannot do activation of the Manhole thread on the same signal '
+                                   'that you want to do oneshot activation !')
+            signal.signal(activate_on, _activate_on_signal)
         atexit.register(_remove_manhole_uds)
         if patch_fork:
             if activate_on is None and oneshot_on is None and socket_path is None:
