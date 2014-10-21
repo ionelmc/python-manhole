@@ -89,7 +89,7 @@ def cry(message, time=_get_original('time.time')):
     """
     if VERBOSE:
         try:
-            os.write(_STDERR, "Manhole[%.4f]: %s\n" % (time(), message))
+            _STDERR.write("Manhole[%.4f]: %s\n" % (time(), message))
         except:  # pylint: disable=W0702
             pass
 
@@ -429,7 +429,7 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
         _SOCKET_PATH = socket_path
         _REINSTALL_DELAY = reinstall_delay
         _REDIRECT_STDERR = redirect_stderr
-        _STDERR = sys.__stderr__.fileno()
+        _STDERR = sys.__stderr__
         if oneshot_on is not None:
             oneshot_on = getattr(signal, 'SIG'+oneshot_on) if isinstance(oneshot_on, string) else oneshot_on
             signal.signal(oneshot_on, _handle_oneshot)

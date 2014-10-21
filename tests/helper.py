@@ -91,21 +91,6 @@ if __name__ == '__main__':
                 print('ALREADY_INSTALLED')
             else:
                 raise AssertionError("Did not raise AlreadyInstalled")
-        elif test_name == 'test_stderr_doesnt_deadlock':
-            import subprocess
-            manhole.install()
-
-            for i in range(50):
-                print('running iteration', i)
-                p = subprocess.Popen(['true'])
-                print('waiting for process', p.pid)
-                p.wait()
-                print('process ended')
-                path = '/tmp/manhole-%d' % p.pid
-                if os.path.exists(path):
-                    os.unlink(path)
-                    raise AssertionError(path + ' exists !')
-            print('SUCCESS')
         elif test_name == 'test_fork_exec':
             manhole.install(reinstall_delay=5)
             print("Installed.")

@@ -462,10 +462,3 @@ def test_sigmask():
                               b"mask = signalfd.sigprocmask(signalfd.SIG_BLOCK, [])\n"
                               b"print([int(n) for n in mask])\n")
                     wait_for_strings(client.read, 1, '%s' % [signal.SIGUSR1])
-
-
-def test_stderr_doesnt_deadlock():
-    for _ in range(100):
-        with TestProcess(sys.executable, HELPER, 'test_stderr_doesnt_deadlock') as proc:
-            with dump_on_error(proc.read):
-                wait_for_strings(proc.read, TIMEOUT, 'SUCCESS')
