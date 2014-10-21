@@ -84,14 +84,20 @@ except ImportError:
     pthread_setname_np = lambda ident, name: None
 
 
-def cry(message, time=_get_original('time.time')):
+def _cry(message, time=_get_original('time.time')):
     """
     Fail-ignorant logging function.
     """
     if VERBOSE:
+        if _VERBOSE_DESTINATION is None:
+            raise RuntimeError("Manhole is not installed!")
         try:
             full_message = "Manhole[%.4f]: %s\n" % (time(), message)
-            os.write(_STDERR, full_message.encode('ascii', 'ignore'))
+
+            if isinstance(_VERBOSE_DESTINATION, int):
+                os.write(_VERBOSE_DESTINATION, full_message.encode('ascii', 'ignore'))
+            else:
+                _VERBOSE_DESTINATION.write(full_message)
         except:  # pylint: disable=W0702
             if DEBUG:
                 raise
@@ -161,7 +167,7 @@ class Manhole(_ORIGINAL_THREAD):
     def start(self):
         super(Manhole, self).start()
         if not self.serious.wait(self.start_timeout) and not PY26:
-            cry("WARNING: Waited %s seconds but Manhole thread didn't start yet :(" % self.start_timeout)
+            _cry("WARNING: Waited %s seconds but Manhole thread didn't start yet :(" % self.start_timeout)
 
     @staticmethod
     def get_socket():
@@ -171,7 +177,7 @@ class Manhole(_ORIGINAL_THREAD):
             os.unlink(name)
         sock.bind(name)
         sock.listen(5)
-        cry("Manhole UDS path: "+name)
+        _cry("Manhole UDS path: "+name)
         return sock
 
     def run(self):
@@ -187,12 +193,12 @@ class Manhole(_ORIGINAL_THREAD):
         pthread_setname_np(self.ident, self.name)
 
         if self.bind_delay:
-            cry("Delaying UDS binding %s seconds ..." % self.bind_delay)
+            _cry("Delaying UDS binding %s seconds ..." % self.bind_delay)
             _ORIGINAL_SLEEP(self.bind_delay)
 
         sock = self.get_socket()
         while True:
-            cry("Waiting for new connection (in pid:%s) ..." % os.getpid())
+            _cry("Waiting for new connection (in pid:%s) ..." % os.getpid())
             try:
                 client = ManholeConnection(sock.accept()[0], self.locals, self.daemon_connection)
                 client.start()
@@ -218,7 +224,7 @@ class ManholeConnection(_ORIGINAL_THREAD):
         self.locals = locals
 
     def run(self):
-        cry('Started ManholeConnection thread. Checking credentials ...')
+        _cry('Started ManholeConnection thread. Checking credentials ...')
         pthread_setname_np(self.ident, "Manhole ----")
         pid, _, _ = self.check_credentials(self.client)
         pthread_setname_np(self.ident, "Manhole %s" % pid)
@@ -238,7 +244,7 @@ class ManholeConnection(_ORIGINAL_THREAD):
                 client_name, euid
             ))
 
-        cry("Accepted connection %s from %s" % (client, client_name))
+        _cry("Accepted connection %s from %s" % (client, client_name))
         return pid, uid, gid
 
     @staticmethod
@@ -266,7 +272,7 @@ class ManholeConnection(_ORIGINAL_THREAD):
                         backup.append((name, getattr(sys, name)))
                         setattr(sys, name, _ORIGINAL_FDOPEN(client_fd, mode, 1 if PY3 else 0))
                 run_repl(locals)
-                cry("DONE.")
+                _cry("DONE.")
             finally:
                 try:
                     # Change the switch/check interval to something ridiculous. We don't want to have other thread try
@@ -288,10 +294,10 @@ class ManholeConnection(_ORIGINAL_THREAD):
                     del junk
                 finally:
                     setinterval(old_interval)
-                    cry("Cleaned up.")
+                    _cry("Cleaned up.")
         except Exception:
-            cry("ManholeConnection thread failed:")
-            cry(traceback.format_exc())
+            _cry("ManholeConnection thread failed:")
+            _cry(traceback.format_exc())
 
 
 class ManholeConsole(code.InteractiveConsole):
@@ -328,14 +334,14 @@ def _handle_oneshot(_signum, _frame):
     assert _INST, "Manhole wasn't installed !"
     try:
         sock = Manhole.get_socket()
-        cry("Waiting for new connection (in pid:%s) ..." % os.getpid())
+        _cry("Waiting for new connection (in pid:%s) ..." % os.getpid())
         client, _ = sock.accept()
         ManholeConnection.check_credentials(client)
         ManholeConnection.handle(client, _INST.locals)
     except:  # pylint: disable=W0702
         # we don't want to let any exception out, it might make the application missbehave
-        cry("Manhole oneshot connection failed:")
-        cry(traceback.format_exc())
+        _cry("Manhole oneshot connection failed:")
+        _cry(traceback.format_exc())
     finally:
         _remove_manhole_uds()
 
@@ -353,19 +359,17 @@ def _manhole_uds_name():
 
 
 _INST_LOCK = _ORIGINAL_ALLOCATE_LOCK()
-_STDERR = _INST = _ORIGINAL_OS_FORK = _ORIGINAL_OS_FORKPTY = _SHOULD_RESTART = None
-_UNBUFFERED_LOGGING = True
+_VERBOSE_DESTINATION = _INST = _ORIGINAL_OS_FORK = _ORIGINAL_OS_FORKPTY = _SHOULD_RESTART = None
 _SOCKET_PATH = None
 _REINSTALL_DELAY = None
 _REDIRECT_STDERR = True
-# Ensures that fork is not called while we hold sys.stderr internal lock.
 
 
 def _patched_fork():
     """Fork a child process."""
     pid = _ORIGINAL_OS_FORK()
     if not pid:
-        cry('Fork detected. Reinstalling Manhole.')
+        _cry('Fork detected. Reinstalling Manhole.')
         reinstall()
     return pid
 
@@ -374,7 +378,7 @@ def _patched_forkpty():
     """Fork a new process with a new pseudo-terminal as controlling tty."""
     pid, master_fd = _ORIGINAL_OS_FORKPTY()
     if not pid:
-        cry('Fork detected. Reinstalling Manhole.')
+        _cry('Fork detected. Reinstalling Manhole.')
         reinstall()
     return pid, master_fd
 
@@ -385,7 +389,7 @@ def _patch_os_fork_functions():
         _ORIGINAL_OS_FORK, os.fork = os.fork, _patched_fork
     if not _ORIGINAL_OS_FORKPTY:
         _ORIGINAL_OS_FORKPTY, os.forkpty = os.forkpty, _patched_forkpty
-    cry("Patched %s and %s." % (_ORIGINAL_OS_FORK, _ORIGINAL_OS_FORKPTY))
+    _cry("Patched %s and %s." % (_ORIGINAL_OS_FORK, _ORIGINAL_OS_FORKPTY))
 
 
 def _activate_on_signal(_signum, _frame):
@@ -400,7 +404,7 @@ ALL_SIGNALS = [
 
 def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS, oneshot_on=None, start_timeout=0.5,
             socket_path=None, reinstall_delay=0.5, locals=None, daemon_connection=False, redirect_stderr=True,
-            debug=False):
+            verbose_destination=sys.__stderr__.fileno() if hasattr(sys.__stderr__, 'fileno') else sys.__stderr__):
     """
     Installs the manhole.
 
@@ -424,16 +428,17 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
         locals (dict): Names to add to manhole interactive shell locals.
         daemon_connection (bool): The connection thread is daemonic (dies on app exit). Default: ``False``.
         redirect_stderr (bool): Redirect output from stderr to manhole console. Default: ``True``.
+        verbose_destination (file descriptor or handle): Destination for verbose messages. Default is unbuffered stderr
+            (raw fd).
     """
     global _STDERR, _INST, _SHOULD_RESTART  # pylint: disable=W0603
-    global DEBUG, VERBOSE, _REINSTALL_DELAY, _SOCKET_PATH, _REDIRECT_STDERR  # pylint: disable=W0603
+    global VERBOSE, _VERBOSE_DESTINATION, _REINSTALL_DELAY, _SOCKET_PATH, _REDIRECT_STDERR  # pylint: disable=W0603
     with _INST_LOCK:
         if _INST:
             raise AlreadyInstalled("Manhole already installed")
         _INST = Manhole(sigmask, start_timeout, locals=locals, daemon_connection=daemon_connection)
-        _STDERR = sys.__stderr__.fileno()
+        _VERBOSE_DESTINATION = verbose_destination
         VERBOSE = verbose
-        DEBUG = debug
         _SOCKET_PATH = socket_path
         _REINSTALL_DELAY = reinstall_delay
         _REDIRECT_STDERR = redirect_stderr
@@ -458,11 +463,11 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
                 _patch_os_fork_functions()
             else:
                 if activate_on:
-                    cry("Not patching os.fork and os.forkpty. Activation is done by signal %s" % activate_on)
+                    _cry("Not patching os.fork and os.forkpty. Activation is done by signal %s" % activate_on)
                 elif oneshot_on:
-                    cry("Not patching os.fork and os.forkpty. Oneshot activation is done by signal %s" % oneshot_on)
+                    _cry("Not patching os.fork and os.forkpty. Oneshot activation is done by signal %s" % oneshot_on)
                 elif socket_path:
-                    cry("Not patching os.fork and os.forkpty. Using user socket path %s" % socket_path)
+                    _cry("Not patching os.fork and os.forkpty. Using user socket path %s" % socket_path)
 
 
 def reinstall():
