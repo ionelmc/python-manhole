@@ -89,7 +89,8 @@ def cry(message, time=_get_original('time.time')):
     """
     if VERBOSE:
         try:
-            os.write(_STDERR, "Manhole[%.4f]: %s\n" % (time(), message))
+            full_message = "Manhole[%.4f]: %s\n" % (time(), message)
+            os.write(_STDERR, full_message.encode('ascii', 'ignore'))
         except:  # pylint: disable=W0702
             pass
 
