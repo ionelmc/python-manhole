@@ -431,7 +431,7 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
         redirect_stderr (bool): Redirect output from stderr to manhole console. Default: ``True``.
     """
     global _STDERR, _INST, _SHOULD_RESTART, _CRY_LOCK  # pylint: disable=W0603
-    global _UNBUFFERED_LOGGING, VERBOSE, _REINSTALL_DELAY, _SOCKET_PATH, _REDIRECT_STDERR  # pylint: disable=W0603
+    global _UNBUFFERED_LOGGING, DEBUG, VERBOSE, _REINSTALL_DELAY, _SOCKET_PATH, _REDIRECT_STDERR  # pylint: disable=W0603
     with _INST_LOCK:
         if _INST:
             raise AlreadyInstalled("Manhole already installed")
