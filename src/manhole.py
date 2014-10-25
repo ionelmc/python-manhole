@@ -99,13 +99,13 @@ _INST_LOCK = _ORIGINAL_ALLOCATE_LOCK()
 # These are initialized when manhole is installed.
 
 _INST = None
-_VERBOSE_DESTINATION = None
 _ORIGINAL_OS_FORK = None
 _ORIGINAL_OS_FORKPTY = None
+_REDIRECT_STDERR = True
+_REINSTALL_DELAY = None
 _SHOULD_RESTART = None
 _SOCKET_PATH = None
-_REINSTALL_DELAY = None
-_REDIRECT_STDERR = True
+_VERBOSE_DESTINATION = None
 
 
 def _cry(message, time=_get_original('time.time')):
