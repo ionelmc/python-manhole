@@ -33,34 +33,28 @@ else:
     setinterval = sys.setcheckinterval
     getinterval = sys.getcheckinterval
 
-
-def _get_original(qual_name):
-    mod, name = qual_name.split('.')
-    original = getattr(__import__(mod), name)
-
-    try:
-        from gevent.monkey import get_original
-        original = get_original(mod, name)
-    except (ImportError, SyntaxError):
-        pass
-
-    try:
-        from eventlet.patcher import original
-        original = getattr(original(mod), name)
-    except (ImportError, SyntaxError):
-        pass
-
-    return original
-_ORIGINAL_SOCKET = _get_original('socket.socket')
-_ORIGINAL_FDOPEN = _get_original('os.fdopen')
 try:
-    _ORIGINAL_ALLOCATE_LOCK = _get_original('thread.allocate_lock')
+    from eventlet.patcher import original as _original
+
+    def _get_original(mod, name):
+        return getattr(_original(mod), name)
+except ImportError:
+    try:
+        from gevent.monkey import get_original as _get_original
+    except ImportError:
+        def _get_original(mod, name):
+            return getattr(__import__(mod), name)
+
+_ORIGINAL_SOCKET = _get_original('socket', 'socket')
+_ORIGINAL_FDOPEN = _get_original('os', 'fdopen')
+try:
+    _ORIGINAL_ALLOCATE_LOCK = _get_original('thread', 'allocate_lock')
 except ImportError:  # python 3
-    _ORIGINAL_ALLOCATE_LOCK = _get_original('_thread.allocate_lock')
-_ORIGINAL_THREAD = _get_original('threading.Thread')
-_ORIGINAL_EVENT = _get_original('threading.Event')
-_ORIGINAL__ACTIVE = _get_original('threading._active')
-_ORIGINAL_SLEEP = _get_original('time.sleep')
+    _ORIGINAL_ALLOCATE_LOCK = _get_original('_thread', 'allocate_lock')
+_ORIGINAL_THREAD = _get_original('threading', 'Thread')
+_ORIGINAL_EVENT = _get_original('threading', 'Event')
+_ORIGINAL__ACTIVE = _get_original('threading', '_active')
+_ORIGINAL_SLEEP = _get_original('time', 'sleep')
 
 PY3 = sys.version_info[0] == 3
 PY26 = sys.version_info[:2] == (2, 6)
@@ -321,7 +315,7 @@ class Logger(object):
     Initially this is not configured. Until you call ``manhole.install()`` this logger object won't work (will raise
     ``NotInstalled``).
     """
-    time = _get_original('time.time')
+    time = _get_original('time', 'time')
     enabled = True
     destination = None
 
