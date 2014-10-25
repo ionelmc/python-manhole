@@ -64,7 +64,6 @@ _ORIGINAL_SLEEP = _get_original('time.sleep')
 
 PY3 = sys.version_info[0] == 3
 PY26 = sys.version_info[:2] == (2, 6)
-VERBOSE = True
 
 try:
     import ctypes
@@ -105,6 +104,7 @@ _REDIRECT_STDERR = True
 _REINSTALL_DELAY = None
 _SHOULD_RESTART = None
 _SOCKET_PATH = None
+_VERBOSE = True
 _VERBOSE_DESTINATION = None
 
 
@@ -112,7 +112,7 @@ def _cry(message, time=_get_original('time.time')):
     """
     Fail-ignorant logging function.
     """
-    if VERBOSE:
+    if _VERBOSE:
         if _VERBOSE_DESTINATION is None:
             raise RuntimeError("Manhole is not installed!")
         try:
@@ -434,12 +434,12 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
             (raw fd).
     """
     # pylint: disable=W0603
-    global VERBOSE
     global _INST
     global _REDIRECT_STDERR
     global _REINSTALL_DELAY
     global _SHOULD_RESTART
     global _SOCKET_PATH
+    global _VERBOSE
     global _VERBOSE_DESTINATION
 
     with _INST_LOCK:
@@ -447,7 +447,7 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
             raise AlreadyInstalled("Manhole already installed")
         _INST = Manhole(sigmask, start_timeout, locals=locals, daemon_connection=daemon_connection)
         _VERBOSE_DESTINATION = verbose_destination
-        VERBOSE = verbose
+        _VERBOSE = verbose
         _SOCKET_PATH = socket_path
         _REINSTALL_DELAY = reinstall_delay
         _REDIRECT_STDERR = redirect_stderr
