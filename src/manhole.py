@@ -82,6 +82,33 @@ try:
 except ImportError:
     pthread_setname_np = lambda ident, name: None
 
+if sys.platform == 'darwin' or sys.platform.startswith("freebsd"):
+    _PEERCRED_LEVEL = getattr(socket, 'SOL_LOCAL', 0)
+    _PEERCRED_OPTION = getattr(socket, 'LOCAL_PEERCRED', 1)
+else:
+    _PEERCRED_LEVEL = socket.SOL_SOCKET
+    # TODO: Is this missing on some platforms?
+    _PEERCRED_OPTION = getattr(socket, 'SO_PEERCRED', 17)
+
+ALL_SIGNALS = [
+    getattr(signal, sig) for sig in dir(signal)
+    if sig.startswith('SIG') and '_' not in sig
+]
+
+_INST_LOCK = _ORIGINAL_ALLOCATE_LOCK()
+
+# Manhole configuration
+# These are initialized when manhole is installed.
+
+_INST = None
+_STDERR = None
+_ORIGINAL_OS_FORK = None
+_ORIGINAL_OS_FORKPTY = None
+_SHOULD_RESTART = None
+_SOCKET_PATH = None
+_REINSTALL_DELAY = None
+_REDIRECT_STDERR = True
+
 
 def cry(message, time=_get_original('time.time')):
     """
@@ -92,15 +119,6 @@ def cry(message, time=_get_original('time.time')):
             _STDERR.write("Manhole[%.4f]: %s\n" % (time(), message))
         except:  # pylint: disable=W0702
             pass
-
-
-if sys.platform == 'darwin' or sys.platform.startswith("freebsd"):
-    _PEERCRED_LEVEL = getattr(socket, 'SOL_LOCAL', 0)
-    _PEERCRED_OPTION = getattr(socket, 'LOCAL_PEERCRED', 1)
-else:
-    _PEERCRED_LEVEL = socket.SOL_SOCKET
-    # TODO: Is this missing on some platforms?
-    _PEERCRED_OPTION = getattr(socket, 'SO_PEERCRED', 17)
 
 
 def get_peercred(sock):
@@ -349,13 +367,6 @@ def _manhole_uds_name():
     return _SOCKET_PATH
 
 
-_INST_LOCK = _ORIGINAL_ALLOCATE_LOCK()
-_STDERR = _INST = _ORIGINAL_OS_FORK = _ORIGINAL_OS_FORKPTY = _SHOULD_RESTART = None
-_SOCKET_PATH = None
-_REINSTALL_DELAY = None
-_REDIRECT_STDERR = True
-
-
 def _patched_fork():
     """Fork a child process."""
     pid = _ORIGINAL_OS_FORK()
@@ -386,11 +397,6 @@ def _patch_os_fork_functions():
 def _activate_on_signal(_signum, _frame):
     assert _INST, "Manhole wasn't installed !"
     _INST.start()
-
-ALL_SIGNALS = [
-    getattr(signal, sig) for sig in dir(signal)
-    if sig.startswith('SIG') and '_' not in sig
-]
 
 
 def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS, oneshot_on=None, start_timeout=0.5,
