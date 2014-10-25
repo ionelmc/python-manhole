@@ -59,13 +59,13 @@ def assert_manhole_running(proc, uds_path, oneshot=False, extra=None):
 
 def test_cry_when_uninstalled(monkeypatch):
     import manhole
-    monkeypatch.setattr(manhole, 'VERBOSE', True)
+    monkeypatch.setattr(manhole, '_VERBOSE', True)
     raises(RuntimeError, manhole._cry, "whatever")
 
 
 def test_cry_fd(monkeypatch, capfd):
     import manhole
-    monkeypatch.setattr(manhole, 'VERBOSE', True)
+    monkeypatch.setattr(manhole, '_VERBOSE', True)
     monkeypatch.setattr(manhole, '_VERBOSE_DESTINATION', 2)
     manhole._cry("whatever")
     assert "]: whatever" in capfd.readouterr()[1]
@@ -73,7 +73,7 @@ def test_cry_fd(monkeypatch, capfd):
 
 def test_cry_fh(monkeypatch, capfd):
     import manhole
-    monkeypatch.setattr(manhole, 'VERBOSE', True)
+    monkeypatch.setattr(manhole, '_VERBOSE', True)
     class output:
         data = []
         write = data.append
