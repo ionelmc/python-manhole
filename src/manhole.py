@@ -65,6 +65,7 @@ _ORIGINAL_SLEEP = _get_original('time.sleep')
 PY3 = sys.version_info[0] == 3
 PY26 = sys.version_info[:2] == (2, 6)
 VERBOSE = True
+DEBUG = False
 
 try:
     import ctypes
@@ -98,7 +99,8 @@ def _cry(message, time=_get_original('time.time')):
             else:
                 _VERBOSE_DESTINATION.write(full_message)
         except:  # pylint: disable=W0702
-            pass
+            if DEBUG:
+                raise
 
 
 if sys.platform == 'darwin' or sys.platform.startswith("freebsd"):
