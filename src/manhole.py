@@ -89,8 +89,8 @@ else:
     # TODO: Is this missing on some platforms?
     _PEERCRED_OPTION = getattr(socket, 'SO_PEERCRED', 17)
 
-ALL_SIGNALS = tuple(getattr(signal, sig) for sig in dir(signal)
-                    if sig.startswith('SIG') and '_' not in sig)
+_ALL_SIGNALS = tuple(getattr(signal, sig) for sig in dir(signal)
+                     if sig.startswith('SIG') and '_' not in sig)
 
 _INST_LOCK = _ORIGINAL_ALLOCATE_LOCK()
 
@@ -404,7 +404,7 @@ def _activate_on_signal(_signum, _frame):
     _INST.start()
 
 
-def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS, oneshot_on=None, start_timeout=0.5,
+def install(verbose=True, patch_fork=True, activate_on=None, sigmask=_ALL_SIGNALS, oneshot_on=None, start_timeout=0.5,
             socket_path=None, reinstall_delay=0.5, locals=None, daemon_connection=False, redirect_stderr=True,
             verbose_destination=sys.__stderr__.fileno() if hasattr(sys.__stderr__, 'fileno') else sys.__stderr__):
     """
