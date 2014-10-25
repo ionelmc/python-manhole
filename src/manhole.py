@@ -90,10 +90,8 @@ else:
     # TODO: Is this missing on some platforms?
     _PEERCRED_OPTION = getattr(socket, 'SO_PEERCRED', 17)
 
-ALL_SIGNALS = [
-    getattr(signal, sig) for sig in dir(signal)
-    if sig.startswith('SIG') and '_' not in sig
-]
+ALL_SIGNALS = tuple(getattr(signal, sig) for sig in dir(signal)
+                    if sig.startswith('SIG') and '_' not in sig)
 
 _INST_LOCK = _ORIGINAL_ALLOCATE_LOCK()
 
