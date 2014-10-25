@@ -435,7 +435,7 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
         verbose_destination (file descriptor or handle): Destination for verbose messages. Default is unbuffered stderr
             (raw fd).
     """
-    global _STDERR, _INST, _SHOULD_RESTART  # pylint: disable=W0603
+    global _INST, _SHOULD_RESTART  # pylint: disable=W0603
     global VERBOSE, _VERBOSE_DESTINATION, _REINSTALL_DELAY, _SOCKET_PATH, _REDIRECT_STDERR  # pylint: disable=W0603
     with _INST_LOCK:
         if _INST:
