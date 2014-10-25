@@ -433,8 +433,15 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
         verbose_destination (file descriptor or handle): Destination for verbose messages. Default is unbuffered stderr
             (raw fd).
     """
-    global _INST, _SHOULD_RESTART  # pylint: disable=W0603
-    global VERBOSE, _VERBOSE_DESTINATION, _REINSTALL_DELAY, _SOCKET_PATH, _REDIRECT_STDERR  # pylint: disable=W0603
+    # pylint: disable=W0603
+    global VERBOSE
+    global _INST
+    global _REDIRECT_STDERR
+    global _REINSTALL_DELAY
+    global _SHOULD_RESTART
+    global _SOCKET_PATH
+    global _VERBOSE_DESTINATION
+
     with _INST_LOCK:
         if _INST:
             raise AlreadyInstalled("Manhole already installed")
