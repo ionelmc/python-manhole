@@ -88,8 +88,15 @@ def cry(message, time=_get_original('time.time')):
     Fail-ignorant logging function.
     """
     if VERBOSE:
+        if _VERBOSE_DESTINATION is None:
+            raise RuntimeError("Manhole is not installed!")
         try:
-            _STDERR.write("Manhole[%.4f]: %s\n" % (time(), message))
+            full_message = "Manhole[%.4f]: %s\n" % (time(), message)
+
+            if isinstance(_VERBOSE_DESTINATION, int):
+                os.write(_VERBOSE_DESTINATION, full_message.encode('ascii', 'ignore'))
+            else:
+                _VERBOSE_DESTINATION.write(full_message)
         except:  # pylint: disable=W0702
             pass
 
@@ -350,7 +357,7 @@ def _manhole_uds_name():
 
 
 _INST_LOCK = _ORIGINAL_ALLOCATE_LOCK()
-_STDERR = _INST = _ORIGINAL_OS_FORK = _ORIGINAL_OS_FORKPTY = _SHOULD_RESTART = None
+_VERBOSE_DESTINATION = _INST = _ORIGINAL_OS_FORK = _ORIGINAL_OS_FORKPTY = _SHOULD_RESTART = None
 _SOCKET_PATH = None
 _REINSTALL_DELAY = None
 _REDIRECT_STDERR = True
@@ -394,7 +401,8 @@ ALL_SIGNALS = [
 
 
 def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS, oneshot_on=None, start_timeout=0.5,
-            socket_path=None, reinstall_delay=0.5, locals=None, daemon_connection=False, redirect_stderr=True):
+            socket_path=None, reinstall_delay=0.5, locals=None, daemon_connection=False, redirect_stderr=True,
+            verbose_destination=sys.__stderr__.fileno() if hasattr(sys.__stderr__, 'fileno') else sys.__stderr__):
     """
     Installs the manhole.
 
@@ -418,18 +426,21 @@ def install(verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS
         locals (dict): Names to add to manhole interactive shell locals.
         daemon_connection (bool): The connection thread is daemonic (dies on app exit). Default: ``False``.
         redirect_stderr (bool): Redirect output from stderr to manhole console. Default: ``True``.
+        verbose_destination (file descriptor or handle): Destination for verbose messages. Default is unbuffered stderr
+            (raw fd).
     """
     global _STDERR, _INST, _SHOULD_RESTART  # pylint: disable=W0603
-    global VERBOSE, _REINSTALL_DELAY, _SOCKET_PATH, _REDIRECT_STDERR  # pylint: disable=W0603
+    global VERBOSE, _VERBOSE_DESTINATION, _REINSTALL_DELAY, _SOCKET_PATH, _REDIRECT_STDERR  # pylint: disable=W0603
     with _INST_LOCK:
         if _INST:
             raise AlreadyInstalled("Manhole already installed")
         _INST = Manhole(sigmask, start_timeout, locals=locals, daemon_connection=daemon_connection)
+        _VERBOSE_DESTINATION = verbose_destination
         VERBOSE = verbose
         _SOCKET_PATH = socket_path
         _REINSTALL_DELAY = reinstall_delay
         _REDIRECT_STDERR = redirect_stderr
-        _STDERR = sys.__stderr__
+
         if oneshot_on is not None:
             oneshot_on = getattr(signal, 'SIG'+oneshot_on) if isinstance(oneshot_on, string) else oneshot_on
             signal.signal(oneshot_on, _handle_oneshot)

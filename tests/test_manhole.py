@@ -57,6 +57,32 @@ def assert_manhole_running(proc, uds_path, oneshot=False, extra=None):
     wait_for_strings(proc.read, TIMEOUT, 'Cleaned up.', *[] if oneshot else ['Waiting for new connection'])
 
 
+def test_cry_when_uninstalled(monkeypatch):
+    import manhole
+    monkeypatch.setattr(manhole, 'VERBOSE', True)
+    raises(RuntimeError, manhole._cry, "whatever")
+
+
+def test_cry_fd(monkeypatch, capfd):
+    import manhole
+    monkeypatch.setattr(manhole, 'VERBOSE', True)
+    monkeypatch.setattr(manhole, '_VERBOSE_DESTINATION', 2)
+    manhole._cry("whatever")
+    assert "]: whatever" in capfd.readouterr()[1]
+
+
+def test_cry_fh(monkeypatch, capfd):
+    import manhole
+    monkeypatch.setattr(manhole, 'VERBOSE', True)
+    class output:
+        data = []
+        write = data.append
+    monkeypatch.setattr(manhole, '_VERBOSE_DESTINATION', output)
+    manhole._cry("whatever")
+    assert len(output.data) == 1
+    assert "]: whatever" in output.data[0]
+
+
 def test_simple():
     with TestProcess(sys.executable, HELPER, 'test_simple') as proc:
         with dump_on_error(proc.read):
@@ -88,6 +114,7 @@ def test_daemon_connection():
                 for _ in range(5):
                     client.sock.send(b'bogus()\n')
                     time.sleep(0.05)
+                    print(repr(client.sock.recv(1024)))
             raises((socket.error, OSError), assert_manhole_running, proc, uds_path, extra=terminate_and_read)
             wait_for_strings(proc.read, TIMEOUT, 'In atexit handler')
 
@@ -402,21 +429,6 @@ def test_oneshot_on_usr2():
             assert_manhole_running(proc, uds_path, oneshot=True)
 
 
-def test_fail_to_cry():
-    import manhole
-    verbose = manhole.VERBOSE
-    out = manhole._STDERR
-    try:
-        manhole.VERBOSE = True
-        fh = os.fdopen(os.dup(2), 'w')
-        fh.close()
-        manhole._STDERR = fh
-        manhole.cry('stuff')
-    finally:
-        manhole.VERBOSE = verbose
-        manhole._STDERR = out
-
-
 def test_oneshot_on_usr2_error():
     with TestProcess(sys.executable, '-u', HELPER, 'test_oneshot_on_usr2') as proc:
         with dump_on_error(proc.read):
@@ -462,3 +474,10 @@ def test_sigmask():
                               b"mask = signalfd.sigprocmask(signalfd.SIG_BLOCK, [])\n"
                               b"print([int(n) for n in mask])\n")
                     wait_for_strings(client.read, 1, '%s' % [signal.SIGUSR1])
+
+
+def test_stderr_doesnt_deadlock():
+    for _ in range(100):
+        with TestProcess(sys.executable, HELPER, 'test_stderr_doesnt_deadlock') as proc:
+            with dump_on_error(proc.read):
+                wait_for_strings(proc.read, TIMEOUT, 'SUCCESS')
