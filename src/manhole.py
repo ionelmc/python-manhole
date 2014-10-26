@@ -349,7 +349,7 @@ _log = Logger()
 
 
 class Manhole(object):
-    # Manhole configuration
+    # Manhole core configuration
     # These are initialized when manhole is installed.
     original_os_fork = None
     original_os_forkpty = None
@@ -359,14 +359,10 @@ class Manhole(object):
     socket_path = None
     thread = None
 
-    def __init__(self,
-                 verbose=True, patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS, oneshot_on=None,
-                 start_timeout=0.5, socket_path=None, reinstall_delay=0.5, locals=None, daemon_connection=False,
-                 redirect_stderr=True,
-                 verbose_destination=sys.__stderr__.fileno() if hasattr(sys.__stderr__, 'fileno') else sys.__stderr__):
-
-        _log.configure(verbose, verbose_destination)
-
+    def configure(self,
+                  patch_fork=True, activate_on=None, sigmask=ALL_SIGNALS, oneshot_on=None,
+                  start_timeout=0.5, socket_path=None, reinstall_delay=0.5, locals=None, daemon_connection=False,
+                  redirect_stderr=True):
         self.socket_path = socket_path
         self.reinstall_delay = reinstall_delay
         self.redirect_stderr = redirect_stderr
@@ -469,7 +465,9 @@ class Manhole(object):
         self.thread.start()
 
 
-def install(**kwargs):
+def install(verbose=True,
+            verbose_destination=sys.__stderr__.fileno() if hasattr(sys.__stderr__, 'fileno') else sys.__stderr__,
+            **kwargs):
     """
     Installs the manhole.
 
@@ -502,7 +500,10 @@ def install(**kwargs):
     with _LOCK:
         if _MANHOLE is not None:
             raise AlreadyInstalled("Manhole already installed!")
-        _MANHOLE = Manhole(**kwargs)
+        _log.configure(verbose, verbose_destination)
+        _MANHOLE = Manhole()
+
+    _MANHOLE.configure(**kwargs)  # Threads might be started here
 
 
 def dump_stacktraces():
