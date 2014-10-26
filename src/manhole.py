@@ -501,9 +501,9 @@ def install(verbose=True,
     with _LOCK:
         if _MANHOLE is not None:
             raise AlreadyInstalled("Manhole already installed!")
-        _LOG.configure(verbose, verbose_destination)
         _MANHOLE = Manhole()
 
+    _LOG.configure(verbose, verbose_destination)
     _MANHOLE.configure(**kwargs)  # Threads might be started here
 
 
