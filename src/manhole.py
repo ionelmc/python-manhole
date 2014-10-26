@@ -345,6 +345,7 @@ class Logger(object):
                     self.destination.write(full_message)
             except:  # pylint: disable=W0702
                 pass
+
 _LOG = Logger()
 
 
