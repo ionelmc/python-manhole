@@ -57,30 +57,21 @@ def assert_manhole_running(proc, uds_path, oneshot=False, extra=None):
     wait_for_strings(proc.read, TIMEOUT, 'Cleaned up.', *[] if oneshot else ['Waiting for new connection'])
 
 
-def test_cry_when_uninstalled(monkeypatch):
+def test_cry_when_uninstalled():
     import manhole
-    monkeypatch.setattr(manhole, 'VERBOSE', True)
-    raises(RuntimeError, manhole._cry, "whatever")
+    raises(RuntimeError, manhole._CRY, "whatever")
 
 
-def test_cry_fd(monkeypatch, capfd):
-    import manhole
-    monkeypatch.setattr(manhole, 'VERBOSE', True)
-    monkeypatch.setattr(manhole, '_VERBOSE_DESTINATION', 2)
-    manhole._cry("whatever")
-    assert "]: whatever" in capfd.readouterr()[1]
+def test_cry_fd(capfd):
+    with TestProcess(sys.executable, HELPER, 'test_cry_fd') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, "]: whatever-1", "]: whatever-2")
 
 
 def test_cry_fh(monkeypatch, capfd):
-    import manhole
-    monkeypatch.setattr(manhole, 'VERBOSE', True)
-    class output:
-        data = []
-        write = data.append
-    monkeypatch.setattr(manhole, '_VERBOSE_DESTINATION', output)
-    manhole._cry("whatever")
-    assert len(output.data) == 1
-    assert "]: whatever" in output.data[0]
+    with TestProcess(sys.executable, HELPER, 'test_cry_fh') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, 'SUCCESS')
 
 
 def test_simple():

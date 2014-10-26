@@ -79,7 +79,18 @@ if __name__ == '__main__':
             setup_greenthreads(True)
             import manhole
 
-        if test_name == 'test_activate_on_usr2':
+        if test_name == 'test_cry_fd':
+            manhole.install(verbose=True, verbose_destination=2)
+            manhole._CRY("whatever-1")
+            manhole._MANHOLE.cry("whatever-2")
+        elif test_name == 'test_cry_fh':
+            class Output(object):
+                data = []
+                write = data.append
+            manhole.install(verbose_destination=Output)
+            if len(Output.data) == 1 and "]: whatever" in Output.data[0]:
+                print("SUCCESS")
+        elif test_name == 'test_activate_on_usr2':
             manhole.install(activate_on='USR2')
             for i in range(TIMEOUT * 100):
                 time.sleep(0.1)
