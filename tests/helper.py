@@ -87,8 +87,9 @@ if __name__ == '__main__':
             class Output(object):
                 data = []
                 write = data.append
-            manhole.install(verbose_destination=Output)
-            if len(Output.data) == 1 and "]: whatever" in Output.data[0]:
+            manhole.install(verbose=True, verbose_destination=Output)
+            manhole._CRY("whatever")
+            if Output.data and "]: whatever" in Output.data[-1]:
                 print("SUCCESS")
         elif test_name == 'test_activate_on_usr2':
             manhole.install(activate_on='USR2')
@@ -161,7 +162,7 @@ if __name__ == '__main__':
             for i in range(15):
                 time.sleep(0.1)
             print("Sending signal to manhole thread ...")
-            pthread_kill(manhole._INST.ident, signal.SIGUSR2)
+            pthread_kill(manhole._MANHOLE.thread.ident, signal.SIGUSR2)
             for i in range(TIMEOUT * 100):
                 time.sleep(0.1)
         elif test_name == 'test_oneshot_on_usr2':

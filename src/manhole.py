@@ -133,7 +133,7 @@ class ManholeThread(_ORIGINAL_THREAD):
         daemon_connection (bool): The connection thread is daemonic (dies on app exit). Default: ``False``.
     """
 
-    def __init__(self, sigmask, start_timeout, bind_delay=None, locals=None, daemon_connection=False):
+    def __init__(self, cry, get_socket, sigmask, start_timeout, bind_delay=None, locals=None, daemon_connection=False):
         super(ManholeThread, self).__init__()
         self.daemon = True
         self.daemon_connection = daemon_connection
@@ -145,31 +145,24 @@ class ManholeThread(_ORIGINAL_THREAD):
         self.start_timeout = start_timeout
         self.bind_delay = bind_delay
         self.locals = locals
+        self.cry = cry
+        self.get_socket = get_socket
 
     def clone(self, **kwargs):
         """
         Make a fresh thread with the same options. This is usually used on dead threads.
         """
         return ManholeThread(
-            self.sigmask, self.start_timeout, locals=self.locals, daemon_connection=self.daemon_connection,
+            self.cry, self.get_socket, self.sigmask, self.start_timeout, locals=self.locals,
+            daemon_connection=self.daemon_connection,
             **kwargs
         )
 
     def start(self):
         super(ManholeThread, self).start()
         if not self.serious.wait(self.start_timeout) and not PY26:
-            _CRY("WARNING: Waited %s seconds but Manhole thread didn't start yet :(" % self.start_timeout)
+            self.cry("WARNING: Waited %s seconds but Manhole thread didn't start yet :(" % self.start_timeout)
 
-    @staticmethod
-    def get_socket():
-        sock = _ORIGINAL_SOCKET(socket.AF_UNIX, socket.SOCK_STREAM)
-        name = _MANHOLE.uds_name
-        if os.path.exists(name):
-            os.unlink(name)
-        sock.bind(name)
-        sock.listen(5)
-        _CRY("Manhole UDS path: "+name)
-        return sock
 
     def run(self):
         """
@@ -184,12 +177,12 @@ class ManholeThread(_ORIGINAL_THREAD):
         pthread_setname_np(self.ident, self.name)
 
         if self.bind_delay:
-            _CRY("Delaying UDS binding %s seconds ..." % self.bind_delay)
+            self.cry("Delaying UDS binding %s seconds ..." % self.bind_delay)
             _ORIGINAL_SLEEP(self.bind_delay)
 
         sock = self.get_socket()
         while True:
-            _CRY("Waiting for new connection (in pid:%s) ..." % os.getpid())
+            self.cry("Waiting for new connection (in pid:%s) ..." % os.getpid())
             try:
                 client = ManholeConnectionThread(sock.accept()[0], self.locals, self.daemon_connection)
                 client.start()
@@ -337,7 +330,7 @@ class Highlander(type):
 
     def __call__(cls, *args, **kwargs):
         if cls.__immortal__:
-            raise RuntimeError("You cannot have more than one %s instance!" % cls.__name__)
+            raise AlreadyInstalled("You cannot have more than one %s instance!" % cls.__name__)
         cls.__immortal__ = man = super(Highlander, cls).__call__(*args, **kwargs)
         return man
 
@@ -390,11 +383,13 @@ class ManholeInstaller(with_metaclass(Highlander)):
         with self.thread_creation_lock:
             if self.thread:
                 raise AlreadyInstalled("Manhole already installed!")
-            self.thread = ManholeThread(sigmask, start_timeout, locals=locals, daemon_connection=daemon_connection)
             self.cry = self.cry_factory(verbose, verbose_destination)
             self.socket_path = socket_path
             self.reinstall_delay = reinstall_delay
             self.redirect_stderr = redirect_stderr
+            self.thread = ManholeThread(
+                self.cry, self.get_socket, sigmask, start_timeout, locals=locals, daemon_connection=daemon_connection
+            )
 
             if oneshot_on is not None:
                 oneshot_on = getattr(signal, 'SIG'+oneshot_on) if isinstance(oneshot_on, string) else oneshot_on
@@ -422,6 +417,15 @@ class ManholeInstaller(with_metaclass(Highlander)):
                     elif socket_path:
                         self.cry("Not patching os.fork and os.forkpty. Using user socket path %s" % socket_path)
 
+    def get_socket(self):
+        sock = _ORIGINAL_SOCKET(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.remove_manhole_uds()
+        name = self.uds_name
+        sock.bind(name)
+        sock.listen(5)
+        self.cry("Manhole UDS path: " + name)
+        return sock
+
     def reinstall(self):
         """
         Reinstalls the manhole. Checks if the thread is running. If not, it starts it again.
@@ -434,7 +438,7 @@ class ManholeInstaller(with_metaclass(Highlander)):
 
     def handle_oneshot(self, _signum, _frame):
         try:
-            sock = ManholeThread.get_socket()
+            sock = self.get_socket()
             self.cry("Waiting for new connection (in pid:%s) ..." % os.getpid())
             client, _ = sock.accept()
             ManholeConnectionThread.check_credentials(client)
