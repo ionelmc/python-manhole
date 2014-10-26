@@ -315,19 +315,25 @@ def run_repl(locals):
 
 
 class Logger(object):
+    """
+    Internal object used for logging.
+
+    Initially this is not configured. Until you call ``manhole.install()`` this logger object won't work (will raise
+    ``NotInstalled``).
+    """
     time = _get_original('time.time')
-    verbose = True
+    enabled = True
     destination = None
 
-    def configure(self, verbose, destination):
-        self.verbose = verbose
+    def configure(self, enabled, destination):
+        self.enabled = enabled
         self.destination = destination
 
     def __call__(self, message):
         """
         Fail-ignorant logging function.
         """
-        if self.verbose:
+        if self.enabled:
             if self.destination is None:
                 raise NotInstalled("Manhole is not installed!")
             try:
