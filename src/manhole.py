@@ -92,7 +92,7 @@ else:
 ALL_SIGNALS = tuple(getattr(signal, sig) for sig in dir(signal)
                     if sig.startswith('SIG') and '_' not in sig)
 
-# These (_log and _MANHOLE) will hold instances after install
+# These (_LOG and _MANHOLE) will hold instances after install
 _MANHOLE = None
 _LOCK = _ORIGINAL_ALLOCATE_LOCK()
 
@@ -162,7 +162,7 @@ class ManholeThread(_ORIGINAL_THREAD):
     def start(self):
         super(ManholeThread, self).start()
         if not self.serious.wait(self.start_timeout) and not PY26:
-            _log("WARNING: Waited %s seconds but Manhole thread didn't start yet :(" % self.start_timeout)
+            _LOG("WARNING: Waited %s seconds but Manhole thread didn't start yet :(" % self.start_timeout)
 
     def run(self):
         """
@@ -177,12 +177,12 @@ class ManholeThread(_ORIGINAL_THREAD):
         pthread_setname_np(self.ident, self.name)
 
         if self.bind_delay:
-            _log("Delaying UDS binding %s seconds ..." % self.bind_delay)
+            _LOG("Delaying UDS binding %s seconds ..." % self.bind_delay)
             _ORIGINAL_SLEEP(self.bind_delay)
 
         sock = self.get_socket()
         while True:
-            _log("Waiting for new connection (in pid:%s) ..." % os.getpid())
+            _LOG("Waiting for new connection (in pid:%s) ..." % os.getpid())
             try:
                 client = ManholeConnectionThread(sock.accept()[0], self.locals, self.daemon_connection)
                 client.start()
@@ -208,7 +208,7 @@ class ManholeConnectionThread(_ORIGINAL_THREAD):
         self.locals = locals
 
     def run(self):
-        _log('Started ManholeConnectionThread thread. Checking credentials ...')
+        _LOG('Started ManholeConnectionThread thread. Checking credentials ...')
         pthread_setname_np(self.ident, "Manhole ----")
         pid, _, _ = self.check_credentials(self.client)
         pthread_setname_np(self.ident, "Manhole %s" % pid)
@@ -228,7 +228,7 @@ class ManholeConnectionThread(_ORIGINAL_THREAD):
                 client_name, euid
             ))
 
-        _log("Accepted connection %s from %s" % (client, client_name))
+        _LOG("Accepted connection %s from %s" % (client, client_name))
         return pid, uid, gid
 
     @staticmethod
@@ -256,7 +256,7 @@ class ManholeConnectionThread(_ORIGINAL_THREAD):
                         backup.append((name, getattr(sys, name)))
                         setattr(sys, name, _ORIGINAL_FDOPEN(client_fd, mode, 1 if PY3 else 0))
                 run_repl(locals)
-                _log("DONE.")
+                _LOG("DONE.")
             finally:
                 try:
                     # Change the switch/check interval to something ridiculous. We don't want to have other thread try
@@ -278,10 +278,10 @@ class ManholeConnectionThread(_ORIGINAL_THREAD):
                     del junk
                 finally:
                     setinterval(old_interval)
-                    _log("Cleaned up.")
+                    _LOG("Cleaned up.")
         except Exception:
-            _log("ManholeConnectionThread thread failed:")
-            _log(traceback.format_exc())
+            _LOG("ManholeConnectionThread thread failed:")
+            _LOG(traceback.format_exc())
 
 
 class ManholeConsole(code.InteractiveConsole):
@@ -345,7 +345,7 @@ class Logger(object):
                     self.destination.write(full_message)
             except:  # pylint: disable=W0702
                 pass
-_log = Logger()
+_LOG = Logger()
 
 
 class Manhole(object):
@@ -390,18 +390,18 @@ class Manhole(object):
                 self.patch_os_fork_functions()
             else:
                 if activate_on:
-                    _log("Not patching os.fork and os.forkpty. Activation is done by signal %s" % activate_on)
+                    _LOG("Not patching os.fork and os.forkpty. Activation is done by signal %s" % activate_on)
                 elif oneshot_on:
-                    _log("Not patching os.fork and os.forkpty. Oneshot activation is done by signal %s" % oneshot_on)
+                    _LOG("Not patching os.fork and os.forkpty. Oneshot activation is done by signal %s" % oneshot_on)
                 elif socket_path:
-                    _log("Not patching os.fork and os.forkpty. Using user socket path %s" % socket_path)
+                    _LOG("Not patching os.fork and os.forkpty. Using user socket path %s" % socket_path)
 
     def get_socket(self):
         sock = _ORIGINAL_SOCKET(socket.AF_UNIX, socket.SOCK_STREAM)
         name = self.remove_manhole_uds()
         sock.bind(name)
         sock.listen(5)
-        _log("Manhole UDS path: " + name)
+        _LOG("Manhole UDS path: " + name)
         return sock
 
     def reinstall(self):
@@ -417,14 +417,14 @@ class Manhole(object):
     def handle_oneshot(self, _signum, _frame):
         try:
             sock = self.get_socket()
-            _log("Waiting for new connection (in pid:%s) ..." % os.getpid())
+            _LOG("Waiting for new connection (in pid:%s) ..." % os.getpid())
             client, _ = sock.accept()
             ManholeConnectionThread.check_credentials(client)
             ManholeConnectionThread.handle(client, self.thread.locals)
         except:  # pylint: disable=W0702
             # we don't want to let any exception out, it might make the application missbehave
-            _log("Manhole oneshot connection failed:")
-            _log(traceback.format_exc())
+            _LOG("Manhole oneshot connection failed:")
+            _LOG(traceback.format_exc())
         finally:
             self.remove_manhole_uds()
 
@@ -444,7 +444,7 @@ class Manhole(object):
         """Fork a child process."""
         pid = self.original_os_fork()
         if not pid:
-            _log('Fork detected. Reinstalling Manhole.')
+            _LOG('Fork detected. Reinstalling Manhole.')
             self.reinstall()
         return pid
 
@@ -452,14 +452,14 @@ class Manhole(object):
         """Fork a new process with a new pseudo-terminal as controlling tty."""
         pid, master_fd = self.original_os_forkpty()
         if not pid:
-            _log('Fork detected. Reinstalling Manhole.')
+            _LOG('Fork detected. Reinstalling Manhole.')
             self.reinstall()
         return pid, master_fd
 
     def patch_os_fork_functions(self):
         self.original_os_fork, os.fork = os.fork, self.patched_fork
         self.original_os_forkpty, os.forkpty = os.forkpty, self.patched_forkpty
-        _log("Patched %s and %s." % (self.original_os_fork, self.original_os_fork))
+        _LOG("Patched %s and %s." % (self.original_os_fork, self.original_os_fork))
 
     def activate_on_signal(self, _signum, _frame):
         self.thread.start()
@@ -500,7 +500,7 @@ def install(verbose=True,
     with _LOCK:
         if _MANHOLE is not None:
             raise AlreadyInstalled("Manhole already installed!")
-        _log.configure(verbose, verbose_destination)
+        _LOG.configure(verbose, verbose_destination)
         _MANHOLE = Manhole()
 
     _MANHOLE.configure(**kwargs)  # Threads might be started here

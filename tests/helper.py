@@ -81,14 +81,14 @@ if __name__ == '__main__':
 
         if test_name == 'test_cry_fd':
             manhole.install(verbose=True, verbose_destination=2)
-            manhole._log("whatever-1")
-            manhole._log("whatever-2")
+            manhole._LOG("whatever-1")
+            manhole._LOG("whatever-2")
         elif test_name == 'test_cry_fh':
             class Output(object):
                 data = []
                 write = data.append
             manhole.install(verbose=True, verbose_destination=Output)
-            manhole._log("whatever")
+            manhole._LOG("whatever")
             if Output.data and "]: whatever" in Output.data[-1]:
                 print("SUCCESS")
         elif test_name == 'test_activate_on_usr2':
