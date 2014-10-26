@@ -107,6 +107,14 @@ class AlreadyInstalled(Exception):
     pass
 
 
+class NotInstalled(Exception):
+    pass
+
+
+class ConfigurationConflict(Exception):
+    pass
+
+
 class SuspiciousClient(Exception):
     pass
 
@@ -321,7 +329,7 @@ class Logger(object):
         """
         if self.verbose:
             if self.destination is None:
-                raise RuntimeError("Manhole is not installed!")
+                raise NotInstalled("Manhole is not installed!")
             try:
                 full_message = "Manhole[%.4f]: %s\n" % (self.time(), message)
 
@@ -371,8 +379,8 @@ class Manhole(object):
         else:
             activate_on = getattr(signal, 'SIG'+activate_on) if isinstance(activate_on, string) else activate_on
             if activate_on == oneshot_on:
-                raise RuntimeError('You cannot do activation of the Manhole thread on the same signal '
-                                   'that you want to do oneshot activation !')
+                raise ConfigurationConflict('You cannot do activation of the Manhole thread on the same signal '
+                                            'that you want to do oneshot activation !')
             signal.signal(activate_on, self.activate_on_signal)
         atexit.register(self.remove_manhole_uds)
         if patch_fork:

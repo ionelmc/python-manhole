@@ -59,7 +59,8 @@ def assert_manhole_running(proc, uds_path, oneshot=False, extra=None):
 
 def test_cry_when_uninstalled():
     import manhole
-    raises(RuntimeError, manhole._log, "whatever")
+
+    raises(manhole.NotInstalled, manhole._log, "whatever")
 
 
 def test_cry_fd(capfd):
