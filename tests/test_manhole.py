@@ -57,20 +57,20 @@ def assert_manhole_running(proc, uds_path, oneshot=False, extra=None):
     wait_for_strings(proc.read, TIMEOUT, 'Cleaned up.', *[] if oneshot else ['Waiting for new connection'])
 
 
-def test_cry_when_uninstalled():
+def test_log_when_uninstalled():
     import manhole
 
     raises(manhole.NotInstalled, manhole._LOG, "whatever")
 
 
-def test_cry_fd(capfd):
-    with TestProcess(sys.executable, HELPER, 'test_cry_fd') as proc:
+def test_log_fd(capfd):
+    with TestProcess(sys.executable, HELPER, 'test_log_fd') as proc:
         with dump_on_error(proc.read):
             wait_for_strings(proc.read, TIMEOUT, "]: whatever-1", "]: whatever-2")
 
 
-def test_cry_fh(monkeypatch, capfd):
-    with TestProcess(sys.executable, HELPER, 'test_cry_fh') as proc:
+def test_log_fh(monkeypatch, capfd):
+    with TestProcess(sys.executable, HELPER, 'test_log_fh') as proc:
         with dump_on_error(proc.read):
             wait_for_strings(proc.read, TIMEOUT, 'SUCCESS')
 
