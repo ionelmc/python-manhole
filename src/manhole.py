@@ -467,15 +467,17 @@ def install(verbose=True,
     Installs the manhole.
 
     Args:
-        verbose (bool): Set it to ``False`` to squelch the stderr ouput
-        patch_fork (bool): set it to ``False`` if you don't want your ``os.fork`` and ``os.forkpy`` monkeypatched
+        verbose (bool): Set it to ``False`` to squelch the logging.
+        verbose_destination (file descriptor or handle): Destination for verbose messages. Default is unbuffered stderr
+            (stderr ``2`` file descriptor).
+        patch_fork (bool): Set it to ``False`` if you don't want your ``os.fork`` and ``os.forkpy`` monkeypatched
         activate_on (int or signal name): set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you
             want the Manhole thread to start when this signal is sent. This is desireable in case you don't want the
             thread active all the time.
-        oneshot_on (int or signal name): set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you
+        oneshot_on (int or signal name): Set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you
             want the Manhole to listen for connection in the signal handler. This is desireable in case you don't want
             threads at all.
-        sigmask (list of ints or signal names): will set the signal mask to the given list (using
+        sigmask (list of ints or signal names): Will set the signal mask to the given list (using
             ``signalfd.sigprocmask``). No action is done if ``signalfd`` is not importable.
             **NOTE**: This is done so that the Manhole thread doesn't *steal* any signals; Normally that is fine cause
             Python will force all the signal handling to be run in the main thread but signalfd doesn't.
@@ -486,8 +488,6 @@ def install(verbose=True,
         locals (dict): Names to add to manhole interactive shell locals.
         daemon_connection (bool): The connection thread is daemonic (dies on app exit). Default: ``False``.
         redirect_stderr (bool): Redirect output from stderr to manhole console. Default: ``True``.
-        verbose_destination (file descriptor or handle): Destination for verbose messages. Default is unbuffered stderr
-            (raw fd).
     """
     # pylint: disable=W0603
     global _MANHOLE
