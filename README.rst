@@ -130,6 +130,10 @@ What happens when you actually connect to the socket
 Known issues
 ============
 
+* Using threads and file handle (not raw file descriptor) ``verbose_destination`` can cause deadlocks. See bug reports:
+  `PyPy <https://bitbucket.org/pypy/pypy/issue/1895/writing-to-stderr-from-multiple-processes>`_ and `Python 3.4
+  <http://bugs.python.org/issue22697>`_.
+
 SIGTERM and socket cleanup
 --------------------------
 
