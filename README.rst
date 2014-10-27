@@ -101,7 +101,7 @@ Options
 
 * ``verbose`` - Set it to ``False`` to squelch the logging.
 * ``verbose_destination`` - Destination for verbose messages. Set it to a file descriptor or handle. Default is
-    unbuffered stderr (stderr ``2`` file descriptor).
+  unbuffered stderr (stderr ``2`` file descriptor).
 * ``patch_fork`` - Set it to ``False`` if you don't want your ``os.fork`` and ``os.forkpy`` monkeypatched
 * ``activate_on`` - Set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you want the Manhole thread
   to start when this signal is sent. This is desireable in case you don't want the thread active all the time.
