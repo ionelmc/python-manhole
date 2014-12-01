@@ -2,11 +2,11 @@
        python-manhole
 ===========================
 
-.. image:: http://img.shields.io/travis/ionelmc/python-manhole.png
+.. image:: http://img.shields.io/travis/ionelmc/python-manhole/master.png
     :alt: Build Status
     :target: https://travis-ci.org/ionelmc/python-manhole
 
-.. image:: http://img.shields.io/coveralls/ionelmc/python-manhole.png
+.. image:: http://img.shields.io/coveralls/ionelmc/python-manhole/master.png
     :alt: Coverage Status
     :target: https://coveralls.io/r/ionelmc/python-manhole
 
