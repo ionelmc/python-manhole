@@ -1,4 +1,4 @@
-Welcome to Manhole's documentation!
+Welcome to manhole's documentation!
 ======================================
 
 Contents:
@@ -20,3 +20,4 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+

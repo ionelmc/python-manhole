@@ -17,7 +17,7 @@ if os.getenv('SPELLCHECK'):
 
 source_suffix = '.rst'
 master_doc = 'index'
-project = u'Manhole'
+project = u'manhole'
 copyright = u'2014, Ionel Cristian Mărieș'
 version = release = re.findall(
     'version="(.*)"',
