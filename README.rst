@@ -69,7 +69,9 @@ Install it::
 
     pip install manhole
 
-You can put this in your django settings, wsgi app file, some module that's always imported early etc::
+You can put this in your django settings, wsgi app file, some module that's always imported early etc:
+
+.. code-block:: python
 
     import manhole
     manhole.install() # this will start the daemon thread
@@ -116,7 +118,7 @@ Features
 Options
 -------
 
-::
+.. code-block:: python
 
     manhole.install(
         verbose=True,
@@ -170,7 +172,10 @@ SIGTERM and socket cleanup
 
 By default Python doesn't call the ``atexit`` callbacks with the default SIGTERM handling. This makes manhole leave stray
 socket files around. If this is undesirable you should install a custom SIGTERM handler so ``atexit`` is properly invoked.
-Example::
+
+Example:
+
+.. code-block:: python
 
     import signal
     import sys
