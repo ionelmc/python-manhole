@@ -62,8 +62,6 @@ env:
     - TOXENV=pypy-nocover
     - TOXENV=pypy-signalfd,coveralls
     - TOXENV=pypy-signalfd-nocover
-    - TOXENV=docs
-
 before_install:
   - python --version
   - virtualenv --version
@@ -78,3 +76,4 @@ notifications:
   email:
     on_success: never
     on_failure: always
+
