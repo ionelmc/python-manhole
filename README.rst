@@ -99,6 +99,28 @@ Sample output::
     >>> print 'foobar'
     foobar
 
+Alternative client
+------------------
+
+There's a new experimental ``manhole`` bin since 1.1.0, that emulates ``socat``::
+
+    usage: manhole [-h] [-t TIMEOUT] [-1 | -2] PID
+
+    Connect to a manhole.
+
+    positional arguments:
+      PID                   A numerical process id, or a path in the form:
+                            /tmp/manhole-1234
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -t TIMEOUT, --timeout TIMEOUT
+                            Timeout to use. Default: 1 seconds.
+      -1, -USR1             Send USR1 (10) to the process before connecting.
+      -2, -USR2             Send USR2 (12) to the process before connecting.
+
+
+
 Features
 ========
 

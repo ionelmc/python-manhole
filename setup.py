@@ -100,6 +100,9 @@ setup(
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
     ],
+    scripts=[
+        join('scripts', 'manhole'),
+    ],
     keywords=[
         'debugging', 'manhole', 'thread', 'socket', 'unix domain socket'
     ],
