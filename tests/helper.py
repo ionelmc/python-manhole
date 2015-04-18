@@ -81,6 +81,10 @@ if __name__ == '__main__':
 
         if test_name == 'test_environ_variable_activation':
             time.sleep(TIMEOUT)
+        elif test_name == 'test_install_twice_not_strict':
+            manhole.install(oneshot_on='USR2')
+            manhole.install(strict=False)
+            time.sleep(TIMEOUT)
         elif test_name == 'test_log_fd':
             manhole.install(verbose=True, verbose_destination=2)
             manhole._LOG("whatever-1")

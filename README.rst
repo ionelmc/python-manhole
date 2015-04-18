@@ -128,7 +128,8 @@ Options
         sigmask=manhole.ALL_SIGNALS,
         socket_path=None,
         reinstall_delay=0.5,
-        locals=None
+        locals=None,
+        strict=True,
     )
 
 * ``verbose`` - Set it to ``False`` to squelch the logging.
@@ -150,6 +151,7 @@ Options
 * ``locals`` - Names to add to manhole interactive shell locals.
 * ``daemon_connection`` - The connection thread is daemonic (dies on app exit). Default: ``False``.
 * ``redirect_stderr`` - Redirect output from stderr to manhole console. Default: ``True``.
+* ``strict`` - If ``True`` then ``AlreadyInstalled`` will be raised when attempting to install manhole twice. Default: ``True``.
 
 Environment variable installation
 ---------------------------------

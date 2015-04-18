@@ -462,6 +462,7 @@ class Manhole(object):
 
 def install(verbose=True,
             verbose_destination=sys.__stderr__.fileno() if hasattr(sys.__stderr__, 'fileno') else sys.__stderr__,
+            strict=True,
             **kwargs):
     """
     Installs the manhole.
@@ -494,7 +495,10 @@ def install(verbose=True,
 
     with _LOCK:
         if _MANHOLE is not None:
-            raise AlreadyInstalled("Manhole already installed!")
+            if strict:
+                raise AlreadyInstalled("Manhole already installed!")
+            else:
+                return
         _MANHOLE = Manhole()
 
     _LOG.configure(verbose, verbose_destination)
