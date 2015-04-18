@@ -450,6 +450,17 @@ def test_interrupt_on_accept():
             assert_manhole_running(proc, uds_path)
 
 
+def test_environ_variable_activation():
+    with TestProcess(sys.executable, '-u', HELPER, 'test_environ_variable_activation', env=dict(os.environ, PYTHONMANHOLE="oneshot_on='USR2'")) as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
+            proc.signal(signal.SIGUSR2)
+            wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+            uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+            assert_manhole_running(proc, uds_path, oneshot=True)
+
+
 @mark.skipif(not is_module_available('signalfd'), reason="signalfd not available")
 def test_sigmask():
     with TestProcess(sys.executable, HELPER, 'test_sigmask') as proc:

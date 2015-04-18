@@ -99,7 +99,6 @@ Sample output::
     >>> print 'foobar'
     foobar
 
-
 Features
 ========
 
@@ -151,6 +150,24 @@ Options
 * ``locals`` - Names to add to manhole interactive shell locals.
 * ``daemon_connection`` - The connection thread is daemonic (dies on app exit). Default: ``False``.
 * ``redirect_stderr`` - Redirect output from stderr to manhole console. Default: ``True``.
+
+Environment variable installation
+---------------------------------
+
+Manhole can be installed via the ``PYTHONMANHOLE`` environment varialbe.
+
+This::
+
+    PYTHONMANHOLE='' python yourapp.py
+
+Is equivalent to having this in ``yourapp.py``:
+
+    import manhole
+    manhole.install()
+
+Any extra text in the environment variable is passed to ``manhole.install()``. Example::
+
+    PYTHONMANHOLE='onshot_on="USR2"' python yourapp.py
 
 What happens when you actually connect to the socket
 ----------------------------------------------------

@@ -79,7 +79,9 @@ if __name__ == '__main__':
             setup_greenthreads(True)
             import manhole
 
-        if test_name == 'test_log_fd':
+        if test_name == 'test_environ_variable_activation':
+            time.sleep(TIMEOUT)
+        elif test_name == 'test_log_fd':
             manhole.install(verbose=True, verbose_destination=2)
             manhole._LOG("whatever-1")
             manhole._LOG("whatever-2")
