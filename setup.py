@@ -106,6 +106,9 @@ setup(
     keywords=[
         'debugging', 'manhole', 'thread', 'socket', 'unix domain socket'
     ],
+    extras_require={
+        ':python_version=="2.6"': ['argparse'],
+    },
     install_requires=[
     ],
     cmdclass={
