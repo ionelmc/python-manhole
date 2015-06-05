@@ -101,7 +101,7 @@ setup(
         'Programming Language :: Python :: Implementation :: PyPy',
     ],
     scripts=[
-        join('scripts', 'manhole'),
+        join('scripts', 'manhole-cli'),
     ],
     keywords=[
         'debugging', 'manhole', 'thread', 'socket', 'unix domain socket'
