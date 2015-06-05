@@ -7,7 +7,7 @@ Changelog
 
 * Added support for installing the manhole via the ``PYTHONMANHOLE`` environment variable.
 * Added a ``strict`` install option. Set it to false to avoid getting the ``AlreadyInstalled`` exception.
-* Added a ``manhole`` script that emulates ``socat readline unix-connect:/tmp/manhole-1234``.
+* Added a ``manhole-cli`` script that emulates ``socat readline unix-connect:/tmp/manhole-1234``.
 
 1.0.0 (2014-10-13)
 ------------------
