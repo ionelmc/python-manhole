@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.1.0 (???)
+1.1.0 (2015-06-06)
 ------------------
 
 * Added support for installing the manhole via the ``PYTHONMANHOLE`` environment variable.
