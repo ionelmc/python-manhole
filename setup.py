@@ -83,7 +83,7 @@ class GeneratePTH(Command):
 
 setup(
     name='manhole',
-    version='1.0.0',
+    version='1.1.0',
     license='BSD',
     description='Inpection manhole for python applications. Connection is done via unix domain sockets.',
     long_description='%s\n%s' % (read('README.rst'), re.sub(':[a-z]+:`~?(.*?)`', r'``\1``', read('CHANGELOG.rst'))),
