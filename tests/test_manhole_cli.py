@@ -2,7 +2,9 @@ from __future__ import print_function
 
 import os
 import sys
+import signal
 
+import pytest
 from process_tests import dump_on_error
 from process_tests import TestProcess
 from process_tests import wait_for_strings
@@ -16,10 +18,25 @@ TIMEOUT = int(os.getenv('MANHOLE_TEST_TIMEOUT', 10))
 HELPER = os.path.join(os.path.dirname(__file__), 'helper.py')
 
 
+def test_pid_validation():
+    exc = pytest.raises(subprocess.CalledProcessError, subprocess.check_output, ['manhole-cli', 'asdfasdf'],
+                        stderr=subprocess.STDOUT)
+    assert exc.value.output == b"""usage: manhole-cli [-h] [-t TIMEOUT] [-1 | -2 | -s SIGNAL] PID
+manhole-cli: error: argument PID: PID must be in one of these forms: 1234 or /tmp/manhole-1234
+"""
+
+
+def test_sig_number_validation():
+    exc = pytest.raises(subprocess.CalledProcessError, subprocess.check_output,
+                        ['manhole-cli', '-s', '12341234', '12341234'], stderr=subprocess.STDOUT)
+    assert exc.value.output.startswith(b"""usage: manhole-cli [-h] [-t TIMEOUT] [-1 | -2 | -s SIGNAL] PID
+manhole-cli: error: argument -s/--signal: Invalid signal number 12341234. Expected one of: """)
+
+
 def test_help():
     output = subprocess.check_output(['manhole-cli', '--help'])
     print(output)
-    assert output == b"""usage: manhole-cli [-h] [-t TIMEOUT] [-1 | -2] PID
+    assert output == b"""usage: manhole-cli [-h] [-t TIMEOUT] [-1 | -2 | -s SIGNAL] PID
 
 Connect to a manhole.
 
@@ -33,13 +50,17 @@ optional arguments:
                         Timeout to use. Default: 1 seconds.
   -1, -USR1             Send USR1 (10) to the process before connecting.
   -2, -USR2             Send USR2 (12) to the process before connecting.
+  -s SIGNAL, --signal SIGNAL
+                        Send the given SIGNAL to the process before
+                        connecting.
 """
 
 
 def test_usr2():
     with TestProcess(sys.executable, '-u', HELPER, 'test_oneshot_on_usr2') as service:
         with dump_on_error(service.read):
-            wait_for_strings(service.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
+            wait_for_strings(service.read, TIMEOUT,
+                             'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
             with TestProcess('manhole-cli', '-USR2', str(service.proc.pid), bufsize=0, stdin=subprocess.PIPE) as client:
                 with dump_on_error(client.read):
                     wait_for_strings(client.read, TIMEOUT, '(ManholeConsole)', '>>>')
@@ -62,7 +83,47 @@ def test_path():
     with TestProcess(sys.executable, HELPER, 'test_simple') as service:
         with dump_on_error(service.read):
             wait_for_strings(service.read, TIMEOUT, '/tmp/manhole-')
-            with TestProcess('manhole-cli', '/tmp/manhole-%s' % service.proc.pid, bufsize=0, stdin=subprocess.PIPE) as client:
+            with TestProcess('manhole-cli', '/tmp/manhole-%s' % service.proc.pid, bufsize=0,
+                             stdin=subprocess.PIPE) as client:
+                with dump_on_error(client.read):
+                    wait_for_strings(client.read, TIMEOUT, '(ManholeConsole)', '>>>')
+                    client.proc.stdin.write(b"1234+2345\n")
+                    wait_for_strings(client.read, TIMEOUT, '3579')
+
+
+def test_sig_usr2():
+    with TestProcess(sys.executable, '-u', HELPER, 'test_oneshot_on_usr2') as service:
+        with dump_on_error(service.read):
+            wait_for_strings(service.read, TIMEOUT,
+                             'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
+            with TestProcess('manhole-cli', '--signal=USR2', str(service.proc.pid), bufsize=0,
+                             stdin=subprocess.PIPE) as client:
+                with dump_on_error(client.read):
+                    wait_for_strings(client.read, TIMEOUT, '(ManholeConsole)', '>>>')
+                    client.proc.stdin.write(b"1234+2345\n")
+                    wait_for_strings(client.read, TIMEOUT, '3579')
+
+
+def test_sig_usr2_full():
+    with TestProcess(sys.executable, '-u', HELPER, 'test_oneshot_on_usr2') as service:
+        with dump_on_error(service.read):
+            wait_for_strings(service.read, TIMEOUT,
+                             'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
+            with TestProcess('manhole-cli', '-s', 'SIGUSR2', str(service.proc.pid), bufsize=0,
+                             stdin=subprocess.PIPE) as client:
+                with dump_on_error(client.read):
+                    wait_for_strings(client.read, TIMEOUT, '(ManholeConsole)', '>>>')
+                    client.proc.stdin.write(b"1234+2345\n")
+                    wait_for_strings(client.read, TIMEOUT, '3579')
+
+
+def test_sig_usr2_number():
+    with TestProcess(sys.executable, '-u', HELPER, 'test_oneshot_on_usr2') as service:
+        with dump_on_error(service.read):
+            wait_for_strings(service.read, TIMEOUT,
+                             'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
+            with TestProcess('manhole-cli', '-s', str(signal.SIGUSR2), str(service.proc.pid), bufsize=0,
+                             stdin=subprocess.PIPE) as client:
                 with dump_on_error(client.read):
                     wait_for_strings(client.read, TIMEOUT, '(ManholeConsole)', '>>>')
                     client.proc.stdin.write(b"1234+2345\n")
