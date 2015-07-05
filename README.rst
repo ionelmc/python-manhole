@@ -2,51 +2,66 @@
         python-manhole
 ===============================
 
-| |docs| |travis| |coveralls| |landscape| |scrutinizer|
-| |version| |downloads| |wheel| |supported-versions| |supported-implementations|
+.. list-table::
+    :stub-columns: 1
+
+    * - docs
+      - |docs|
+    * - tests
+      - | |travis| |appveyor|
+        | |coveralls| |codecov| |landscape| |scrutinizer|
+    * - package
+      - |version| |downloads|
+
+..
+    |wheel| |supported-versions| |supported-implementations|
 
 .. |docs| image:: https://readthedocs.org/projects/python-manhole/badge/?style=flat
     :target: https://readthedocs.org/projects/python-manhole
     :alt: Documentation Status
 
-.. |travis| image:: http://img.shields.io/travis/ionelmc/python-manhole/master.png?style=flat
+.. |travis| image:: http://img.shields.io/travis/ionelmc/python-manhole/master.svg?style=flat&label=Travis
     :alt: Travis-CI Build Status
     :target: https://travis-ci.org/ionelmc/python-manhole
 
-.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/ionelmc/python-manhole?branch=master
+.. |appveyor| image:: https://img.shields.io/appveyor/ci/ionelmc/python-manhole/master.svg?style=flat&label=AppVeyor
     :alt: AppVeyor Build Status
     :target: https://ci.appveyor.com/project/ionelmc/python-manhole
 
-.. |coveralls| image:: http://img.shields.io/coveralls/ionelmc/python-manhole/master.png?style=flat
+.. |coveralls| image:: http://img.shields.io/coveralls/ionelmc/python-manhole/master.svg?style=flat&label=Coveralls
     :alt: Coverage Status
     :target: https://coveralls.io/r/ionelmc/python-manhole
+
+.. |codecov| image:: http://img.shields.io/codecov/c/github/ionelmc/python-manhole/master.svg?style=flat&label=Codecov
+    :alt: Coverage Status
+    :target: https://codecov.io/github/ionelmc/python-manhole
 
 .. |landscape| image:: https://landscape.io/github/ionelmc/python-manhole/master/landscape.svg?style=flat
     :target: https://landscape.io/github/ionelmc/python-manhole/master
     :alt: Code Quality Status
 
-.. |version| image:: http://img.shields.io/pypi/v/manhole.png?style=flat
+.. |version| image:: http://img.shields.io/pypi/v/manhole.svg?style=flat
     :alt: PyPI Package latest release
     :target: https://pypi.python.org/pypi/manhole
 
-.. |downloads| image:: http://img.shields.io/pypi/dm/manhole.png?style=flat
+.. |downloads| image:: http://img.shields.io/pypi/dm/manhole.svg?style=flat
     :alt: PyPI Package monthly downloads
     :target: https://pypi.python.org/pypi/manhole
 
-.. |wheel| image:: https://pypip.in/wheel/manhole/badge.png?style=flat
+.. |wheel| image:: https://pypip.in/wheel/manhole/badge.svg?style=flat
     :alt: PyPI Wheel
     :target: https://pypi.python.org/pypi/manhole
 
-.. |supported-versions| image:: https://pypip.in/py_versions/manhole/badge.png?style=flat
+.. |supported-versions| image:: https://pypip.in/py_versions/manhole/badge.svg?style=flat
     :alt: Supported versions
     :target: https://pypi.python.org/pypi/manhole
 
-.. |supported-implementations| image:: https://pypip.in/implementation/manhole/badge.png?style=flat
-    :alt: Supported imlementations
+.. |supported-implementations| image:: https://pypip.in/implementation/manhole/badge.svg?style=flat
+    :alt: Supported implementations
     :target: https://pypi.python.org/pypi/manhole
 
-.. |scrutinizer| image:: https://img.shields.io/scrutinizer/g/ionelmc/python-manhole/master.png?style=flat
-    :alt: Scrtinizer Status
+.. |scrutinizer| image:: https://img.shields.io/scrutinizer/g/ionelmc/python-manhole/master.svg?style=flat
+    :alt: Scrutinizer Status
     :target: https://scrutinizer-ci.com/g/ionelmc/python-manhole/
 
 Manhole is in-process service that will accept unix domain socket connections and present the

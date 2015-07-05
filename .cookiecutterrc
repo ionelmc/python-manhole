@@ -1,0 +1,29 @@
+# This file exists so you can easily regenerate your project.
+#
+# Unfortunatelly cookiecutter can't use this right away so
+# you have to copy this file to ~/.cookiecutterrc
+
+default_context:
+
+    c_extension_optional:      'no'
+    c_extension_support:       'no'
+    codecov:                   'yes'
+    command_line_interface:    'no'
+    coveralls:                 'yes'
+    distribution_name:         'manhole'
+    email:                     'contact@ionelmc.ro'
+    full_name:                 'Ionel Cristian Mărieș'
+    github_username:           'ionelmc'
+    landscape:                 'yes'
+    package_name:              'manhole'
+    project_name:              'manhole'
+    project_short_description: 'Manhole is in-process service that will accept unix domain socket connections and present the'
+    release_date:              '2015-07-05'
+    repo_name:                 'python-manhole'
+    scrutinizer:               'yes'
+    sphinx_theme:              'sphinx-py3doc-enhanced-theme'
+    test_matrix_configurator:  'yes'
+    test_runner:               'pytest'
+    version:                   '1.2.0'
+    website:                   'http://blog.ionelmc.ro'
+    year:                      '2012-2015'
