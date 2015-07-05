@@ -37,7 +37,6 @@ else:
 try:
     from eventlet.patcher import original as _original
 
-
     def _get_original(mod, name):
         return getattr(_original(mod), name)
 except ImportError:
