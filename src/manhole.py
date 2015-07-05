@@ -1,5 +1,6 @@
 from __future__ import print_function
 from logging import getLogger
+
 logger = getLogger(__name__)
 
 import traceback
@@ -36,6 +37,7 @@ else:
 try:
     from eventlet.patcher import original as _original
 
+
     def _get_original(mod, name):
         return getattr(_original(mod), name)
 except ImportError:
@@ -62,6 +64,7 @@ PY26 = sys.version_info[:2] == (2, 6)
 try:
     import ctypes
     import ctypes.util
+
     libpthread_path = ctypes.util.find_library("pthread")
     if not libpthread_path:
         raise ImportError
@@ -194,6 +197,7 @@ class ManholeConnectionThread(_ORIGINAL_THREAD):
     Manhole thread that handles the connection. This thread is a normal thread (non-daemon) - it won't exit if the
     main thread exits.
     """
+
     def __init__(self, client, locals, daemon=False):
         super(ManholeConnectionThread, self).__init__()
         self.daemon = daemon
@@ -279,7 +283,6 @@ class ManholeConnectionThread(_ORIGINAL_THREAD):
 
 
 class ManholeConsole(code.InteractiveConsole):
-
     def __init__(self, *args, **kw):
         code.InteractiveConsole.__init__(self, *args, **kw)
         if _MANHOLE.redirect_stderr:
@@ -340,19 +343,24 @@ class Logger(object):
             except:  # pylint: disable=W0702
                 pass
 
+
 _LOG = Logger()
 
 
 class Manhole(object):
     # Manhole core configuration
     # These are initialized when manhole is installed.
+    daemon_connection = False
+    locals = None
     original_os_fork = None
     original_os_forkpty = None
-    redirect_stderr = None
-    reinstall_delay = None
+    redirect_stderr = True
+    reinstall_delay = 0.5
     should_restart = None
+    sigmask = _ALL_SIGNALS
     socket_path = None
-    thread = None
+    start_timeout = 0.5
+    _thread = None
 
     def configure(self,
                   patch_fork=True, activate_on=None, sigmask=_ALL_SIGNALS, oneshot_on=None,
@@ -361,12 +369,13 @@ class Manhole(object):
         self.socket_path = socket_path
         self.reinstall_delay = reinstall_delay
         self.redirect_stderr = redirect_stderr
-        self.thread = ManholeThread(
-            self.get_socket, sigmask, start_timeout, locals=locals, daemon_connection=daemon_connection
-        )
+        self.locals = locals
+        self.sigmask = sigmask
+        self.daemon_connection = daemon_connection
+        self.start_timeout = start_timeout
 
         if oneshot_on is not None:
-            oneshot_on = getattr(signal, 'SIG'+oneshot_on) if isinstance(oneshot_on, string) else oneshot_on
+            oneshot_on = getattr(signal, 'SIG' + oneshot_on) if isinstance(oneshot_on, string) else oneshot_on
             signal.signal(oneshot_on, self.handle_oneshot)
 
         if activate_on is None:
@@ -374,7 +383,7 @@ class Manhole(object):
                 self.thread.start()
                 self.should_restart = True
         else:
-            activate_on = getattr(signal, 'SIG'+activate_on) if isinstance(activate_on, string) else activate_on
+            activate_on = getattr(signal, 'SIG' + activate_on) if isinstance(activate_on, string) else activate_on
             if activate_on == oneshot_on:
                 raise ConfigurationConflict('You cannot do activation of the Manhole thread on the same signal '
                                             'that you want to do oneshot activation !')
@@ -390,6 +399,15 @@ class Manhole(object):
                     _LOG("Not patching os.fork and os.forkpty. Oneshot activation is done by signal %s" % oneshot_on)
                 elif socket_path:
                     _LOG("Not patching os.fork and os.forkpty. Using user socket path %s" % socket_path)
+
+    @property
+    def thread(self):
+        if self._thread is None:
+            self._thread = ManholeThread(
+                self.get_socket, self.sigmask, self.start_timeout, locals=self.locals,
+                daemon_connection=self.daemon_connection
+            )
+        return self._thread
 
     def get_socket(self):
         sock = _ORIGINAL_SOCKET(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -409,7 +427,7 @@ class Manhole(object):
                 if self.should_restart:
                     self.thread.start()
 
-    def handle_oneshot(self, _signum, _frame):
+    def handle_oneshot(self, _signum=None, _frame=None):
         try:
             sock = self.get_socket()
             _LOG("Waiting for new connection (in pid:%s) ..." % os.getpid())
@@ -417,7 +435,7 @@ class Manhole(object):
             ManholeConnectionThread.check_credentials(client)
             ManholeConnectionThread.handle(client, self.thread.locals)
         except:  # pylint: disable=W0702
-            # we don't want to let any exception out, it might make the application missbehave
+            # we don't want to let any exception out, it might make the application misbehave
             _LOG("Manhole oneshot connection failed:")
             _LOG(traceback.format_exc())
         finally:
