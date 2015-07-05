@@ -2,6 +2,11 @@
 Changelog
 =========
 
+1.2.0 (2015-07-05)
+------------------
+
+* Changed ``manhole-cli`` to not spam the terminal with errors if socket file doesn't exist.
+
 1.1.0 (2015-06-06)
 ------------------
 
