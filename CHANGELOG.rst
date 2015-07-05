@@ -5,7 +5,11 @@ Changelog
 1.2.0 (2015-07-05)
 ------------------
 
-* Changed ``manhole-cli`` to not spam the terminal with errors if socket file doesn't exist.
+* Changed ``manhole-cli``:
+
+  * Won't spam the terminal with errors if socket file doesn't exist.
+  * Allowed sending any signal (new ``--signal`` argument).
+  * Fixed some validation issues for the ``PID`` argument.
 
 1.1.0 (2015-06-06)
 ------------------

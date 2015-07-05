@@ -18,13 +18,41 @@ try:
 except NameError:
     pass
 
+SIG_NAMES = {}
+SIG_NUMBERS = set()
+for sig, num in vars(signal).items():
+    if sig.startswith('SIG') and '_' not in sig:
+        SIG_NAMES[sig] = num
+        SIG_NAMES[sig[3:]] = num
+        SIG_NUMBERS.add(num)
 
-def parse_pid(value, regex=re.compile(r'(/tmp/manhole-)?(?P<pid>\d+)')):
+
+def parse_pid(value, regex=re.compile(r'^(/tmp/manhole-)?(?P<pid>\d+)$')):
     match = regex.match(value)
     if not match:
         raise argparse.ArgumentTypeError("PID must be in one of these forms: 1234 or /tmp/manhole-1234")
 
     return int(match.group('pid'))
+
+
+def parse_signal(value):
+    try:
+        value = int(value)
+    except ValueError:
+        pass
+    else:
+        if value in SIG_NUMBERS:
+            return value
+        else:
+            raise argparse.ArgumentTypeError("Invalid signal number %s. Expected one of: %s" % (
+                value, ', '.join(str(i) for i in SIG_NUMBERS)
+            ))
+    value = value.upper()
+    if value in SIG_NAMES:
+        return SIG_NAMES[value]
+    else:
+        raise argparse.ArgumentTypeError("Invalid signal name %r." % value)
+
 
 parser = argparse.ArgumentParser(description='Connect to a manhole.')
 parser.add_argument('pid', metavar='PID', type=parse_pid,  # nargs='?',
@@ -36,6 +64,8 @@ group.add_argument('-1', '-USR1', dest='signal', action='store_const', const=sig
                    help='Send USR1 (%(const)s) to the process before connecting.')
 group.add_argument('-2', '-USR2', dest='signal', action='store_const', const=signal.SIGUSR2,
                    help='Send USR2 (%(const)s) to the process before connecting.')
+group.add_argument('-s', '--signal', dest='signal', type=parse_signal, metavar="SIGNAL",
+                   help='Send the given SIGNAL to the process before connecting.')
 
 
 class ConnectionHandler(threading.Thread):
@@ -66,6 +96,7 @@ class ConnectionHandler(threading.Thread):
                 else:
                     raise RuntimeError("Unknown FD %s" % fd)
 
+
 if __name__ == "__main__":
     args = parser.parse_args()
 
@@ -75,6 +106,7 @@ if __name__ == "__main__":
     except IOError:
         pass
     import atexit
+
     atexit.register(readline.write_history_file, histfile)
     del histfile
 
