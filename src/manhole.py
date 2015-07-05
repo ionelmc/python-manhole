@@ -409,6 +409,10 @@ class Manhole(object):
             )
         return self._thread
 
+    @thread.setter
+    def thread(self, value):
+        self._thread = value
+
     def get_socket(self):
         sock = _ORIGINAL_SOCKET(socket.AF_UNIX, socket.SOCK_STREAM)
         name = self.remove_manhole_uds()
