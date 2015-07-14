@@ -491,7 +491,6 @@ def test_sigmask():
 
 
 def test_stderr_doesnt_deadlock():
-    for _ in range(100):
-        with TestProcess(sys.executable, HELPER, 'test_stderr_doesnt_deadlock') as proc:
-            with dump_on_error(proc.read):
-                wait_for_strings(proc.read, TIMEOUT, 'SUCCESS')
+    with TestProcess(sys.executable, HELPER, 'test_stderr_doesnt_deadlock') as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, 'SUCCESS')
