@@ -500,6 +500,8 @@ def install(verbose=True,
         oneshot_on (int or signal name): Set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you
             want the Manhole to listen for connection in the signal handler. This is desireable in case you don't want
             threads at all.
+        thread (bool): Start the always-on ManholeThread. Default: ``True``. Automatically switched to ``False`` if
+            ``oneshort_on`` or ``activate_on`` are used.
         sigmask (list of ints or signal names): Will set the signal mask to the given list (using
             ``signalfd.sigprocmask``). No action is done if ``signalfd`` is not importable.
             **NOTE**: This is done so that the Manhole thread doesn't *steal* any signals; Normally that is fine cause
