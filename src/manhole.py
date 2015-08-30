@@ -362,7 +362,7 @@ class Manhole(object):
     _thread = None
 
     def configure(self,
-                  patch_fork=True, activate_on=None, sigmask=_ALL_SIGNALS, oneshot_on=None,
+                  patch_fork=True, activate_on=None, sigmask=_ALL_SIGNALS, oneshot_on=None, thread=True,
                   start_timeout=0.5, socket_path=None, reinstall_delay=0.5, locals=None, daemon_connection=False,
                   redirect_stderr=True):
         self.socket_path = socket_path
@@ -373,20 +373,21 @@ class Manhole(object):
         self.daemon_connection = daemon_connection
         self.start_timeout = start_timeout
 
+        if oneshot_on is None and activate_on is None and thread:
+            self.thread.start()
+            self.should_restart = True
+
         if oneshot_on is not None:
             oneshot_on = getattr(signal, 'SIG' + oneshot_on) if isinstance(oneshot_on, string) else oneshot_on
             signal.signal(oneshot_on, self.handle_oneshot)
 
-        if activate_on is None:
-            if oneshot_on is None:
-                self.thread.start()
-                self.should_restart = True
-        else:
+        if activate_on is not None:
             activate_on = getattr(signal, 'SIG' + activate_on) if isinstance(activate_on, string) else activate_on
             if activate_on == oneshot_on:
                 raise ConfigurationConflict('You cannot do activation of the Manhole thread on the same signal '
                                             'that you want to do oneshot activation !')
             signal.signal(activate_on, self.activate_on_signal)
+
         atexit.register(self.remove_manhole_uds)
         if patch_fork:
             if activate_on is None and oneshot_on is None and socket_path is None:
@@ -515,15 +516,15 @@ def install(verbose=True,
     global _MANHOLE
 
     with _LOCK:
-        if _MANHOLE is not None:
+        if _MANHOLE is None:
+            _MANHOLE = Manhole()
+        else:
             if strict:
                 raise AlreadyInstalled("Manhole already installed!")
-            else:
-                return
-        _MANHOLE = Manhole()
 
     _LOG.configure(verbose, verbose_destination)
     _MANHOLE.configure(**kwargs)  # Threads might be started here
+    return _MANHOLE
 
 
 def dump_stacktraces():

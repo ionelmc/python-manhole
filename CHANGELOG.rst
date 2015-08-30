@@ -2,6 +2,12 @@
 Changelog
 =========
 
+1.3.0 (?)
+------------------
+
+* Allowed Manhole to be configured without any thread or activation (in case you want to manually activate).
+* Added an example and tests for using Manhole with uWSGi.
+
 1.2.0 (2015-07-06)
 ------------------
 

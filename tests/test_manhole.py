@@ -10,6 +10,7 @@ import sys
 import time
 from contextlib import closing
 
+import requests
 from process_tests import dump_on_error
 from process_tests import TestProcess
 from process_tests import TestSocket
@@ -95,7 +96,8 @@ def test_install_once():
 def test_install_twice_not_strict():
     with TestProcess(sys.executable, HELPER, 'test_install_twice_not_strict') as proc:
         with dump_on_error(proc.read):
-            wait_for_strings(proc.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
+            wait_for_strings(proc.read, TIMEOUT,
+                             'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
             proc.signal(signal.SIGUSR2)
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
@@ -118,6 +120,7 @@ def test_daemon_connection():
                     client.sock.send(b'bogus()\n')
                     time.sleep(0.05)
                     print(repr(client.sock.recv(1024)))
+
             raises((socket.error, OSError), assert_manhole_running, proc, uds_path, extra=terminate_and_read)
             wait_for_strings(proc.read, TIMEOUT, 'In atexit handler')
 
@@ -137,6 +140,7 @@ def test_non_daemon_connection():
                 wait_for_strings(client.read, TIMEOUT, 'bogus')
                 client.sock.send(b'doofus()\n')
                 wait_for_strings(client.read, TIMEOUT, 'doofus')
+
             assert_manhole_running(proc, uds_path, extra=terminate_and_read, oneshot=True)
             wait_for_strings(proc.read, TIMEOUT, 'In atexit handler')
 
@@ -369,7 +373,8 @@ def test_auth_fail():
                     pass
                 wait_for_strings(
                     proc.read, TIMEOUT,
-                    "SuspiciousClient: Can't accept client with PID:-1 UID:-1 GID:-1. It doesn't match the current EUID:",
+                    "SuspiciousClient: Can't accept client with PID:-1 UID:-1 GID:-1. It doesn't match the current "
+                    "EUID:",
                     'Waiting for new connection'
                 )
                 proc.proc.send_signal(signal.SIGINT)
@@ -384,7 +389,7 @@ def test_signalfd_weirdness():
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
             wait_for_strings(proc.read, 25 * TIMEOUT, *[
                 '[%s] read from signalfd:' % j for j in range(200)
-            ])
+                ])
             assert_manhole_running(proc, uds_path)
 
 
@@ -417,13 +422,16 @@ def test_activate_on_usr2():
 def test_activate_on_with_oneshot_on():
     with TestProcess(sys.executable, '-u', HELPER, 'test_activate_on_with_oneshot_on') as proc:
         with dump_on_error(proc.read):
-            wait_for_strings(proc.read, TIMEOUT, "You cannot do activation of the Manhole thread on the same signal that you want to do oneshot activation !")
+            wait_for_strings(proc.read, TIMEOUT,
+                             "You cannot do activation of the Manhole thread on the same signal that you want to do "
+                             "oneshot activation !")
 
 
 def test_oneshot_on_usr2():
     with TestProcess(sys.executable, '-u', HELPER, 'test_oneshot_on_usr2') as proc:
         with dump_on_error(proc.read):
-            wait_for_strings(proc.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
+            wait_for_strings(proc.read, TIMEOUT,
+                             'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
             raises(AssertionError, wait_for_strings, proc.read, TIMEOUT, '/tmp/manhole-')
             proc.signal(signal.SIGUSR2)
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
@@ -435,7 +443,8 @@ def test_oneshot_on_usr2():
 def test_oneshot_on_usr2_error():
     with TestProcess(sys.executable, '-u', HELPER, 'test_oneshot_on_usr2') as proc:
         with dump_on_error(proc.read):
-            wait_for_strings(proc.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
+            wait_for_strings(proc.read, TIMEOUT,
+                             'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
             raises(AssertionError, wait_for_strings, proc.read, TIMEOUT, '/tmp/manhole-')
             proc.signal(signal.SIGUSR2)
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
@@ -457,14 +466,17 @@ def test_interrupt_on_accept():
         with dump_on_error(proc.read):
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
-            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection', 'Sending signal to manhole thread', 'Waiting for new connection')
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection', 'Sending signal to manhole thread',
+                             'Waiting for new connection')
             assert_manhole_running(proc, uds_path)
 
 
 def test_environ_variable_activation():
-    with TestProcess(sys.executable, '-u', HELPER, 'test_environ_variable_activation', env=dict(os.environ, PYTHONMANHOLE="oneshot_on='USR2'")) as proc:
+    with TestProcess(sys.executable, '-u', HELPER, 'test_environ_variable_activation',
+                     env=dict(os.environ, PYTHONMANHOLE="oneshot_on='USR2'")) as proc:
         with dump_on_error(proc.read):
-            wait_for_strings(proc.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
+            wait_for_strings(proc.read, TIMEOUT,
+                             'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
             proc.signal(signal.SIGUSR2)
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
@@ -495,3 +507,31 @@ def test_stderr_doesnt_deadlock():
         with TestProcess(sys.executable, HELPER, 'test_stderr_doesnt_deadlock') as proc:
             with dump_on_error(proc.read):
                 wait_for_strings(proc.read, TIMEOUT, 'SUCCESS')
+
+
+def test_uwsgi():
+    with TestProcess(
+            'uwsgi',
+            '--master',
+            '--processes', '1',
+            '--no-orphans',
+            '--log-5xx',
+            '--single-interpreter',
+            '--shared-socket', ':0',
+            '--no-default-app',
+            '--manage-script-name',
+            '--http', '=0',
+            '--mount', '=wsgi:application'
+    ) as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, 'uWSGI http bound')
+            port = re.findall(r"uWSGI http bound on :(\d+) fd", proc.read())[0]
+            assert requests.get('http://127.0.0.1:%s/' % port).text == 'OK'
+
+            wait_for_strings(proc.read, TIMEOUT, 'spawned uWSGI worker 1')
+            pid = re.findall(r"spawned uWSGI worker 1 \(pid: (\d+), ", proc.read())[0]
+
+            for _ in range(2):
+                with open('/tmp/manhole-pid', 'w') as fh:
+                    fh.write(pid)
+                assert_manhole_running(proc, '/tmp/manhole-%s' % pid, oneshot=True)

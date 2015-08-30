@@ -188,7 +188,8 @@ Options
 * ``locals`` - Names to add to manhole interactive shell locals.
 * ``daemon_connection`` - The connection thread is daemonic (dies on app exit). Default: ``False``.
 * ``redirect_stderr`` - Redirect output from stderr to manhole console. Default: ``True``.
-* ``strict`` - If ``True`` then ``AlreadyInstalled`` will be raised when attempting to install manhole twice. Default: ``True``.
+* ``strict`` - If ``True`` then ``AlreadyInstalled`` will be raised when attempting to install manhole twice.
+  Default: ``True``.
 
 Environment variable installation
 ---------------------------------
@@ -199,7 +200,7 @@ This::
 
     PYTHONMANHOLE='' python yourapp.py
 
-Is equivalent to having this in ``yourapp.py``:
+Is equivalent to having this in ``yourapp.py``::
 
     import manhole
     manhole.install()
@@ -226,8 +227,9 @@ Known issues
 SIGTERM and socket cleanup
 --------------------------
 
-By default Python doesn't call the ``atexit`` callbacks with the default SIGTERM handling. This makes manhole leave stray
-socket files around. If this is undesirable you should install a custom SIGTERM handler so ``atexit`` is properly invoked.
+By default Python doesn't call the ``atexit``callbacks with the default SIGTERM handling. This makes manhole leave
+stray socket files around. If this is undesirable you should install a custom SIGTERM handler so ``atexit``is
+properly invoked.
 
 Example:
 
@@ -240,6 +242,59 @@ Example:
         sys.exit(128 + signo)  # this will raise SystemExit and cause atexit to be called
 
     signal.signal(signal.SIGTERM, handle_sigterm)
+
+Using Manhole with uWSGI
+------------------------
+
+Because uWSGI overrides signal handling Manhole is a bit more tricky to setup. One way is to use "uWSGI signals" (not
+the POSIX signals) and have the workers check a file for the pid you want to open the Manhole in.
+
+Stick something this in your WSGI application file:
+
+.. sourcecode:: python
+
+    from __future__ import print_function
+    import sys
+    import os
+    import manhole
+
+    stack_dump_file = '/tmp/manhole-pid'
+    uwsgi_signal_number = 17
+
+    try:
+        import uwsgi
+
+        if not os.path.exists(stack_dump_file):
+            open(stack_dump_file, 'w')
+
+        def open_manhole(dummy_signum):
+            with open(stack_dump_file, 'r') as fh:
+                pid = fh.read().strip()
+                if pid == str(os.getpid()):
+                    inst = manhole.install(strict=False, thread=False)
+                    inst.handle_oneshot(dummy_signum, dummy_signum)
+
+        uwsgi.register_signal(uwsgi_signal_number, 'workers', open_manhole)
+        uwsgi.add_file_monitor(uwsgi_signal_number, stack_dump_file)
+
+        print("Listening for stack mahole requests via %r" % (stack_dump_file,), file=sys.stderr)
+    except ImportError:
+        print("Not running under uwsgi; unable to configure manhole trigger", file=sys.stderr)
+    except IOError:
+        print("IOError creating manhole trigger %r" % (stack_dump_file,), file=sys.stderr)
+
+
+    # somewhere bellow you'd have something like
+    from django.core.wsgi import get_wsgi_application
+    application = get_wsgi_application()
+    # or
+    def application(environ, start_response):
+        start_response('200 OK', [('Content-Type', 'text/plain'), ('Content-Length', '2')])
+        yield b'OK'
+
+
+
+To open the Manhole just run `echo 1234 > /tmp/manhole-pid` and then `manhole-cli 1234`.
 
 Requirements
 ============
