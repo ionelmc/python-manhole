@@ -2,6 +2,6 @@
 Usage
 =====
 
-To use manhole in a project::
+To use Manhole in a project::
 
 	import manhole

@@ -1,5 +1,5 @@
-Welcome to manhole's documentation!
-======================================
+Welcome to Manhole's documentation!
+=====================================
 
 Contents:
 

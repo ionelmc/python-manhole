@@ -1,5 +1,5 @@
 manhole
-=============================
+=======
 
 .. automodule:: manhole
     :members:

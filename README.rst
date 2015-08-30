@@ -1,6 +1,6 @@
-===============================
-        python-manhole
-===============================
+=======
+Manhole
+=======
 
 .. list-table::
     :stub-columns: 1
@@ -8,31 +8,28 @@
     * - docs
       - |docs|
     * - tests
-      - | |travis| |appveyor|
-        | |coveralls| |codecov| |landscape| |scrutinizer|
+      - | |travis| |requires|
+        | |coveralls| |codecov| |landscape| |scrutinizer| |codacy| |codeclimate|
     * - package
-      - |version| |downloads|
-
-..
-    |wheel| |supported-versions| |supported-implementations|
+      - |version| |downloads| |wheel| |supported-versions| |supported-implementations|
 
 .. |docs| image:: https://readthedocs.org/projects/python-manhole/badge/?style=flat
     :target: https://readthedocs.org/projects/python-manhole
     :alt: Documentation Status
 
-.. |travis| image:: http://img.shields.io/travis/ionelmc/python-manhole/master.svg?style=flat&label=Travis
+.. |travis| image:: https://travis-ci.org/ionelmc/python-manhole.svg?branch=master
     :alt: Travis-CI Build Status
     :target: https://travis-ci.org/ionelmc/python-manhole
 
-.. |appveyor| image:: https://img.shields.io/appveyor/ci/ionelmc/python-manhole/master.svg?style=flat&label=AppVeyor
-    :alt: AppVeyor Build Status
-    :target: https://ci.appveyor.com/project/ionelmc/python-manhole
+.. |requires| image:: https://requires.io/github/ionelmc/python-manhole/requirements.svg?branch=master
+    :alt: Requirements Status
+    :target: https://requires.io/github/ionelmc/python-manhole/requirements/?branch=master
 
-.. |coveralls| image:: http://img.shields.io/coveralls/ionelmc/python-manhole/master.svg?style=flat&label=Coveralls
+.. |coveralls| image:: https://coveralls.io/repos/ionelmc/python-manhole/badge.svg?branch=master&service=github
     :alt: Coverage Status
     :target: https://coveralls.io/r/ionelmc/python-manhole
 
-.. |codecov| image:: http://img.shields.io/codecov/c/github/ionelmc/python-manhole/master.svg?style=flat&label=Codecov
+.. |codecov| image:: https://codecov.io/github/ionelmc/python-manhole/coverage.svg?branch=master
     :alt: Coverage Status
     :target: https://codecov.io/github/ionelmc/python-manhole
 
@@ -40,24 +37,32 @@
     :target: https://landscape.io/github/ionelmc/python-manhole/master
     :alt: Code Quality Status
 
-.. |version| image:: http://img.shields.io/pypi/v/manhole.svg?style=flat
+.. |codacy| image:: https://img.shields.io/codacy/REPLACE_WITH_PROJECT_ID.svg?style=flat
+    :target: https://www.codacy.com/app/ionelmc/python-manhole
+    :alt: Codacy Code Quality Status
+
+.. |codeclimate| image:: https://codeclimate.com/github/ionelmc/python-manhole/badges/gpa.svg
+   :target: https://codeclimate.com/github/ionelmc/python-manhole
+   :alt: CodeClimate Quality Status
+
+.. |version| image:: https://img.shields.io/pypi/v/manhole.svg?style=flat
     :alt: PyPI Package latest release
     :target: https://pypi.python.org/pypi/manhole
 
-.. |downloads| image:: http://img.shields.io/pypi/dm/manhole.svg?style=flat
+.. |downloads| image:: https://img.shields.io/pypi/dm/manhole.svg?style=flat
     :alt: PyPI Package monthly downloads
     :target: https://pypi.python.org/pypi/manhole
 
-.. |wheel| image:: https://pypip.in/wheel/manhole/badge.svg?style=flat
+.. |wheel| image:: https://img.shields.io/pypi/wheel/manhole.svg?style=flat
     :alt: PyPI Wheel
     :target: https://pypi.python.org/pypi/manhole
 
-.. |supported-versions| image:: https://pypip.in/py_versions/manhole/badge.svg?style=flat
+.. |supported-versions| image:: https://img.shields.io/pypi/pyversions/manhole.svg?style=flat
     :alt: Supported versions
     :target: https://pypi.python.org/pypi/manhole
 
-.. |supported-implementations| image:: https://pypip.in/implementation/manhole/badge.svg?style=flat
-    :alt: Supported implementations
+.. |supported-implementations| image:: https://img.shields.io/pypi/implementation/manhole.svg?style=flat
+    :alt: Supported imlementations
     :target: https://pypi.python.org/pypi/manhole
 
 .. |scrutinizer| image:: https://img.shields.io/scrutinizer/g/ionelmc/python-manhole/master.svg?style=flat

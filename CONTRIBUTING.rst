@@ -17,8 +17,8 @@ When `reporting a bug <https://github.com/ionelmc/python-manhole/issues>`_ pleas
 Documentation improvements
 ==========================
 
-manhole could always use more documentation, whether as part of the
-official manhole docs, in docstrings, or even on the web in blog posts,
+Manhole could always use more documentation, whether as part of the
+official Manhole docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
 Feature requests and feedback
