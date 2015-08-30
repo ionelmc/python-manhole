@@ -19,7 +19,6 @@ from process_tests import wait_for_strings
 from pytest import mark
 from pytest import raises
 
-
 TIMEOUT = int(os.getenv('MANHOLE_TEST_TIMEOUT', 10))
 SOCKET_PATH = '/tmp/manhole-socket'
 HELPER = os.path.join(os.path.dirname(__file__), 'helper.py')
@@ -390,8 +389,7 @@ def test_signalfd_weirdness():
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
             wait_for_strings(proc.read, 25 * TIMEOUT, *[
-                '[%s] read from signalfd:' % j for j in range(200)
-                ])
+                '[%s] read from signalfd:' % j for j in range(200)])
             assert_manhole_running(proc, uds_path)
 
 
