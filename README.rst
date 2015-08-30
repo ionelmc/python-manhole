@@ -299,8 +299,6 @@ Stick something this in your WSGI application file:
         start_response('200 OK', [('Content-Type', 'text/plain'), ('Content-Length', '2')])
         yield b'OK'
 
-
-
 To open the Manhole just run `echo 1234 > /tmp/manhole-pid` and then `manhole-cli 1234`.
 
 Requirements
