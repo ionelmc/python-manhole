@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import imp
 import os
+import platform
 import re
 import select
 import signal
@@ -11,12 +12,13 @@ import time
 from contextlib import closing
 
 import requests
-from process_tests import dump_on_error
 from process_tests import TestProcess
 from process_tests import TestSocket
+from process_tests import dump_on_error
 from process_tests import wait_for_strings
 from pytest import mark
 from pytest import raises
+
 
 TIMEOUT = int(os.getenv('MANHOLE_TEST_TIMEOUT', 10))
 SOCKET_PATH = '/tmp/manhole-socket'
@@ -509,6 +511,7 @@ def test_stderr_doesnt_deadlock():
                 wait_for_strings(proc.read, TIMEOUT, 'SUCCESS')
 
 
+@mark.skipif("platform.python_implementation() == 'PyPy'")
 def test_uwsgi():
     with TestProcess(
             'uwsgi',
