@@ -227,7 +227,7 @@ Known issues
 SIGTERM and socket cleanup
 --------------------------
 
-By default Python doesn't call the ``atexit``callbacks with the default SIGTERM handling. This makes manhole leave
+By default Python doesn't call the ``atexit`` callbacks with the default SIGTERM handling. This makes manhole leave
 stray socket files around. If this is undesirable you should install a custom SIGTERM handler so ``atexit``is
 properly invoked.
 
