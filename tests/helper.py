@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import atexit
 import errno
+from functools import partial
 import logging
 import os
 import select
@@ -20,6 +21,7 @@ def handle_sigterm(signo, _frame):
     # Simulate real termination
     print("Terminated", file=OUTPUT)
     sys.exit(128 + signo)
+
 
 # Handling sigterm ensure that atexit functions are called, and we do not leave
 # leftover /tmp/manhole-pid sockets.
@@ -57,6 +59,7 @@ def do_fork():
             except OSError as e:
                 if e.errno != errno.ESRCH:
                     raise
+
         os.waitpid(pid, 0)
     else:
         time.sleep(TIMEOUT * 10)
@@ -74,6 +77,7 @@ if __name__ == '__main__':
 
         if os.getenv('PATCH_THREAD', False):
             import manhole
+
             setup_greenthreads(True)
         else:
             setup_greenthreads(True)
@@ -93,6 +97,8 @@ if __name__ == '__main__':
             class Output(object):
                 data = []
                 write = data.append
+
+
             manhole.install(verbose=True, verbose_destination=Output)
             manhole._LOG("whatever")
             if Output.data and "]: whatever" in Output.data[-1]:
@@ -111,6 +117,7 @@ if __name__ == '__main__':
                 raise AssertionError("Did not raise AlreadyInstalled")
         elif test_name == 'test_stderr_doesnt_deadlock':
             import subprocess
+
             manhole.install()
 
             for i in range(50):
@@ -151,10 +158,13 @@ if __name__ == '__main__':
         elif test_name == 'test_interrupt_on_accept':
             def handle_usr2(_sig, _frame):
                 print('Got USR2')
+
+
             signal.signal(signal.SIGUSR2, handle_usr2)
 
             import ctypes
             import ctypes.util
+
             libpthread_path = ctypes.util.find_library("pthread")
             if not libpthread_path:
                 raise ImportError
@@ -173,42 +183,29 @@ if __name__ == '__main__':
                 time.sleep(0.1)
         elif test_name == 'test_oneshot_on_usr2':
             manhole.install(oneshot_on='USR2')
-            for i in range(TIMEOUT  * 100):
+            for i in range(TIMEOUT * 100):
                 time.sleep(0.1)
         elif test_name.startswith('test_signalfd_weirdness'):
+            signalled = False
+            @partial(signal.signal, signal.SIGUSR1)
+            def signal_handler(sig, _):
+                print('Received signal %s' % sig)
+                global signalled
+                signalled = True
+
             if 'negative' in test_name:
                 manhole.install(sigmask=None)
             else:
-                manhole.install(sigmask=[signal.SIGCHLD])
+                manhole.install(sigmask=[signal.SIGUSR1])
+
             time.sleep(0.3)  # give the manhole a bit enough time to start
             print('Starting ...')
             import signalfd
-            signalfd.sigprocmask(signalfd.SIG_BLOCK, [signal.SIGCHLD])
-            fd = signalfd.signalfd(-1, [signal.SIGCHLD], signalfd.SFD_NONBLOCK|signalfd.SFD_CLOEXEC)
-            for i in range(1000):
-                print('Forking %s:' % i)
-                pid = os.fork()
-                print(' - [%s/%s] forked' % (i, pid))
-                if pid:
-                    while 1:
-                        print(' - [%s/%s] selecting on: %s' % (i, pid, [fd]))
-                        read_ready, _, errors = select.select([fd], [], [fd], 1)
-                        if read_ready:
-                            try:
-                                print(' - [%s/%s] reading from signalfd ...' % (i, pid))
-                                print(' - [%s] read from signalfd: %r ' % (i, os.read(fd, 128)))
-                                break
-                            except OSError as exc:
-                                print(' - [%s/%s] reading from signalfd failed with errno %s' % (i, pid, exc.errno))
-                        else:
-                            print(' - [%s/%s] reading from signalfd failed - not ready !' % (i, pid))
-                            if 'negative' in test_name:
-                                time.sleep(1)
-                        if errors:
-                            raise RuntimeError("fd has error")
-                else:
-                    print(' - [%s/%s] exiting' % (i, pid))
-                    os._exit(0)
+
+            signalfd.sigprocmask(signalfd.SIG_BLOCK, [signal.SIGUSR1])
+            for i in range(10000):
+                os.kill(os.getpid(), signal.SIGUSR1)
+            print('signalled=%s' % signalled)
             time.sleep(TIMEOUT * 10)
         elif test_name == 'test_auth_fail':
             manhole.get_peercred = lambda _: (-1, -1, -1)
@@ -258,6 +255,8 @@ if __name__ == '__main__':
                         except OSError as e:
                             if e.errno != errno.ESRCH:
                                 raise
+
+
                     while not os.waitpid(pid, os.WNOHANG)[0]:
                         try:
                             os.write(2, os.read(masterfd, 1024))
@@ -273,5 +272,6 @@ if __name__ == '__main__':
     except:  # pylint: disable=W0702
         print('Died with %s.' % sys.exc_info()[0].__name__, file=OUTPUT)
         import traceback
+
         traceback.print_exc(file=OUTPUT)
     print('DIED.', file=OUTPUT)

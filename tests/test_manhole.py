@@ -382,28 +382,25 @@ def test_auth_fail():
 
 
 @mark.skipif(not is_module_available('signalfd'), reason="signalfd not available")
-def test_signalfd_weirdness():
+def test_sigprocmask():
     with TestProcess(sys.executable, '-u', HELPER, 'test_signalfd_weirdness') as proc:
         with dump_on_error(proc.read):
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-            wait_for_strings(proc.read, 3*TIMEOUT, *[
-                '[%s] read from signalfd:' % j for j in range(200)])
+            wait_for_strings(proc.read, TIMEOUT, 'signalled=False')
             assert_manhole_running(proc, uds_path)
 
 
-@mark.skipif(not is_module_available('signalfd') or
-             is_module_available('gevent') or
-             is_module_available('eventlet'),
+@mark.skipif(not is_module_available('signalfd'),
              reason="signalfd doesn't play well with gevent/eventlet")
-def test_signalfd_weirdness_negative():
+def test_sigprocmask_negative():
     with TestProcess(sys.executable, '-u', HELPER, 'test_signalfd_weirdness_negative') as proc:
         with dump_on_error(proc.read):
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-            wait_for_strings(proc.read, TIMEOUT, 'reading from signalfd failed')
+            wait_for_strings(proc.read, TIMEOUT, 'signalled=True')
             assert_manhole_running(proc, uds_path)
 
 
