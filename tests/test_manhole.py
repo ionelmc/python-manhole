@@ -168,10 +168,10 @@ def check_locals(uds_path):
     sock = connect_to_manhole(uds_path)
     with TestSocket(sock) as client:
         with dump_on_error(client.read):
-            wait_for_strings(client.read, 1, ">>>")
+            wait_for_strings(client.read, TIMEOUT, ">>>")
             sock.send(b"from __future__ import print_function\n"
                       b"print(k1, k2)\n")
-            wait_for_strings(client.read, 1, "v1 v2")
+            wait_for_strings(client.read, TIMEOUT, "v1 v2")
 
 
 def test_fork_exec():
