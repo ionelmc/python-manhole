@@ -388,7 +388,7 @@ def test_signalfd_weirdness():
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-            wait_for_strings(proc.read, TIMEOUT, *[
+            wait_for_strings(proc.read, 3*TIMEOUT, *[
                 '[%s] read from signalfd:' % j for j in range(200)])
             assert_manhole_running(proc, uds_path)
 
