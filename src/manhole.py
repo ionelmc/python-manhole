@@ -210,7 +210,6 @@ class ManholeConnectionThread(_ORIGINAL_THREAD):
         super(ManholeConnectionThread, self).__init__()
         self.daemon = daemon
         self.client = force_original_socket(client)
-        print(self.client, client)
         self.name = "ManholeConnectionThread"
         self.locals = locals
 
