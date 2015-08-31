@@ -7,6 +7,7 @@ Changelog
 
 * Allowed Manhole to be configured without any thread or activation (in case you want to manually activate).
 * Added an example and tests for using Manhole with uWSGi.
+* Fixed error handling in ``manhole-cli`` on Python 3 (exc vars don't leak anymore).
 
 1.2.0 (2015-07-06)
 ------------------

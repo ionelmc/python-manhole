@@ -126,7 +126,7 @@ if __name__ == "__main__":
         else:
             break
     else:
-        print("Failed to connect to %r: %r" % (uds_path, exc), file=sys.stderr)
+        print("Failed to connect to %r: Timeout" % uds_path, file=sys.stderr)
         sys.exit(5)
 
     poll = select.poll()
