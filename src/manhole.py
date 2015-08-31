@@ -1,17 +1,15 @@
 from __future__ import print_function
-from logging import getLogger
 
-logger = getLogger(__name__)
-
-import traceback
+import atexit
+import code
+import errno
+import os
+import signal
 import socket
 import struct
 import sys
-import os
-import atexit
-import code
-import signal
-import errno
+import traceback
+from contextlib import closing
 
 __version__ = '1.2.0'
 
@@ -47,7 +45,7 @@ except ImportError:
             return getattr(__import__(mod), name)
 
 _ORIGINAL_SOCKET = _get_original('socket', 'socket')
-_ORIGINAL_DUP = _get_original('_socket', 'dup')
+_ORIGINAL_FROMFD = _get_original('socket', 'fromfd')
 _ORIGINAL_FDOPEN = _get_original('os', 'fdopen')
 try:
     _ORIGINAL_ALLOCATE_LOCK = _get_original('thread', 'allocate_lock')
@@ -95,8 +93,12 @@ _LOCK = _ORIGINAL_ALLOCATE_LOCK()
 
 
 def force_original_socket(sock):
-    with sock:
-        return _ORIGINAL_SOCKET(sock.family, sock.type, sock.proto, _ORIGINAL_DUP(sock.fileno()))
+    with closing(sock):
+        if hasattr(_ORIGINAL_SOCKET, '_sock'):
+            sock._sock, sock = None, sock._sock
+            return _ORIGINAL_SOCKET(_sock=sock)
+        else:
+            return _ORIGINAL_SOCKET(sock.family, sock.type, sock.proto, os.dup(sock.fileno()))
 
 
 def get_peercred(sock):
@@ -186,6 +188,7 @@ class ManholeThread(_ORIGINAL_THREAD):
         while True:
             _LOG("Waiting for new connection (in pid:%s) ..." % os.getpid())
             try:
+                _LOG("%s; %s" % (sock, sock.accept.__code__.co_filename))
                 client = ManholeConnectionThread(sock.accept()[0], self.locals, self.daemon_connection)
                 client.start()
                 client.join()
@@ -207,6 +210,7 @@ class ManholeConnectionThread(_ORIGINAL_THREAD):
         super(ManholeConnectionThread, self).__init__()
         self.daemon = daemon
         self.client = force_original_socket(client)
+        print(self.client, client)
         self.name = "ManholeConnectionThread"
         self.locals = locals
 
