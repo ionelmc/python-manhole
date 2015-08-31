@@ -47,6 +47,7 @@ except ImportError:
             return getattr(__import__(mod), name)
 
 _ORIGINAL_SOCKET = _get_original('socket', 'socket')
+_ORIGINAL_DUP = _get_original('_socket', 'dup')
 _ORIGINAL_FDOPEN = _get_original('os', 'fdopen')
 try:
     _ORIGINAL_ALLOCATE_LOCK = _get_original('thread', 'allocate_lock')
@@ -91,6 +92,11 @@ _ALL_SIGNALS = tuple(getattr(signal, sig) for sig in dir(signal)
 # These (_LOG and _MANHOLE) will hold instances after install
 _MANHOLE = None
 _LOCK = _ORIGINAL_ALLOCATE_LOCK()
+
+
+def force_original_socket(sock):
+    with sock:
+        return _ORIGINAL_SOCKET(sock.family, sock.type, sock.proto, _ORIGINAL_DUP(sock.fileno()))
 
 
 def get_peercred(sock):
@@ -200,7 +206,7 @@ class ManholeConnectionThread(_ORIGINAL_THREAD):
     def __init__(self, client, locals, daemon=False):
         super(ManholeConnectionThread, self).__init__()
         self.daemon = daemon
-        self.client = client
+        self.client = force_original_socket(client)
         self.name = "ManholeConnectionThread"
         self.locals = locals
 
@@ -435,7 +441,7 @@ class Manhole(object):
         try:
             sock = self.get_socket()
             _LOG("Waiting for new connection (in pid:%s) ..." % os.getpid())
-            client, _ = sock.accept()
+            client = force_original_socket(sock.accept()[0])
             ManholeConnectionThread.check_credentials(client)
             ManholeConnectionThread.handle(client, self.thread.locals)
         except:  # pylint: disable=W0702
