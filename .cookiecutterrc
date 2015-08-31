@@ -5,6 +5,7 @@
 
 default_context:
 
+    appveyor:                  'no'
     c_extension_optional:      'no'
     c_extension_support:       'no'
     codacy:                    'yes'
@@ -22,10 +23,12 @@ default_context:
     project_short_description: 'Manhole is in-process service that will accept unix domain socket connections and present the'
     release_date:              '2015-07-05'
     repo_name:                 'python-manhole'
+    requiresio:                'yes'
     scrutinizer:               'yes'
     sphinx_theme:              'sphinx-py3doc-enhanced-theme'
     test_matrix_configurator:  'yes'
     test_runner:               'pytest'
+    travis:                    'yes'
     version:                   '1.2.0'
     website:                   'http://blog.ionelmc.ro'
     year:                      '2012-2015'
