@@ -184,7 +184,7 @@ if __name__ == '__main__':
             print('Starting ...')
             import signalfd
             signalfd.sigprocmask(signalfd.SIG_BLOCK, [signal.SIGCHLD])
-            fd = signalfd.signalfd(0, [signal.SIGCHLD], signalfd.SFD_NONBLOCK|signalfd.SFD_CLOEXEC)
+            fd = signalfd.signalfd(-1, [signal.SIGCHLD], signalfd.SFD_NONBLOCK|signalfd.SFD_CLOEXEC)
             for i in range(1000):
                 print('Forking %s:' % i)
                 pid = os.fork()
