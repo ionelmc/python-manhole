@@ -192,7 +192,6 @@ if __name__ == '__main__':
                 print('Received signal %s' % sig)
                 global signalled
                 signalled = True
-
             if 'negative' in test_name:
                 manhole.install(sigmask=None)
             else:
@@ -203,7 +202,8 @@ if __name__ == '__main__':
             import signalfd
 
             signalfd.sigprocmask(signalfd.SIG_BLOCK, [signal.SIGUSR1])
-            for i in range(10000):
+            sys.setcheckinterval(1)
+            for i in range(100000):
                 os.kill(os.getpid(), signal.SIGUSR1)
             print('signalled=%s' % signalled)
             time.sleep(TIMEOUT * 10)
