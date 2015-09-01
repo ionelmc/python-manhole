@@ -193,7 +193,6 @@ class ManholeThread(_ORIGINAL_THREAD):
         while self.should_run:
             _LOG("Waiting for new connection (in pid:%s) ..." % os.getpid())
             try:
-                _LOG("%s; %s" % (sock, sock.accept.__code__.co_filename))
                 client = ManholeConnectionThread(sock.accept()[0], self.locals, self.daemon_connection)
                 client.start()
                 client.join()
