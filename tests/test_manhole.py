@@ -99,11 +99,10 @@ def test_install_twice_not_strict():
         with dump_on_error(proc.read):
             wait_for_strings(proc.read, TIMEOUT,
                              'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
-            proc.signal(signal.SIGUSR2)
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-            assert_manhole_running(proc, uds_path, oneshot=True)
+            assert_manhole_running(proc, uds_path)
 
 
 @mark.skipif(is_module_available('eventlet'), reason="evenlet can't deal with extra threads at process exit")

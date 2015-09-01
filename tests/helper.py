@@ -98,7 +98,6 @@ if __name__ == '__main__':
                 data = []
                 write = data.append
 
-
             manhole.install(verbose=True, verbose_destination=Output)
             manhole._LOG("whatever")
             if Output.data and "]: whatever" in Output.data[-1]:

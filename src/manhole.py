@@ -152,6 +152,10 @@ class ManholeThread(_ORIGINAL_THREAD):
         self.bind_delay = bind_delay
         self.locals = locals
         self.get_socket = get_socket
+        self.should_run = False
+
+    def stop(self):
+        self.should_run = False
 
     def clone(self, **kwargs):
         """
@@ -164,6 +168,7 @@ class ManholeThread(_ORIGINAL_THREAD):
         )
 
     def start(self):
+        self.should_run = True
         super(ManholeThread, self).start()
         if not self.serious.wait(self.start_timeout) and not PY26:
             _LOG("WARNING: Waited %s seconds but Manhole thread didn't start yet :(" % self.start_timeout)
@@ -185,7 +190,7 @@ class ManholeThread(_ORIGINAL_THREAD):
             _ORIGINAL_SLEEP(self.bind_delay)
 
         sock = self.get_socket()
-        while True:
+        while self.should_run:
             _LOG("Waiting for new connection (in pid:%s) ..." % os.getpid())
             try:
                 _LOG("%s; %s" % (sock, sock.accept.__code__.co_filename))
@@ -334,6 +339,10 @@ class Logger(object):
         self.enabled = enabled
         self.destination = destination
 
+    def release(self):
+        self.enabled = True
+        self.destination = None
+
     def __call__(self, message):
         """
         Fail-ignorant logging function.
@@ -381,6 +390,7 @@ class Manhole(object):
         self.sigmask = sigmask
         self.daemon_connection = daemon_connection
         self.start_timeout = start_timeout
+        self.previous_singal_handlers = {}
 
         if oneshot_on is None and activate_on is None and thread:
             self.thread.start()
@@ -388,14 +398,14 @@ class Manhole(object):
 
         if oneshot_on is not None:
             oneshot_on = getattr(signal, 'SIG' + oneshot_on) if isinstance(oneshot_on, string) else oneshot_on
-            signal.signal(oneshot_on, self.handle_oneshot)
+            self.previous_singal_handlers.setdefault(oneshot_on, signal.signal(oneshot_on, self.handle_oneshot))
 
         if activate_on is not None:
             activate_on = getattr(signal, 'SIG' + activate_on) if isinstance(activate_on, string) else activate_on
             if activate_on == oneshot_on:
                 raise ConfigurationConflict('You cannot do activation of the Manhole thread on the same signal '
                                             'that you want to do oneshot activation !')
-            signal.signal(activate_on, self.activate_on_signal)
+            self.previous_singal_handlers.setdefault(activate_on, signal.signal(activate_on, self.activate_on_signal))
 
         atexit.register(self.remove_manhole_uds)
         if patch_fork:
@@ -408,6 +418,16 @@ class Manhole(object):
                     _LOG("Not patching os.fork and os.forkpty. Oneshot activation is done by signal %s" % oneshot_on)
                 elif socket_path:
                     _LOG("Not patching os.fork and os.forkpty. Using user socket path %s" % socket_path)
+
+    def release(self):
+        if self._thread:
+            self._thread.stop()
+            self._thread = None
+        self.remove_manhole_uds()
+        self.restore_os_fork_functions()
+        for sig, handler in self.previous_singal_handlers.items():
+            signal.signal(sig, handler)
+        self.previous_singal_handlers.clear()
 
     @property
     def thread(self):
@@ -487,6 +507,12 @@ class Manhole(object):
         self.original_os_forkpty, os.forkpty = os.forkpty, self.patched_forkpty
         _LOG("Patched %s and %s." % (self.original_os_fork, self.original_os_fork))
 
+    def restore_os_fork_functions(self):
+        if self.original_os_fork:
+            os.fork = self.original_os_fork
+        if self.original_os_forkpty:
+            os.forkpty = self.original_os_forkpty
+
     def activate_on_signal(self, _signum, _frame):
         self.thread.start()
 
@@ -532,6 +558,9 @@ def install(verbose=True,
         else:
             if strict:
                 raise AlreadyInstalled("Manhole already installed!")
+            else:
+                _LOG.release()
+                _MANHOLE.release()  # Threads might be started here
 
     _LOG.configure(verbose, verbose_destination)
     _MANHOLE.configure(**kwargs)  # Threads might be started here
