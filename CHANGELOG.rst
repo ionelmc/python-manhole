@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.3.0 (?)
+1.3.0 (2015-09-03)
 ------------------
 
 * Allowed Manhole to be configured without any thread or activation (in case you want to manually activate).
