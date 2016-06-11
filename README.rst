@@ -180,8 +180,8 @@ Options
 * ``patch_fork`` - Set it to ``False`` if you don't want your ``os.fork`` and ``os.forkpy`` monkeypatched
 * ``activate_on`` - Set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you want the Manhole thread
   to start when this signal is sent. This is desireable in case you don't want the thread active all the time.
-* ``thread``` - Set to ``True`` to start the always-on ManholeThread. Default: ``True``.
-  Automatically switched to ``False`` if ``oneshort_on`` or ``activate_on`` are used.
+* ``thread`` - Set to ``True`` to start the always-on ManholeThread. Default: ``True``.
+  Automatically switched to ``False`` if ``oneshot_on`` or ``activate_on`` are used.
 * ``oneshot_on`` - Set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you want the Manhole to
   listen for connection in the signal handler. This is desireable in case you don't want threads at all.
 * ``sigmask`` - Will set the signal mask to the given list (using ``signalfd.sigprocmask``). No action is done if
