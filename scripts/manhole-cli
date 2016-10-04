@@ -27,7 +27,7 @@ for sig, num in vars(signal).items():
         SIG_NUMBERS.add(num)
 
 
-def parse_pid(value, regex=re.compile(r'^(/tmp/manhole-)?(?P<pid>\d+)$')):
+def parse_pid(value, regex=re.compile(r'^(/tmp(/.*?)?/manhole-)?(?P<pid>\d+)$')):
     match = regex.match(value)
     if not match:
         raise argparse.ArgumentTypeError("PID must be in one of these forms: 1234 or /tmp/manhole-1234")
