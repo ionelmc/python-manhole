@@ -1,138 +1,512 @@
 language: python
-python: 2.7
 sudo: false
+cache: pip
 env:
   global:
-    MANHOLE_TEST_TIMEOUT=30
-    LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
+    - MANHOLE_TEST_TIMEOUT=30
+    - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
+    - SEGFAULT_SIGNALS=all
   matrix:
     - TOXENV=check
-    - TOXENV=2.6,coveralls,codecov
-    - TOXENV=2.6-eventlet,coveralls,codecov
-    - TOXENV=2.6-eventlet-nocover
-    - TOXENV=2.6-eventlet-nocover-patchthread
-    - TOXENV=2.6-eventlet-patchthread,coveralls,codecov
-    - TOXENV=2.6-gevent,coveralls,codecov
-    - TOXENV=2.6-gevent-nocover
-    - TOXENV=2.6-gevent-nocover-patchthread
-    - TOXENV=2.6-gevent-patchthread,coveralls,codecov
-    - TOXENV=2.6-nocover
-    - TOXENV=2.6-signalfd,coveralls,codecov
-    - TOXENV=2.6-signalfd-eventlet,coveralls,codecov
-    - TOXENV=2.6-signalfd-eventlet-nocover
-    - TOXENV=2.6-signalfd-eventlet-nocover-patchthread
-    - TOXENV=2.6-signalfd-eventlet-patchthread,coveralls,codecov
-    - TOXENV=2.6-signalfd-gevent,coveralls,codecov
-    - TOXENV=2.6-signalfd-gevent-nocover
-    - TOXENV=2.6-signalfd-gevent-nocover-patchthread
-    - TOXENV=2.6-signalfd-gevent-patchthread,coveralls,codecov
-    - TOXENV=2.6-signalfd-nocover
-    - TOXENV=2.7,coveralls,codecov
-    - TOXENV=2.7-eventlet,coveralls,codecov
-    - TOXENV=2.7-eventlet-nocover
-    - TOXENV=2.7-eventlet-nocover-patchthread
-    - TOXENV=2.7-eventlet-patchthread,coveralls,codecov
-    - TOXENV=2.7-gevent,coveralls,codecov
-    - TOXENV=2.7-gevent-nocover
-    - TOXENV=2.7-gevent-nocover-patchthread
-    - TOXENV=2.7-gevent-patchthread,coveralls,codecov
-    - TOXENV=2.7-nocover
-    - TOXENV=2.7-signalfd,coveralls,codecov
-    - TOXENV=2.7-signalfd-eventlet,coveralls,codecov
-    - TOXENV=2.7-signalfd-eventlet-nocover
-    - TOXENV=2.7-signalfd-eventlet-nocover-patchthread
-    - TOXENV=2.7-signalfd-eventlet-patchthread,coveralls,codecov
-    - TOXENV=2.7-signalfd-gevent,coveralls,codecov
-    - TOXENV=2.7-signalfd-gevent-nocover
-    - TOXENV=2.7-signalfd-gevent-nocover-patchthread
-    - TOXENV=2.7-signalfd-gevent-patchthread,coveralls,codecov
-    - TOXENV=2.7-signalfd-nocover
-    - TOXENV=3.2,coveralls,codecov
-    - TOXENV=3.2-eventlet,coveralls,codecov
-    - TOXENV=3.2-eventlet-nocover
-    - TOXENV=3.2-eventlet-nocover-patchthread
-    - TOXENV=3.2-eventlet-patchthread,coveralls,codecov
-    - TOXENV=3.2-gevent,coveralls,codecov
-    - TOXENV=3.2-gevent-nocover
-    - TOXENV=3.2-gevent-nocover-patchthread
-    - TOXENV=3.2-gevent-patchthread,coveralls,codecov
-    - TOXENV=3.2-nocover
-    - TOXENV=3.2-signalfd,coveralls,codecov
-    - TOXENV=3.2-signalfd-eventlet,coveralls,codecov
-    - TOXENV=3.2-signalfd-eventlet-nocover
-    - TOXENV=3.2-signalfd-eventlet-nocover-patchthread
-    - TOXENV=3.2-signalfd-eventlet-patchthread,coveralls,codecov
-    - TOXENV=3.2-signalfd-gevent,coveralls,codecov
-    - TOXENV=3.2-signalfd-gevent-nocover
-    - TOXENV=3.2-signalfd-gevent-nocover-patchthread
-    - TOXENV=3.2-signalfd-gevent-patchthread,coveralls,codecov
-    - TOXENV=3.2-signalfd-nocover
-    - TOXENV=3.3,coveralls,codecov
-    - TOXENV=3.3-eventlet,coveralls,codecov
-    - TOXENV=3.3-eventlet-nocover
-    - TOXENV=3.3-eventlet-nocover-patchthread
-    - TOXENV=3.3-eventlet-patchthread,coveralls,codecov
-    - TOXENV=3.3-gevent,coveralls,codecov
-    - TOXENV=3.3-gevent-nocover
-    - TOXENV=3.3-gevent-nocover-patchthread
-    - TOXENV=3.3-gevent-patchthread,coveralls,codecov
-    - TOXENV=3.3-nocover
-    - TOXENV=3.3-signalfd,coveralls,codecov
-    - TOXENV=3.3-signalfd-eventlet,coveralls,codecov
-    - TOXENV=3.3-signalfd-eventlet-nocover
-    - TOXENV=3.3-signalfd-eventlet-nocover-patchthread
-    - TOXENV=3.3-signalfd-eventlet-patchthread,coveralls,codecov
-    - TOXENV=3.3-signalfd-gevent,coveralls,codecov
-    - TOXENV=3.3-signalfd-gevent-nocover
-    - TOXENV=3.3-signalfd-gevent-nocover-patchthread
-    - TOXENV=3.3-signalfd-gevent-patchthread,coveralls,codecov
-    - TOXENV=3.3-signalfd-nocover
-    - TOXENV=3.4,coveralls,codecov
-    - TOXENV=3.4-eventlet,coveralls,codecov
-    - TOXENV=3.4-eventlet-nocover
-    - TOXENV=3.4-eventlet-nocover-patchthread
-    - TOXENV=3.4-eventlet-patchthread,coveralls,codecov
-    - TOXENV=3.4-gevent,coveralls,codecov
-    - TOXENV=3.4-gevent-nocover
-    - TOXENV=3.4-gevent-nocover-patchthread
-    - TOXENV=3.4-gevent-patchthread,coveralls,codecov
-    - TOXENV=3.4-nocover
-    - TOXENV=3.4-signalfd,coveralls,codecov
-    - TOXENV=3.4-signalfd-eventlet,coveralls,codecov
-    - TOXENV=3.4-signalfd-eventlet-nocover
-    - TOXENV=3.4-signalfd-eventlet-nocover-patchthread
-    - TOXENV=3.4-signalfd-eventlet-patchthread,coveralls,codecov
-    - TOXENV=3.4-signalfd-gevent,coveralls,codecov
-    - TOXENV=3.4-signalfd-gevent-nocover
-    - TOXENV=3.4-signalfd-gevent-nocover-patchthread
-    - TOXENV=3.4-signalfd-gevent-patchthread,coveralls,codecov
-    - TOXENV=3.4-signalfd-nocover
-    - TOXENV=pypy,coveralls,codecov
-    - TOXENV=pypy-nocover
-    - TOXENV=pypy-signalfd,coveralls,codecov
-    - TOXENV=pypy-signalfd-nocover
+    - TOXENV=docs
+matrix:
+  include:
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-bare-cover,report,coveralls,codecov
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-bare-nocov
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-cover,report,coveralls,codecov
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-eventlet-cover,report,coveralls,codecov
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-eventlet-cover-patchthread,report,coveralls,codecov
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-eventlet-nocov
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-eventlet-nocov-patchthread
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-gevent-cover,report,coveralls,codecov
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-gevent-cover-patchthread,report,coveralls,codecov
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-gevent-nocov
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-gevent-nocov-patchthread
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-nocov
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-signalfd-cover,report,coveralls,codecov
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-signalfd-eventlet-cover,report,coveralls,codecov
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-signalfd-eventlet-cover-patchthread,report,coveralls,codecov
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-signalfd-eventlet-nocov
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-signalfd-eventlet-nocov-patchthread
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-signalfd-gevent-cover,report,coveralls,codecov
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-signalfd-gevent-cover-patchthread,report,coveralls,codecov
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-signalfd-gevent-nocov
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-signalfd-gevent-nocov-patchthread
+    - python: '2.6'
+      env:
+        - TOXENV=2.6-signalfd-nocov
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-bare-cover,report,coveralls,codecov
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-bare-nocov
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-cover,report,coveralls,codecov
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-eventlet-cover,report,coveralls,codecov
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-eventlet-cover-patchthread,report,coveralls,codecov
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-eventlet-nocov
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-eventlet-nocov-patchthread
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-gevent-cover,report,coveralls,codecov
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-gevent-cover-patchthread,report,coveralls,codecov
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-gevent-nocov
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-gevent-nocov-patchthread
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-nocov
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-signalfd-cover,report,coveralls,codecov
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-signalfd-eventlet-cover,report,coveralls,codecov
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-signalfd-eventlet-cover-patchthread,report,coveralls,codecov
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-signalfd-eventlet-nocov
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-signalfd-eventlet-nocov-patchthread
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-signalfd-gevent-cover,report,coveralls,codecov
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-signalfd-gevent-cover-patchthread,report,coveralls,codecov
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-signalfd-gevent-nocov
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-signalfd-gevent-nocov-patchthread
+    - python: '2.7'
+      env:
+        - TOXENV=2.7-signalfd-nocov
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-bare-cover,report,coveralls,codecov
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-bare-nocov
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-cover,report,coveralls,codecov
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-eventlet-cover,report,coveralls,codecov
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-eventlet-cover-patchthread,report,coveralls,codecov
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-eventlet-nocov
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-eventlet-nocov-patchthread
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-gevent-cover,report,coveralls,codecov
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-gevent-cover-patchthread,report,coveralls,codecov
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-gevent-nocov
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-gevent-nocov-patchthread
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-nocov
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-signalfd-cover,report,coveralls,codecov
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-signalfd-eventlet-cover,report,coveralls,codecov
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-signalfd-eventlet-cover-patchthread,report,coveralls,codecov
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-signalfd-eventlet-nocov
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-signalfd-eventlet-nocov-patchthread
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-signalfd-gevent-cover,report,coveralls,codecov
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-signalfd-gevent-cover-patchthread,report,coveralls,codecov
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-signalfd-gevent-nocov
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-signalfd-gevent-nocov-patchthread
+    - python: '3.2'
+      env:
+        - TOXENV=3.2-signalfd-nocov
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-bare-cover,report,coveralls,codecov
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-bare-nocov
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-cover,report,coveralls,codecov
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-eventlet-cover,report,coveralls,codecov
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-eventlet-cover-patchthread,report,coveralls,codecov
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-eventlet-nocov
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-eventlet-nocov-patchthread
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-gevent-cover,report,coveralls,codecov
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-gevent-cover-patchthread,report,coveralls,codecov
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-gevent-nocov
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-gevent-nocov-patchthread
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-nocov
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-signalfd-cover,report,coveralls,codecov
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-signalfd-eventlet-cover,report,coveralls,codecov
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-signalfd-eventlet-cover-patchthread,report,coveralls,codecov
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-signalfd-eventlet-nocov
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-signalfd-eventlet-nocov-patchthread
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-signalfd-gevent-cover,report,coveralls,codecov
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-signalfd-gevent-cover-patchthread,report,coveralls,codecov
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-signalfd-gevent-nocov
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-signalfd-gevent-nocov-patchthread
+    - python: '3.3'
+      env:
+        - TOXENV=3.3-signalfd-nocov
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-bare-cover,report,coveralls,codecov
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-bare-nocov
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-cover,report,coveralls,codecov
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-eventlet-cover,report,coveralls,codecov
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-eventlet-cover-patchthread,report,coveralls,codecov
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-eventlet-nocov
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-eventlet-nocov-patchthread
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-gevent-cover,report,coveralls,codecov
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-gevent-cover-patchthread,report,coveralls,codecov
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-gevent-nocov
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-gevent-nocov-patchthread
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-nocov
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-signalfd-cover,report,coveralls,codecov
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-signalfd-eventlet-cover,report,coveralls,codecov
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-signalfd-eventlet-cover-patchthread,report,coveralls,codecov
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-signalfd-eventlet-nocov
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-signalfd-eventlet-nocov-patchthread
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-signalfd-gevent-cover,report,coveralls,codecov
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-signalfd-gevent-cover-patchthread,report,coveralls,codecov
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-signalfd-gevent-nocov
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-signalfd-gevent-nocov-patchthread
+    - python: '3.4'
+      env:
+        - TOXENV=3.4-signalfd-nocov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-bare-cover,report,coveralls,codecov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-bare-nocov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-cover,report,coveralls,codecov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-eventlet-cover,report,coveralls,codecov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-eventlet-cover-patchthread,report,coveralls,codecov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-eventlet-nocov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-eventlet-nocov-patchthread
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-gevent-cover,report,coveralls,codecov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-gevent-cover-patchthread,report,coveralls,codecov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-gevent-nocov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-gevent-nocov-patchthread
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-nocov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-signalfd-cover,report,coveralls,codecov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-signalfd-eventlet-cover,report,coveralls,codecov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-signalfd-eventlet-cover-patchthread,report,coveralls,codecov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-signalfd-eventlet-nocov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-signalfd-eventlet-nocov-patchthread
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-signalfd-gevent-cover,report,coveralls,codecov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-signalfd-gevent-cover-patchthread,report,coveralls,codecov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-signalfd-gevent-nocov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-signalfd-gevent-nocov-patchthread
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-signalfd-nocov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-bare-cover,report,coveralls,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-bare-nocov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-cover,report,coveralls,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-eventlet-cover,report,coveralls,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-eventlet-cover-patchthread,report,coveralls,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-eventlet-nocov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-eventlet-nocov-patchthread
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-gevent-cover,report,coveralls,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-gevent-cover-patchthread,report,coveralls,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-gevent-nocov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-gevent-nocov-patchthread
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-nocov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-signalfd-cover,report,coveralls,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-signalfd-eventlet-cover,report,coveralls,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-signalfd-eventlet-cover-patchthread,report,coveralls,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-signalfd-eventlet-nocov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-signalfd-eventlet-nocov-patchthread
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-signalfd-gevent-cover,report,coveralls,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-signalfd-gevent-cover-patchthread,report,coveralls,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-signalfd-gevent-nocov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-signalfd-gevent-nocov-patchthread
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-signalfd-nocov
+    - python: 'pypy-5.4'
+      env:
+        - TOXENV=pypy-bare-cover,report,coveralls,codecov
+    - python: 'pypy-5.4'
+      env:
+        - TOXENV=pypy-bare-nocov
+    - python: 'pypy-5.4'
+      env:
+        - TOXENV=pypy-cover,report,coveralls,codecov
+    - python: 'pypy-5.4'
+      env:
+        - TOXENV=pypy-nocov
+    - python: 'pypy-5.4'
+      env:
+        - TOXENV=pypy-signalfd-cover,report,coveralls,codecov
+    - python: 'pypy-5.4'
+      env:
+        - TOXENV=pypy-signalfd-nocov
 before_install:
   - python --version
-  - virtualenv --version
-  - pip --version
   - uname -a
   - lsb_release -a
-  - |
-    if [[ "${TOXENV}" =~ "pypy" ]]; then
-        git clone https://github.com/yyuu/pyenv.git ~/.pyenv
-        PYENV_ROOT="$HOME/.pyenv"
-        PATH="$PYENV_ROOT/bin:$PATH"
-        eval "$(pyenv init -)"
-        pyenv install pypy-2.6.0
-        pyenv global pypy-2.6.0
-    fi
-    pip install virtualenv
 install:
   - pip install tox
+  - virtualenv --version
+  - easy_install --version
+  - pip --version
+  - tox --version
 script:
   - tox -v
+after_failure:
+  - more .tox/log/* | cat
+  - more .tox/*/log/* | cat
 notifications:
   email:
     on_success: never
     on_failure: always
-

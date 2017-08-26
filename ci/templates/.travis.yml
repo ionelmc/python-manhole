@@ -1,38 +1,38 @@
 language: python
-python: 2.7
 sudo: false
+cache: pip
 env:
   global:
-    MANHOLE_TEST_TIMEOUT=30
-    LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
+    - MANHOLE_TEST_TIMEOUT=30
+    - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
+    - SEGFAULT_SIGNALS=all
   matrix:
     - TOXENV=check
-{% for env, config in tox_environments|dictsort %}
-    - TOXENV={{ env }}{% if config.cover %},coveralls,codecov{% endif %}
-
+    - TOXENV=docs
+matrix:
+  include:
+{%- for env, config in tox_environments|dictsort %}{{ '' }}
+    - python: '{{ '{0[0]}-5.4'.format(env.split('-')) if env.startswith('pypy') else env.split('-')[0] }}'
+      env:
+        - TOXENV={{ env }}{% if config.cover %},report,coveralls,codecov{% endif -%}
 {% endfor %}
+
 before_install:
   - python --version
-  - virtualenv --version
-  - pip --version
   - uname -a
   - lsb_release -a
-  - |
-    if [[ "${TOXENV}" =~ "pypy" ]]; then
-        git clone https://github.com/yyuu/pyenv.git ~/.pyenv
-        PYENV_ROOT="$HOME/.pyenv"
-        PATH="$PYENV_ROOT/bin:$PATH"
-        eval "$(pyenv init -)"
-        pyenv install pypy-2.6.0
-        pyenv global pypy-2.6.0
-    fi
-    pip install virtualenv
 install:
   - pip install tox
+  - virtualenv --version
+  - easy_install --version
+  - pip --version
+  - tox --version
 script:
   - tox -v
+after_failure:
+  - more .tox/log/* | cat
+  - more .tox/*/log/* | cat
 notifications:
   email:
     on_success: never
     on_failure: always
-

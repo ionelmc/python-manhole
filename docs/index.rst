@@ -1,7 +1,6 @@
-Welcome to Manhole's documentation!
-=====================================
-
-Contents:
+========
+Contents
+========
 
 .. toctree::
    :maxdepth: 2

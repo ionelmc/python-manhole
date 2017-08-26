@@ -1,6 +1,8 @@
-=======
-Manhole
-=======
+========
+Overview
+========
+
+.. start-badges
 
 .. list-table::
     :stub-columns: 1
@@ -9,9 +11,11 @@ Manhole
       - |docs|
     * - tests
       - | |travis| |requires|
-        | |coveralls| |codecov| |landscape| |scrutinizer| |codacy| |codeclimate|
+        | |coveralls| |codecov|
+        | |landscape| |scrutinizer| |codacy| |codeclimate|
     * - package
-      - |version| |downloads| |wheel| |supported-versions| |supported-implementations|
+      - | |version| |wheel| |supported-versions| |supported-implementations|
+        | |commits-since|
 
 .. |docs| image:: https://readthedocs.org/projects/python-manhole/badge/?style=flat
     :target: https://readthedocs.org/projects/python-manhole
@@ -37,7 +41,7 @@ Manhole
     :target: https://landscape.io/github/ionelmc/python-manhole/master
     :alt: Code Quality Status
 
-.. |codacy| image:: https://img.shields.io/codacy/REPLACE_WITH_PROJECT_ID.svg?style=flat
+.. |codacy| image:: https://img.shields.io/codacy/REPLACE_WITH_PROJECT_ID.svg
     :target: https://www.codacy.com/app/ionelmc/python-manhole
     :alt: Codacy Code Quality Status
 
@@ -45,27 +49,27 @@ Manhole
    :target: https://codeclimate.com/github/ionelmc/python-manhole
    :alt: CodeClimate Quality Status
 
-.. |version| image:: https://img.shields.io/pypi/v/manhole.svg?style=flat
+.. |version| image:: https://img.shields.io/pypi/v/manhole.svg
     :alt: PyPI Package latest release
     :target: https://pypi.python.org/pypi/manhole
 
-.. |downloads| image:: https://img.shields.io/pypi/dm/manhole.svg?style=flat
-    :alt: PyPI Package monthly downloads
-    :target: https://pypi.python.org/pypi/manhole
+.. |commits-since| image:: https://img.shields.io/github/commits-since/ionelmc/python-manhole/v1.3.0.svg
+    :alt: Commits since latest release
+    :target: https://github.com/ionelmc/python-manhole/compare/v1.3.0...master
 
-.. |wheel| image:: https://img.shields.io/pypi/wheel/manhole.svg?style=flat
+.. |wheel| image:: https://img.shields.io/pypi/wheel/manhole.svg
     :alt: PyPI Wheel
     :target: https://pypi.python.org/pypi/manhole
 
-.. |supported-versions| image:: https://img.shields.io/pypi/pyversions/manhole.svg?style=flat
+.. |supported-versions| image:: https://img.shields.io/pypi/pyversions/manhole.svg
     :alt: Supported versions
     :target: https://pypi.python.org/pypi/manhole
 
-.. |supported-implementations| image:: https://img.shields.io/pypi/implementation/manhole.svg?style=flat
-    :alt: Supported imlementations
+.. |supported-implementations| image:: https://img.shields.io/pypi/implementation/manhole.svg
+    :alt: Supported implementations
     :target: https://pypi.python.org/pypi/manhole
 
-.. |scrutinizer| image:: https://img.shields.io/scrutinizer/g/ionelmc/python-manhole/master.svg?style=flat
+.. |scrutinizer| image:: https://img.shields.io/scrutinizer/g/ionelmc/python-manhole/master.svg
     :alt: Scrutinizer Status
     :target: https://scrutinizer-ci.com/g/ionelmc/python-manhole/
 
@@ -139,6 +143,7 @@ There's a new experimental ``manhole`` bin since 1.1.0, that emulates ``socat``:
       -1, -USR1             Send USR1 (10) to the process before connecting.
       -2, -USR2             Send USR2 (12) to the process before connecting.
 
+.. end-badges
 
 
 Features

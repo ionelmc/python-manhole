@@ -84,9 +84,12 @@ class GeneratePTH(Command):
 setup(
     name='manhole',
     version='1.3.0',
-    license='BSD',
-    description='Inspection manhole for python applications. Connection is done via unix domain sockets.',
-    long_description='%s\n%s' % (read('README.rst'), re.sub(':[a-z]+:`~?(.*?)`', r'``\1``', read('CHANGELOG.rst'))),
+    license='BSD license',
+    description='Manhole is in-process service that will accept unix domain socket connections and present the',
+    long_description='%s\n%s' % (
+        re.compile('^.. start-badges.*^.. end-badges', re.M | re.S).sub('', read('README.rst')),
+        re.sub(':[a-z]+:`~?(.*?)`', r'``\1``', read('CHANGELOG.rst'))
+    ),
     author='Ionel Cristian Mărieș',
     author_email='contact@ionelmc.ro',
     url='https://github.com/ionelmc/python-manhole',
@@ -112,6 +115,8 @@ setup(
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
     ],
