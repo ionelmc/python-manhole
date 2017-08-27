@@ -265,7 +265,10 @@ class ManholeConnectionThread(_ORIGINAL_THREAD):
                     for name in names:
                         backup.append((name, getattr(sys, name)))
                         setattr(sys, name, _ORIGINAL_FDOPEN(client_fd, mode, 1 if PY3 else 0))
-                run_repl(locals)
+                try:
+                    run_repl(locals)
+                except Exception as exc:
+                    _LOG("Failed with %r." % exc)
                 _LOG("DONE.")
             finally:
                 try:
