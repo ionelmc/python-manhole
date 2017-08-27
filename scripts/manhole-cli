@@ -60,9 +60,9 @@ parser.add_argument('pid', metavar='PID', type=parse_pid,  # nargs='?',
 parser.add_argument('-t', '--timeout', dest='timeout', default=1, type=float,
                     help='Timeout to use. Default: %(default)s seconds.')
 group = parser.add_mutually_exclusive_group()
-group.add_argument('-1', '-USR1', dest='signal', action='store_const', const=signal.SIGUSR1,
+group.add_argument('-1', '-USR1', dest='signal', action='store_const', const=int(signal.SIGUSR1),
                    help='Send USR1 (%(const)s) to the process before connecting.')
-group.add_argument('-2', '-USR2', dest='signal', action='store_const', const=signal.SIGUSR2,
+group.add_argument('-2', '-USR2', dest='signal', action='store_const', const=int(signal.SIGUSR2),
                    help='Send USR2 (%(const)s) to the process before connecting.')
 group.add_argument('-s', '--signal', dest='signal', type=parse_signal, metavar="SIGNAL",
                    help='Send the given SIGNAL to the process before connecting.')

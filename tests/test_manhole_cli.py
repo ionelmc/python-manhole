@@ -122,7 +122,7 @@ def test_sig_usr2_number():
         with dump_on_error(service.read):
             wait_for_strings(service.read, TIMEOUT,
                              'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
-            with TestProcess('manhole-cli', '-s', str(signal.SIGUSR2), str(service.proc.pid), bufsize=0,
+            with TestProcess('manhole-cli', '-s', str(int(signal.SIGUSR2)), str(service.proc.pid), bufsize=0,
                              stdin=subprocess.PIPE) as client:
                 with dump_on_error(client.read):
                     wait_for_strings(client.read, TIMEOUT, '(ManholeConsole)', '>>>')
