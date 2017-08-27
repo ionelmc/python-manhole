@@ -462,8 +462,9 @@ def test_interrupt_on_accept():
         with dump_on_error(proc.read):
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
+            only_on_old_python = ['Waiting for new connection'] if sys.version_info < (3, 5) else []
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection', 'Sending signal to manhole thread',
-                             'Waiting for new connection')
+                             *only_on_old_python)
             assert_manhole_running(proc, uds_path)
 
 
