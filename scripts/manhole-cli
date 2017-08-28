@@ -73,28 +73,31 @@ class ConnectionHandler(threading.Thread):
         super(ConnectionHandler, self).__init__()
         self.sock = sock
         self.read_fd = read_fd
+        self.conn_fd = sock.fileno()
         self.should_run = True
 
     def run(self):
-        sock = self.sock
-        conn_fd = sock.fileno()
-        read_fd = self.read_fd
-
-        poll.register(read_fd, select.POLLIN | select.POLLPRI | select.POLLERR | select.POLLHUP)
-        poll.register(conn_fd, select.POLLIN | select.POLLPRI | select.POLLERR | select.POLLHUP)
+        poll.register(self.read_fd, select.POLLIN | select.POLLPRI | select.POLLERR | select.POLLHUP)
+        poll.register(self.conn_fd, select.POLLIN | select.POLLPRI | select.POLLERR | select.POLLHUP)
 
         while self.should_run:
-            for fd, _ in poll.poll(args.timeout):
-                if fd == conn_fd:
-                    data = sock.recv(1024)
-                    sys.stdout.write(data.decode('utf8'))
-                    sys.stdout.flush()
-                    readline.redisplay()
-                elif fd == read_fd:
-                    data = os.read(read_fd, 1024)
-                    sock.sendall(data)
-                else:
-                    raise RuntimeError("Unknown FD %s" % fd)
+            self.poll()
+        t = time.time()
+        while time.time() - t < 1:
+            self.poll()
+
+    def poll(self):
+        for fd, _ in poll.poll(args.timeout):
+            if fd == self.conn_fd:
+                data = sock.recv(1024)
+                sys.stdout.write(data.decode('utf8'))
+                sys.stdout.flush()
+                readline.redisplay()
+            elif fd == read_fd:
+                data = os.read(read_fd, 1024)
+                sock.sendall(data)
+            else:
+                raise RuntimeError("Unknown FD %s" % fd)
 
 
 if __name__ == "__main__":
