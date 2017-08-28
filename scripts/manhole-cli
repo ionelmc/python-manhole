@@ -138,10 +138,10 @@ if __name__ == "__main__":
     try:
         while thread.is_alive():
             try:
-                data = input().encode('utf8')
+                data = input()
             except EOFError:
                 break
-            os.write(write_fd, data)
+            os.write(write_fd, data.encode('utf8'))
             os.write(write_fd, b'\n')
     except KeyboardInterrupt:
         pass
