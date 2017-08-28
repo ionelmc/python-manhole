@@ -47,6 +47,8 @@ except ImportError:
 _ORIGINAL_SOCKET = _get_original('socket', 'socket')
 _ORIGINAL_FROMFD = _get_original('socket', 'fromfd')
 _ORIGINAL_FDOPEN = _get_original('os', 'fdopen')
+_ORIGINAL_DUP = _get_original('os', 'dup')
+_ORIGINAL_DUP2 = _get_original('os', 'dup2')
 try:
     _ORIGINAL_ALLOCATE_LOCK = _get_original('thread', 'allocate_lock')
 except ImportError:  # python 3
@@ -268,7 +270,6 @@ def handle_connection_repl(client):
     Handles connection.
     """
     client.settimeout(None)
-
     # # disable this till we have evidence that it's needed
     # client.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 0)
     # # Note: setting SO_RCVBUF on UDS has no effect, see: http://man7.org/linux/man-pages/man7/unix.7.html
@@ -280,7 +281,6 @@ def handle_connection_repl(client):
         patches.append(('w', ('stderr', '__stderr__')))
     try:
         client_fd = client.fileno()
-
         for mode, names in patches:
             for name in names:
                 backup.append((name, getattr(sys, name)))
@@ -306,7 +306,10 @@ def handle_connection_repl(client):
             del backup
             for fh in junk:
                 try:
-                    fh.close()
+                    if hasattr(fh, 'detach'):
+                        fh.detach()
+                    else:
+                        fh.close()
                 except IOError:
                     pass
                 del fh
