@@ -13,12 +13,6 @@ matrix:
   include:
     - python: '2.6'
       env:
-        - TOXENV=2.6-bare-cover,report,coveralls,codecov
-    - python: '2.6'
-      env:
-        - TOXENV=2.6-bare-nocov
-    - python: '2.6'
-      env:
         - TOXENV=2.6-cover,report,coveralls,codecov
     - python: '2.6'
       env:
@@ -77,12 +71,6 @@ matrix:
     - python: '2.6'
       env:
         - TOXENV=2.6-signalfd-nocov
-    - python: '2.7'
-      env:
-        - TOXENV=2.7-bare-cover,report,coveralls,codecov
-    - python: '2.7'
-      env:
-        - TOXENV=2.7-bare-nocov
     - python: '2.7'
       env:
         - TOXENV=2.7-cover,report,coveralls,codecov
@@ -145,12 +133,6 @@ matrix:
         - TOXENV=2.7-signalfd-nocov
     - python: '3.2'
       env:
-        - TOXENV=3.2-bare-cover,report,coveralls,codecov
-    - python: '3.2'
-      env:
-        - TOXENV=3.2-bare-nocov
-    - python: '3.2'
-      env:
         - TOXENV=3.2-cover,report,coveralls,codecov
     - python: '3.2'
       env:
@@ -209,12 +191,6 @@ matrix:
     - python: '3.2'
       env:
         - TOXENV=3.2-signalfd-nocov
-    - python: '3.3'
-      env:
-        - TOXENV=3.3-bare-cover,report,coveralls,codecov
-    - python: '3.3'
-      env:
-        - TOXENV=3.3-bare-nocov
     - python: '3.3'
       env:
         - TOXENV=3.3-cover,report,coveralls,codecov
@@ -277,12 +253,6 @@ matrix:
         - TOXENV=3.3-signalfd-nocov
     - python: '3.4'
       env:
-        - TOXENV=3.4-bare-cover,report,coveralls,codecov
-    - python: '3.4'
-      env:
-        - TOXENV=3.4-bare-nocov
-    - python: '3.4'
-      env:
         - TOXENV=3.4-cover,report,coveralls,codecov
     - python: '3.4'
       env:
@@ -341,12 +311,6 @@ matrix:
     - python: '3.4'
       env:
         - TOXENV=3.4-signalfd-nocov
-    - python: '3.5'
-      env:
-        - TOXENV=3.5-bare-cover,report,coveralls,codecov
-    - python: '3.5'
-      env:
-        - TOXENV=3.5-bare-nocov
     - python: '3.5'
       env:
         - TOXENV=3.5-cover,report,coveralls,codecov
@@ -409,12 +373,6 @@ matrix:
         - TOXENV=3.5-signalfd-nocov
     - python: '3.6'
       env:
-        - TOXENV=3.6-bare-cover,report,coveralls,codecov
-    - python: '3.6'
-      env:
-        - TOXENV=3.6-bare-nocov
-    - python: '3.6'
-      env:
         - TOXENV=3.6-cover,report,coveralls,codecov
     - python: '3.6'
       env:
@@ -473,12 +431,6 @@ matrix:
     - python: '3.6'
       env:
         - TOXENV=3.6-signalfd-nocov
-    - python: 'pypy-5.4'
-      env:
-        - TOXENV=pypy-bare-cover,report,coveralls,codecov
-    - python: 'pypy-5.4'
-      env:
-        - TOXENV=pypy-bare-nocov
     - python: 'pypy-5.4'
       env:
         - TOXENV=pypy-cover,report,coveralls,codecov
