@@ -69,11 +69,12 @@ group.add_argument('-s', '--signal', dest='signal', type=parse_signal, metavar="
 
 
 class ConnectionHandler(threading.Thread):
-    def __init__(self, sock, read_fd):
+    def __init__(self, sock, read_fd, timeout):
         super(ConnectionHandler, self).__init__()
         self.sock = sock
         self.read_fd = read_fd
         self.conn_fd = sock.fileno()
+        self.timeout = timeout
         self.should_run = True
 
     def run(self):
@@ -82,12 +83,13 @@ class ConnectionHandler(threading.Thread):
 
         while self.should_run:
             self.poll()
-        t = time.time()
-        while time.time() - t < 1:
-            self.poll()
+        if not sys.stdin.isatty():
+            t = time.time()
+            while time.time() - t < self.timeout:
+                self.poll()
 
     def poll(self):
-        for fd, _ in poll.poll(args.timeout):
+        for fd, _ in poll.poll(self.timeout):
             if fd == self.conn_fd:
                 data = sock.recv(1024)
                 sys.stdout.write(data.decode('utf8'))
@@ -135,7 +137,7 @@ if __name__ == "__main__":
     poll = select.poll()
     read_fd, write_fd = os.pipe()
 
-    thread = ConnectionHandler(sock, read_fd)
+    thread = ConnectionHandler(sock, read_fd, args.timeout)
     thread.start()
 
     try:
