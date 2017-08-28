@@ -496,7 +496,7 @@ def test_sigmask():
                               b"import signalfd\n"
                               b"mask = signalfd.sigprocmask(signalfd.SIG_BLOCK, [])\n"
                               b"print([int(n) for n in mask])\n")
-                    wait_for_strings(client.read, 1, '%s' % [signal.SIGUSR1])
+                    wait_for_strings(client.read, 1, '%s' % [int(signal.SIGUSR1)])
 
 
 def test_stderr_doesnt_deadlock():
