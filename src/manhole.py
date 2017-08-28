@@ -9,7 +9,6 @@ import socket
 import struct
 import sys
 import traceback
-from contextlib import closing
 
 __version__ = '1.3.0'
 
@@ -317,7 +316,6 @@ def handle_connection_repl(client):
         finally:
             setinterval(old_interval)
             _LOG("Cleaned up.")
-
 
 
 class ManholeConsole(code.InteractiveConsole):
