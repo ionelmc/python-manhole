@@ -98,12 +98,12 @@ _LOCK = _ORIGINAL_ALLOCATE_LOCK()
 
 
 def force_original_socket(sock):
-    with closing(sock):
-        if hasattr(_ORIGINAL_SOCKET, '_sock'):
-            sock._sock, sock = None, sock._sock
-            return _ORIGINAL_SOCKET(_sock=sock)
-        else:
-            return _ORIGINAL_SOCKET(sock.family, sock.type, sock.proto, os.dup(sock.fileno()))
+    if hasattr(sock, 'detach'):
+        fd = sock.detach()
+    else:
+        fd = sock.fileno()
+
+    return _ORIGINAL_FROMFD(fd, sock.family, sock.type, sock.proto)
 
 
 def get_peercred(sock):
