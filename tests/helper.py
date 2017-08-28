@@ -2,13 +2,13 @@ from __future__ import print_function
 
 import atexit
 import errno
-from functools import partial
 import logging
 import os
 import select
 import signal
 import sys
 import time
+from functools import partial
 
 from process_tests import setup_coverage
 

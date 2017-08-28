@@ -80,7 +80,7 @@ waiting for a connection).
 
 Access to the socket is restricted to the application's effective user id or root.
 
-This is just like Twisted's `manhole <http://twistedmatrix.com/documents/current/api/twisted.manhole.html>`__.
+This is just like Twisted's `manhole <http://twistedmatrix.com/documents/current/api/twisted.conch.manhole.html>`__.
 It's simpler (no dependencies), it only runs on Unix domain sockets (in contrast to Twisted's manhole which
 can run on telnet or ssh) and it integrates well with various types of applications.
 
@@ -315,9 +315,8 @@ Requirements
 Similar projects
 ================
 
-* Twisted's `old manhole <http://twistedmatrix.com/documents/current/api/twisted.manhole.html>`__ and the `newer
-  implementation <http://twistedmatrix.com/documents/current/api/twisted.conch.manhole.html>`__ (colors, serverside
-  history).
+* Twisted's `manhole <http://twistedmatrix.com/documents/current/api/twisted.conch.manhole.html>`__ - it has colors and
+  server-side history.
 * `wsgi-shell <https://github.com/GrahamDumpleton/wsgi-shell>`_ - spawns a thread.
 * `pyrasite <https://github.com/lmacken/pyrasite>`_ - uses gdb to inject code.
 * `pydbattach <https://github.com/albertz/pydbattach>`_ - uses gdb to inject code.

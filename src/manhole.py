@@ -72,9 +72,12 @@ try:
     _pthread_setname_np = libpthread.pthread_setname_np
     _pthread_setname_np.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
     _pthread_setname_np.restype = ctypes.c_int
-    pthread_setname_np = lambda ident, name: _pthread_setname_np(ident, name[:15].encode('utf8'))
+
+    def pthread_setname_np(ident, name):
+        _pthread_setname_np(ident, name[:15].encode('utf8'))
 except ImportError:
-    pthread_setname_np = lambda ident, name: None
+    def pthread_setname_np(ident, name):
+        pass
 
 if sys.platform == 'darwin' or sys.platform.startswith("freebsd"):
     _PEERCRED_LEVEL = getattr(socket, 'SOL_LOCAL', 0)
@@ -567,7 +570,7 @@ def install(verbose=True,
         locals (dict): Names to add to manhole interactive shell locals.
         daemon_connection (bool): The connection thread is daemonic (dies on app exit). Default: ``False``.
         redirect_stderr (bool): Redirect output from stderr to manhole console. Default: ``True``.
-        connection_handler (function): Function that implements the connection handler (warning: this is for advanced 
+        connection_handler (function): Function that implements the connection handler (warning: this is for advanced
             users). Default: ``manhole.handle_connection``.
     """
     # pylint: disable=W0603

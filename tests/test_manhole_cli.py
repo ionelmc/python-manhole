@@ -1,12 +1,12 @@
 from __future__ import print_function
 
 import os
-import sys
 import signal
+import sys
 
 import pytest
-from process_tests import dump_on_error
 from process_tests import TestProcess
+from process_tests import dump_on_error
 from process_tests import wait_for_strings
 
 try:

@@ -1,6 +1,8 @@
 from __future__ import print_function
-import sys
+
 import os
+import sys
+
 import manhole
 
 stack_dump_file = '/tmp/manhole-pid'
