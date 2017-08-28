@@ -11,6 +11,7 @@ Changelog
 * Added Python 3.5 and 3.6 in the test grid.
 * Fixed issues with piping to ``manhole-cli``. Now ``echo foobar | manhole-cli`` will wait 1 second for output from manhole
   (you can customize this with the ``--timeout`` option).
+* Fixed issues with newer PyPy (caused by gevent/eventlet socket unwrapping).
 
 1.3.0 (2015-09-03)
 ------------------
