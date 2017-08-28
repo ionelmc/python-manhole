@@ -126,7 +126,7 @@ if __name__ == "__main__":
         try:
             sock.connect(uds_path)
         except Exception as exc:
-            if exc.errno != errno.ENOENT:
+            if exc.errno not in (errno.ENOENT, errno.ECONNREFUSED):
                 print("Failed to connect to %r: %r" % (uds_path, exc), file=sys.stderr)
         else:
             break
