@@ -139,7 +139,9 @@ class ManholeThread(_ORIGINAL_THREAD):
         daemon_connection (bool): The connection thread is daemonic (dies on app exit). Default: ``False``.
     """
 
-    def __init__(self, get_socket, sigmask, start_timeout, bind_delay=None, locals=None, daemon_connection=False):
+    def __init__(self,
+                 get_socket, sigmask, start_timeout, connection_handler,
+                 bind_delay=None, daemon_connection=False):
         super(ManholeThread, self).__init__()
         self.daemon = True
         self.daemon_connection = daemon_connection
@@ -150,7 +152,7 @@ class ManholeThread(_ORIGINAL_THREAD):
         # see: http://emptysqua.re/blog/dawn-of-the-thread/
         self.start_timeout = start_timeout
         self.bind_delay = bind_delay
-        self.locals = locals
+        self.connection_handler = connection_handler
         self.get_socket = get_socket
         self.should_run = False
 
@@ -162,7 +164,8 @@ class ManholeThread(_ORIGINAL_THREAD):
         Make a fresh thread with the same options. This is usually used on dead threads.
         """
         return ManholeThread(
-            self.get_socket, self.sigmask, self.start_timeout, locals=self.locals,
+            self.get_socket, self.sigmask, self.start_timeout,
+            connection_handler=self.connection_handler,
             daemon_connection=self.daemon_connection,
             **kwargs
         )
@@ -193,7 +196,7 @@ class ManholeThread(_ORIGINAL_THREAD):
         while self.should_run:
             _LOG("Waiting for new connection (in pid:%s) ..." % os.getpid())
             try:
-                client = ManholeConnectionThread(sock.accept()[0], self.locals, self.daemon_connection)
+                client = ManholeConnectionThread(sock.accept()[0], self.connection_handler, self.daemon_connection)
                 client.start()
                 client.join()
             except (InterruptedError, socket.error) as e:
@@ -210,19 +213,19 @@ class ManholeConnectionThread(_ORIGINAL_THREAD):
     main thread exits.
     """
 
-    def __init__(self, client, locals, daemon=False):
+    def __init__(self, client, connection_handler, daemon=False):
         super(ManholeConnectionThread, self).__init__()
         self.daemon = daemon
         self.client = force_original_socket(client)
+        self.connection_handler = connection_handler
         self.name = "ManholeConnectionThread"
-        self.locals = locals
 
     def run(self):
         _LOG('Started ManholeConnectionThread thread. Checking credentials ...')
         pthread_setname_np(self.ident, "Manhole ----")
         pid, _, _ = self.check_credentials(self.client)
         pthread_setname_np(self.ident, "Manhole %s" % pid)
-        self.handle(self.client, self.locals)
+        self.connection_handler(self.client)
 
     @staticmethod
     def check_credentials(client):
@@ -241,60 +244,71 @@ class ManholeConnectionThread(_ORIGINAL_THREAD):
         _LOG("Accepted connection %s from %s" % (client, client_name))
         return pid, uid, gid
 
-    @staticmethod
-    def handle(client, locals):
-        """
-        Handles connection. This is a static method so it can be used without a thread (eg: from a signal handler -
-        `oneshot_on`).
-        """
-        client.settimeout(None)
 
-        # # disable this till we have evidence that it's needed
-        # client.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 0)
-        # # Note: setting SO_RCVBUF on UDS has no effect, see: http://man7.org/linux/man-pages/man7/unix.7.html
+def handle_connection_exec(client):
+    """
+    Alternate connection handler. No output redirection.
+    """
+    client.settimeout(None)
+    fh = os.fdopen(client.fileno())
+    payload = fh.readline()
+    while payload:
+        exec(payload)
+        payload = fh.readline()
 
-        backup = []
-        old_interval = getinterval()
-        patches = [('r', ('stdin', '__stdin__')), ('w', ('stdout', '__stdout__'))]
-        if _MANHOLE.redirect_stderr:
-            patches.append(('w', ('stderr', '__stderr__')))
+
+def handle_connection_repl(client):
+    """
+    Handles connection.
+    """
+    client.settimeout(None)
+
+    # # disable this till we have evidence that it's needed
+    # client.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 0)
+    # # Note: setting SO_RCVBUF on UDS has no effect, see: http://man7.org/linux/man-pages/man7/unix.7.html
+
+    backup = []
+    old_interval = getinterval()
+    patches = [('r', ('stdin', '__stdin__')), ('w', ('stdout', '__stdout__'))]
+    if _MANHOLE.redirect_stderr:
+        patches.append(('w', ('stderr', '__stderr__')))
+    try:
         try:
+            client_fd = client.fileno()
+            for mode, names in patches:
+                for name in names:
+                    backup.append((name, getattr(sys, name)))
+                    setattr(sys, name, _ORIGINAL_FDOPEN(client_fd, mode, 1 if PY3 else 0))
             try:
-                client_fd = client.fileno()
-                for mode, names in patches:
-                    for name in names:
-                        backup.append((name, getattr(sys, name)))
-                        setattr(sys, name, _ORIGINAL_FDOPEN(client_fd, mode, 1 if PY3 else 0))
-                try:
-                    run_repl(locals)
-                except Exception as exc:
-                    _LOG("Failed with %r." % exc)
-                _LOG("DONE.")
-            finally:
-                try:
-                    # Change the switch/check interval to something ridiculous. We don't want to have other thread try
-                    # to write to the redirected sys.__std*/sys.std* - it would fail horribly.
-                    setinterval(2147483647)
+                handle_repl(_MANHOLE.locals)
+            except Exception as exc:
+                _LOG("Failed with %r." % exc)
+            _LOG("DONE.")
+        finally:
+            try:
+                # Change the switch/check interval to something ridiculous. We don't want to have other thread try
+                # to write to the redirected sys.__std*/sys.std* - it would fail horribly.
+                setinterval(2147483647)
 
-                    client.close()  # close before it's too late. it may already be dead
-                    junk = []  # keep the old file objects alive for a bit
-                    for name, fh in backup:
-                        junk.append(getattr(sys, name))
-                        setattr(sys, name, fh)
-                    del backup
-                    for fh in junk:
-                        try:
-                            fh.close()
-                        except IOError:
-                            pass
-                        del fh
-                    del junk
-                finally:
-                    setinterval(old_interval)
-                    _LOG("Cleaned up.")
-        except Exception:
-            _LOG("ManholeConnectionThread thread failed:")
-            _LOG(traceback.format_exc())
+                client.close()  # close before it's too late. it may already be dead
+                junk = []  # keep the old file objects alive for a bit
+                for name, fh in backup:
+                    junk.append(getattr(sys, name))
+                    setattr(sys, name, fh)
+                del backup
+                for fh in junk:
+                    try:
+                        fh.close()
+                    except IOError:
+                        pass
+                    del fh
+                del junk
+            finally:
+                setinterval(old_interval)
+                _LOG("Cleaned up.")
+    except Exception:
+        _LOG("ManholeConnectionThread thread failed:")
+        _LOG(traceback.format_exc())
 
 
 class ManholeConsole(code.InteractiveConsole):
@@ -309,7 +323,7 @@ class ManholeConsole(code.InteractiveConsole):
         self.file.write(data)
 
 
-def run_repl(locals):
+def handle_repl(locals):
     """
     Dumps stacktraces and runs an interactive prompt (REPL).
     """
@@ -379,12 +393,14 @@ class Manhole(object):
     sigmask = _ALL_SIGNALS
     socket_path = None
     start_timeout = 0.5
+    connection_handler = None
+    previous_signal_handlers = None
     _thread = None
 
     def configure(self,
                   patch_fork=True, activate_on=None, sigmask=_ALL_SIGNALS, oneshot_on=None, thread=True,
                   start_timeout=0.5, socket_path=None, reinstall_delay=0.5, locals=None, daemon_connection=False,
-                  redirect_stderr=True):
+                  redirect_stderr=True, connection_handler=handle_connection_repl):
         self.socket_path = socket_path
         self.reinstall_delay = reinstall_delay
         self.redirect_stderr = redirect_stderr
@@ -392,7 +408,8 @@ class Manhole(object):
         self.sigmask = sigmask
         self.daemon_connection = daemon_connection
         self.start_timeout = start_timeout
-        self.previous_singal_handlers = {}
+        self.previous_signal_handlers = {}
+        self.connection_handler = connection_handler
 
         if oneshot_on is None and activate_on is None and thread:
             self.thread.start()
@@ -400,14 +417,14 @@ class Manhole(object):
 
         if oneshot_on is not None:
             oneshot_on = getattr(signal, 'SIG' + oneshot_on) if isinstance(oneshot_on, string) else oneshot_on
-            self.previous_singal_handlers.setdefault(oneshot_on, signal.signal(oneshot_on, self.handle_oneshot))
+            self.previous_signal_handlers.setdefault(oneshot_on, signal.signal(oneshot_on, self.handle_oneshot))
 
         if activate_on is not None:
             activate_on = getattr(signal, 'SIG' + activate_on) if isinstance(activate_on, string) else activate_on
             if activate_on == oneshot_on:
                 raise ConfigurationConflict('You cannot do activation of the Manhole thread on the same signal '
                                             'that you want to do oneshot activation !')
-            self.previous_singal_handlers.setdefault(activate_on, signal.signal(activate_on, self.activate_on_signal))
+            self.previous_signal_handlers.setdefault(activate_on, signal.signal(activate_on, self.activate_on_signal))
 
         atexit.register(self.remove_manhole_uds)
         if patch_fork:
@@ -427,15 +444,15 @@ class Manhole(object):
             self._thread = None
         self.remove_manhole_uds()
         self.restore_os_fork_functions()
-        for sig, handler in self.previous_singal_handlers.items():
+        for sig, handler in self.previous_signal_handlers.items():
             signal.signal(sig, handler)
-        self.previous_singal_handlers.clear()
+        self.previous_signal_handlers.clear()
 
     @property
     def thread(self):
         if self._thread is None:
             self._thread = ManholeThread(
-                self.get_socket, self.sigmask, self.start_timeout, locals=self.locals,
+                self.get_socket, self.sigmask, self.start_timeout, self.connection_handler,
                 daemon_connection=self.daemon_connection
             )
         return self._thread
@@ -468,7 +485,7 @@ class Manhole(object):
             _LOG("Waiting for new connection (in pid:%s) ..." % os.getpid())
             client = force_original_socket(sock.accept()[0])
             ManholeConnectionThread.check_credentials(client)
-            ManholeConnectionThread.handle(client, self.thread.locals)
+            self.connection_handler(client)
         except:  # pylint: disable=W0702
             # we don't want to let any exception out, it might make the application misbehave
             _LOG("Manhole oneshot connection failed:")
@@ -550,6 +567,8 @@ def install(verbose=True,
         locals (dict): Names to add to manhole interactive shell locals.
         daemon_connection (bool): The connection thread is daemonic (dies on app exit). Default: ``False``.
         redirect_stderr (bool): Redirect output from stderr to manhole console. Default: ``True``.
+        connection_handler (function): Function that implements the connection handler (warning: this is for advanced 
+            users). Default: ``manhole.handle_connection``.
     """
     # pylint: disable=W0603
     global _MANHOLE
