@@ -2,6 +2,16 @@
 Changelog
 =========
 
+1.4.0 (2017-08-28)
+------------------
+
+* Added the ``connection_handler`` install option. Default value is ``manhole.handle_connection_repl``, and alternate
+  ``manhole.handle_connection_exec`` is provided (very simple: no output redirection, no stacktrace dumping).
+* Dropped Python 3.2 from the test grid. It may work but it's a huge pain to support (pip/pytest don't support it anymore).
+* Added Python 3.5 and 3.6 in the test grid.
+* Fixed issues with piping to ``manhole-cli``. Now ``echo foobar | manhole-cli`` will wait 1 second for output from manhole
+  (you can customize this with the ``--timeout`` option).
+
 1.3.0 (2015-09-03)
 ------------------
 
