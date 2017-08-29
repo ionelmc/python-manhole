@@ -4,7 +4,6 @@ import atexit
 import errno
 import logging
 import os
-import select
 import signal
 import sys
 import time
