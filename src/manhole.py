@@ -375,7 +375,7 @@ class Logger(object):
             if self.destination is None:
                 raise NotInstalled("Manhole is not installed!")
             try:
-                full_message = "Manhole[%.4f]: %s\n" % (self.time(), message)
+                full_message = "Manhole[%s:%.4f]: %s\n" % (os.getpid(), self.time(), message)
 
                 if isinstance(self.destination, int):
                     os.write(self.destination, full_message.encode('ascii', 'ignore'))
