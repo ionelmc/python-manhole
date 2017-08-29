@@ -235,22 +235,22 @@ class ManholeConnectionThread(_ORIGINAL_THREAD):
         except BaseException as exc:
             _LOG("ManholeConnectionThread failure: %r" % exc)
 
-    @staticmethod
-    def check_credentials(client):
-        """
-        Checks credentials for given socket.
-        """
-        pid, uid, gid = get_peercred(client)
 
-        euid = os.geteuid()
-        client_name = "PID:%s UID:%s GID:%s" % (pid, uid, gid)
-        if uid not in (0, euid):
-            raise SuspiciousClient("Can't accept client with %s. It doesn't match the current EUID:%s or ROOT." % (
-                client_name, euid
-            ))
+def check_credentials(client):
+    """
+    Checks credentials for given socket.
+    """
+    pid, uid, gid = get_peercred(client)
 
-        _LOG("Accepted connection %s from %s" % (client, client_name))
-        return pid, uid, gid
+    euid = os.geteuid()
+    client_name = "PID:%s UID:%s GID:%s" % (pid, uid, gid)
+    if uid not in (0, euid):
+        raise SuspiciousClient("Can't accept client with %s. It doesn't match the current EUID:%s or ROOT." % (
+            client_name, euid
+        ))
+
+    _LOG("Accepted connection %s from %s" % (client, client_name))
+    return pid, uid, gid
 
 
 def handle_connection_exec(client):
@@ -493,7 +493,7 @@ class Manhole(object):
                 sock = self.get_socket()
                 _LOG("Waiting for new connection (in pid:%s) ..." % os.getpid())
                 client = force_original_socket(sock.accept()[0])
-                ManholeConnectionThread.check_credentials(client)
+                check_credentials(client)
                 self.connection_handler(client)
             finally:
                 self.remove_manhole_uds()
