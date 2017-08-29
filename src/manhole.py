@@ -9,6 +9,7 @@ import socket
 import struct
 import sys
 import traceback
+from contextlib import closing
 
 __version__ = '1.3.0'
 
@@ -98,11 +99,11 @@ _LOCK = _ORIGINAL_ALLOCATE_LOCK()
 
 def force_original_socket(sock):
     with closing(sock):
-        if hasattr(_ORIGINAL_SOCKET, '_sock'):
-            sock._sock, sock = None, sock._sock
-            return _ORIGINAL_SOCKET(_sock=sock)
+        if hasattr(sock, 'detach'):
+            return _ORIGINAL_SOCKET(sock.family, sock.type, sock.proto, sock.detach())
         else:
-            return _ORIGINAL_SOCKET(sock.family, sock.type, sock.proto, os.dup(sock.fileno()))
+            assert hasattr(_ORIGINAL_SOCKET, '_sock')
+            return _ORIGINAL_SOCKET(_sock=sock._sock)
 
 
 def get_peercred(sock):
