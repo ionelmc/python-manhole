@@ -227,9 +227,9 @@ class ManholeConnectionThread(_ORIGINAL_THREAD):
 
     def run(self):
         _LOG('Started ManholeConnectionThread thread. Checking credentials ...')
-        pthread_setname_np(self.ident, "Manhole ----")
-        pid, _, _ = self.check_credentials(self.client)
-        pthread_setname_np(self.ident, "Manhole %s" % pid)
+        pthread_setname_np(self.ident, "Manhole -------")
+        pid, _, _ = check_credentials(self.client)
+        pthread_setname_np(self.ident, "Manhole < PID:%s" % pid)
         try:
             self.connection_handler(self.client)
         except BaseException as exc:
