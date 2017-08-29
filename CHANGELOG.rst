@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.4.0 (2017-08-28)
+1.4.0 (2017-08-29)
 ------------------
 
 * Added the ``connection_handler`` install option. Default value is ``manhole.handle_connection_repl``, and alternate
