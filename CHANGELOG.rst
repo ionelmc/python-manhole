@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.5.0 (2017-08-30)
+1.5.0 (2017-08-31)
 ------------------
 
 * Added two string aliases for ``connection_handler`` option. Now you can convieniently use ``connection_handler="exec"``.
