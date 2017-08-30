@@ -76,10 +76,11 @@ class ConnectionHandler(threading.Thread):
         self.conn_fd = sock.fileno()
         self.timeout = timeout
         self.should_run = True
+        self.poll = select.poll()
 
     def run(self):
-        poll.register(self.read_fd, select.POLLIN | select.POLLPRI | select.POLLERR | select.POLLHUP)
-        poll.register(self.conn_fd, select.POLLIN | select.POLLPRI | select.POLLERR | select.POLLHUP)
+        self.poll.register(self.read_fd, select.POLLIN | select.POLLPRI | select.POLLERR | select.POLLHUP)
+        self.poll.register(self.conn_fd, select.POLLIN | select.POLLPRI | select.POLLERR | select.POLLHUP)
 
         while self.should_run:
             self.poll()
@@ -89,20 +90,20 @@ class ConnectionHandler(threading.Thread):
                 self.poll()
 
     def poll(self):
-        for fd, _ in poll.poll(self.timeout):
+        for fd, _ in self.poll.poll(self.timeout):
             if fd == self.conn_fd:
-                data = sock.recv(1024*1024)
+                data = self.sock.recv(1024*1024)
                 sys.stdout.write(data.decode('utf8'))
                 sys.stdout.flush()
                 readline.redisplay()
-            elif fd == read_fd:
-                data = os.read(read_fd, 1024)
-                sock.sendall(data)
+            elif fd == self.read_fd:
+                data = os.read(self.read_fd, 1024)
+                self.sock.sendall(data)
             else:
                 raise RuntimeError("Unknown FD %s" % fd)
 
 
-if __name__ == "__main__":
+def main():
     args = parser.parse_args()
 
     histfile = os.path.join(os.path.expanduser("~"), ".manhole_history")
@@ -134,7 +135,6 @@ if __name__ == "__main__":
         print("Failed to connect to %r: Timeout" % uds_path, file=sys.stderr)
         sys.exit(5)
 
-    poll = select.poll()
     read_fd, write_fd = os.pipe()
 
     thread = ConnectionHandler(sock, read_fd, args.timeout)
