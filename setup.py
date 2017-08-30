@@ -120,9 +120,11 @@ setup(
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
     ],
-    scripts=[
-        join('scripts', 'manhole-cli'),
-    ],
+    entry_points={
+        'console_scripts': [
+            'manhole-cli = manhole.cli:main',
+        ]
+    },
     keywords=[
         'debugging', 'manhole', 'thread', 'socket', 'unix domain socket'
     ],
