@@ -69,28 +69,30 @@ group.add_argument('-s', '--signal', dest='signal', type=parse_signal, metavar="
 
 
 class ConnectionHandler(threading.Thread):
-    def __init__(self, sock, read_fd, timeout):
+    def __init__(self, timeout, sock, read_fd=None, wait_the_end=True):
         super(ConnectionHandler, self).__init__()
         self.sock = sock
         self.read_fd = read_fd
         self.conn_fd = sock.fileno()
         self.timeout = timeout
         self.should_run = True
-        self.poll = select.poll()
+        self._poller = select.poll()
+        self.wait_the_end = wait_the_end
 
     def run(self):
-        self.poll.register(self.read_fd, select.POLLIN | select.POLLPRI | select.POLLERR | select.POLLHUP)
-        self.poll.register(self.conn_fd, select.POLLIN | select.POLLPRI | select.POLLERR | select.POLLHUP)
+        if self.read_fd is not None:
+            self._poller.register(self.read_fd, select.POLLIN | select.POLLPRI | select.POLLERR | select.POLLHUP)
+        self._poller.register(self.conn_fd, select.POLLIN | select.POLLPRI | select.POLLERR | select.POLLHUP)
 
         while self.should_run:
             self.poll()
-        if not sys.stdin.isatty():
+        if self.wait_the_end:
             t = time.time()
             while time.time() - t < self.timeout:
                 self.poll()
 
     def poll(self):
-        for fd, _ in self.poll.poll(self.timeout):
+        for fd, _ in self._poller.poll(self.timeout):
             if fd == self.conn_fd:
                 data = self.sock.recv(1024*1024)
                 sys.stdout.write(data.decode('utf8'))
@@ -137,7 +139,7 @@ def main():
 
     read_fd, write_fd = os.pipe()
 
-    thread = ConnectionHandler(sock, read_fd, args.timeout)
+    thread = ConnectionHandler(args.timeout, sock, read_fd, not sys.stdin.isatty())
     thread.start()
 
     try:
