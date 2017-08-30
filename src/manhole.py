@@ -318,6 +318,11 @@ def handle_connection_repl(client):
             setinterval(old_interval)
             _LOG("Cleaned up.")
 
+_CONNECTION_HANDLER_ALIASES = {
+    'repl': handle_connection_repl,
+    'exec': handle_connection_exec
+}
+
 
 class ManholeConsole(code.InteractiveConsole):
     def __init__(self, *args, **kw):
@@ -417,7 +422,7 @@ class Manhole(object):
         self.daemon_connection = daemon_connection
         self.start_timeout = start_timeout
         self.previous_signal_handlers = {}
-        self.connection_handler = connection_handler
+        self.connection_handler = _CONNECTION_HANDLER_ALIASES.get(connection_handler, connection_handler)
 
         if oneshot_on is None and activate_on is None and thread:
             self.thread.start()
@@ -575,8 +580,8 @@ def install(verbose=True,
         locals (dict): Names to add to manhole interactive shell locals.
         daemon_connection (bool): The connection thread is daemonic (dies on app exit). Default: ``False``.
         redirect_stderr (bool): Redirect output from stderr to manhole console. Default: ``True``.
-        connection_handler (function): Function that implements the connection handler (warning: this is for advanced
-            users). Default: ``manhole.handle_connection``.
+        connection_handler (function): Connection handler to use. Use ``"exec"`` for simple implementation without output 
+            redirection or your own function. (warning: this is for advanced users). Default: ``"repl"``.
     """
     # pylint: disable=W0603
     global _MANHOLE
