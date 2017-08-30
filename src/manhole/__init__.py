@@ -267,15 +267,16 @@ def handle_connection_exec(client):
     def exit():
         raise _ExitExecLoop()
 
-    with closing(client), closing(fh):
-        try:
-            payload = fh.readline()
-            while payload:
-                _LOG("Running: %r." % payload)
-                exec(payload)
+    with closing(client):
+        with closing(fh):
+            try:
                 payload = fh.readline()
-        except _ExitExecLoop:
-            _LOG("Exiting exec loop.")
+                while payload:
+                    _LOG("Running: %r." % payload)
+                    exec(payload)
+                    payload = fh.readline()
+            except _ExitExecLoop:
+                _LOG("Exiting exec loop.")
 
 
 def handle_connection_repl(client):
