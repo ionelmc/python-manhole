@@ -272,7 +272,7 @@ def handle_connection_exec(client):
             payload = fh.readline()
             while payload:
                 _LOG("Running: %r." % payload)
-                exec (payload)
+                exec(payload)
                 payload = fh.readline()
         except _ExitExecLoop:
             _LOG("Exiting exec loop.")
@@ -330,6 +330,7 @@ def handle_connection_repl(client):
         finally:
             setinterval(old_interval)
             _LOG("Cleaned up.")
+
 
 _CONNECTION_HANDLER_ALIASES = {
     'repl': handle_connection_repl,
@@ -593,8 +594,8 @@ def install(verbose=True,
         locals (dict): Names to add to manhole interactive shell locals.
         daemon_connection (bool): The connection thread is daemonic (dies on app exit). Default: ``False``.
         redirect_stderr (bool): Redirect output from stderr to manhole console. Default: ``True``.
-        connection_handler (function): Connection handler to use. Use ``"exec"`` for simple implementation without output 
-            redirection or your own function. (warning: this is for advanced users). Default: ``"repl"``.
+        connection_handler (function): Connection handler to use. Use ``"exec"`` for simple implementation without 
+            output redirection or your own function. (warning: this is for advanced users). Default: ``"repl"``.
     """
     # pylint: disable=W0603
     global _MANHOLE
