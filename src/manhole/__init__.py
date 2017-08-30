@@ -253,18 +253,29 @@ def check_credentials(client):
     return pid, uid, gid
 
 
+class _ExitExecLoop(Exception):
+    pass
+
+
 def handle_connection_exec(client):
     """
     Alternate connection handler. No output redirection.
     """
     client.settimeout(None)
     fh = os.fdopen(client.detach() if hasattr(client, 'detach') else client.fileno())
-    with closing(client):
-        with closing(fh):
+
+    def exit():
+        raise _ExitExecLoop()
+
+    with closing(client), closing(fh):
+        try:
             payload = fh.readline()
             while payload:
-                exec(payload)
+                _LOG("Running: %r." % payload)
+                exec (payload)
                 payload = fh.readline()
+        except _ExitExecLoop:
+            _LOG("Exiting exec loop.")
 
 
 def handle_connection_repl(client):
