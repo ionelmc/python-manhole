@@ -595,7 +595,7 @@ def install(verbose=True,
         locals (dict): Names to add to manhole interactive shell locals.
         daemon_connection (bool): The connection thread is daemonic (dies on app exit). Default: ``False``.
         redirect_stderr (bool): Redirect output from stderr to manhole console. Default: ``True``.
-        connection_handler (function): Connection handler to use. Use ``"exec"`` for simple implementation without 
+        connection_handler (function): Connection handler to use. Use ``"exec"`` for simple implementation without
             output redirection or your own function. (warning: this is for advanced users). Default: ``"repl"``.
     """
     # pylint: disable=W0603

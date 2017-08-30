@@ -10,8 +10,8 @@ import select
 import signal
 import socket
 import sys
-import time
 import threading
+import time
 
 try:
     input = raw_input
