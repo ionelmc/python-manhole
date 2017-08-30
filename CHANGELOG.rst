@@ -6,6 +6,7 @@ Changelog
 ------------------
 
 * Added two string aliases for ``connection_handler`` option. Now you can convieniently use ``connection_handler="exec"``.
+* Improved ``handle_connection_exec``. It now has a clean way to exit (``exit()``) and properly closes the socket.
 
 1.4.0 (2017-08-29)
 ------------------
