@@ -249,7 +249,7 @@ def check_credentials(client):
             client_name, euid
         ))
 
-    _LOG("Accepted connection %s from %s" % (client, client_name))
+    _LOG("Accepted connection on fd:%s from %s" % (client.fileno(), client_name))
     return pid, uid, gid
 
 
