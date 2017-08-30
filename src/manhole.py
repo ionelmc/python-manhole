@@ -258,11 +258,13 @@ def handle_connection_exec(client):
     Alternate connection handler. No output redirection.
     """
     client.settimeout(None)
-    fh = os.fdopen(client.fileno())
-    payload = fh.readline()
-    while payload:
-        exec(payload)
-        payload = fh.readline()
+    fh = os.fdopen(client.detach() if hasattr(client, 'detach') else client.fileno())
+    with closing(client):
+        with closing(fh):
+            payload = fh.readline()
+            while payload:
+                exec(payload)
+                payload = fh.readline()
 
 
 def handle_connection_repl(client):
