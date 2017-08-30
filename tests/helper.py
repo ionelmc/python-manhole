@@ -235,6 +235,12 @@ if __name__ == '__main__':
         elif test_name == 'test_sigmask':
             manhole.install(socket_path=SOCKET_PATH, sigmask=[signal.SIGUSR1])
             time.sleep(TIMEOUT)
+        elif test_name == 'test_connection_handler_exec_func':
+            manhole.install(connection_handler=manhole.handle_connection_exec)
+            time.sleep(TIMEOUT * 10)
+        elif test_name == 'test_connection_handler_exec_str':
+            manhole.install(connection_handler='exec')
+            time.sleep(TIMEOUT * 10)
         else:
             manhole.install()
             time.sleep(0.3)  # give the manhole a bit enough time to start

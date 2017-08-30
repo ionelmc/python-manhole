@@ -88,6 +88,24 @@ def test_simple():
                 assert_manhole_running(proc, uds_path)
 
 
+@mark.parametrize('variant', ['str', 'func'])
+def test_connection_handler_exec(variant):
+    with TestProcess(#'strace', '-o/tmp/trace', '-f', '-s1000',
+                     sys.executable, HELPER, 'test_connection_handler_exec_' + variant) as proc:
+        with dump_on_error(proc.read):
+            wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
+            uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
+            wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
+            for _ in range(200):
+                proc.reset()
+                sock = connect_to_manhole(uds_path)
+                wait_for_strings(proc.read, TIMEOUT, 'UID:%s' % os.getuid(), )
+                with TestSocket(sock) as client:
+                    with dump_on_error(client.read):
+                        sock.send(b"print('FOOBAR')\n")
+                        wait_for_strings(proc.read, TIMEOUT, 'FOOBAR')
+
+
 def test_install_once():
     with TestProcess(sys.executable, HELPER, 'test_install_once') as proc:
         with dump_on_error(proc.read):
