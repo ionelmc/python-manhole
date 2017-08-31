@@ -236,10 +236,10 @@ if __name__ == '__main__':
             manhole.install(socket_path=SOCKET_PATH, sigmask=[signal.SIGUSR1])
             time.sleep(TIMEOUT)
         elif test_name == 'test_connection_handler_exec_func':
-            manhole.install(connection_handler=manhole.handle_connection_exec)
+            manhole.install(connection_handler=manhole.handle_connection_exec, locals={'tete': lambda: print('TETE')})
             time.sleep(TIMEOUT * 10)
         elif test_name == 'test_connection_handler_exec_str':
-            manhole.install(connection_handler='exec')
+            manhole.install(connection_handler='exec', locals={'tete': lambda: print('TETE')})
             time.sleep(TIMEOUT * 10)
         else:
             manhole.install()

@@ -103,6 +103,8 @@ def test_connection_handler_exec(variant):
                     with dump_on_error(client.read):
                         sock.send(b"print('FOOBAR')\n")
                         wait_for_strings(proc.read, TIMEOUT, 'FOOBAR')
+                        sock.send(b"tete()\n")
+                        wait_for_strings(proc.read, TIMEOUT, 'TETE')
                         sock.send(b"exit()\n")
                         wait_for_strings(proc.read, TIMEOUT, 'Exiting exec loop.')
 
