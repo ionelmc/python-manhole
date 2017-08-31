@@ -243,7 +243,7 @@ def check_credentials(client):
     pid, uid, gid = get_peercred(client)
 
     euid = os.geteuid()
-    client_name = "PID:%s UID:%s GID:%s" % (pid, uid, gid)  
+    client_name = "PID:%s UID:%s GID:%s" % (pid, uid, gid)
     if uid not in (0, euid):
         raise SuspiciousClient("Can't accept client with %s. It doesn't match the current EUID:%s or ROOT." % (
             client_name, euid
