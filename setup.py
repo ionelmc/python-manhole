@@ -84,7 +84,7 @@ class GeneratePTH(Command):
 
 setup(
     name='manhole',
-    version='1.4.0',
+    version='1.5.0',
     license='BSD license',
     description='Manhole is in-process service that will accept unix domain socket connections and present the',
     long_description='%s\n%s' % (
