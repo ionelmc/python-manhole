@@ -243,7 +243,7 @@ def check_credentials(client):
     pid, uid, gid = get_peercred(client)
 
     euid = os.geteuid()
-    client_name = "PID:%s UID:%s GID:%s" % (pid, uid, gid)
+    client_name = "PID:%s UID:%s GID:%s" % (pid, uid, gid)  
     if uid not in (0, euid):
         raise SuspiciousClient("Can't accept client with %s. It doesn't match the current EUID:%s or ROOT." % (
             client_name, euid
@@ -253,19 +253,18 @@ def check_credentials(client):
     return pid, uid, gid
 
 
-class _ExitExecLoop(Exception):
-    pass
-
-
 def handle_connection_exec(client):
     """
     Alternate connection handler. No output redirection.
     """
-    client.settimeout(None)
-    fh = os.fdopen(client.detach() if hasattr(client, 'detach') else client.fileno())
+    class ExitExecLoop(Exception):
+        pass
 
     def exit():
-        raise _ExitExecLoop()
+        raise ExitExecLoop()
+
+    client.settimeout(None)
+    fh = os.fdopen(client.detach() if hasattr(client, 'detach') else client.fileno())
 
     with closing(client):
         with closing(fh):
@@ -273,9 +272,9 @@ def handle_connection_exec(client):
                 payload = fh.readline()
                 while payload:
                     _LOG("Running: %r." % payload)
-                    exec(payload)
+                    eval(compile(payload, '<manhole>', 'exec'), {'exit': exit}, _MANHOLE.locals)
                     payload = fh.readline()
-            except _ExitExecLoop:
+            except ExitExecLoop:
                 _LOG("Exiting exec loop.")
 
 

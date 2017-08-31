@@ -90,8 +90,7 @@ def test_simple():
 
 @mark.parametrize('variant', ['str', 'func'])
 def test_connection_handler_exec(variant):
-    with TestProcess(#'strace', '-o/tmp/trace', '-f', '-s1000',
-                     sys.executable, HELPER, 'test_connection_handler_exec_' + variant) as proc:
+    with TestProcess(sys.executable, HELPER, 'test_connection_handler_exec_' + variant) as proc:
         with dump_on_error(proc.read):
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
@@ -104,6 +103,8 @@ def test_connection_handler_exec(variant):
                     with dump_on_error(client.read):
                         sock.send(b"print('FOOBAR')\n")
                         wait_for_strings(proc.read, TIMEOUT, 'FOOBAR')
+                        sock.send(b"exit()\n")
+                        wait_for_strings(proc.read, TIMEOUT, 'Exiting exec loop.')
 
 
 def test_install_once():
