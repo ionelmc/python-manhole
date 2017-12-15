@@ -134,10 +134,10 @@ class ManholeThread(_ORIGINAL_THREAD):
     exits.
 
     On connect, a different, non-daemon thread will be started - so that the process won't exit while there's a
-    connection to the manole.
+    connection to the manhole.
 
     Args:
-        sigmask (list of singal numbers): Signals to block in this thread.
+        sigmask (list of signal numbers): Signals to block in this thread.
         start_timeout (float): Seconds to wait for the thread to start. Emits a message if the thread is not running
             when calling ``start()``.
         bind_delay (float): Seconds to delay socket binding. Default: `no delay`.
@@ -371,7 +371,7 @@ class Logger(object):
     """
     Internal object used for logging.
 
-    Initially this is not configured. Until you call ``manhole.install()`` this logger object won't work (will raise
+    Initially this is not configured. Until you call ``manhole.install()``, this logger object won't work (will raise
     ``NotInstalled``).
     """
     time = _get_original('time', 'time')
@@ -585,10 +585,10 @@ def install(verbose=True,
             ``oneshort_on`` or ``activate_on`` are used.
         sigmask (list of ints or signal names): Will set the signal mask to the given list (using
             ``signalfd.sigprocmask``). No action is done if ``signalfd`` is not importable.
-            **NOTE**: This is done so that the Manhole thread doesn't *steal* any signals; Normally that is fine cause
+            **NOTE**: This is done so that the Manhole thread doesn't *steal* any signals; Normally that is fine because
             Python will force all the signal handling to be run in the main thread but signalfd doesn't.
-        socket_path (str): Use a specifc path for the unix domain socket (instead of ``/tmp/manhole-<pid>``). This
-            disables ``patch_fork`` as children cannot resuse the same path.
+        socket_path (str): Use a specific path for the unix domain socket (instead of ``/tmp/manhole-<pid>``). This
+            disables ``patch_fork`` as children cannot reuse the same path.
         reinstall_delay (float): Delay the unix domain socket creation *reinstall_delay* seconds. This
             alleviates cleanup failures when using fork+exec patterns.
         locals (dict): Names to add to manhole interactive shell locals.
