@@ -126,9 +126,9 @@ Sample output::
 Alternative client
 ------------------
 
-There's a new experimental ``manhole`` bin since 1.1.0, that emulates ``socat``::
+There's a new experimental ``manhole-cli`` bin since 1.1.0, that emulates ``socat``::
 
-    usage: manhole [-h] [-t TIMEOUT] [-1 | -2] PID
+    usage: manhole-cli [-h] [-t TIMEOUT] [-1 | -2 | -s SIGNAL] PID
 
     Connect to a manhole.
 
@@ -142,6 +142,9 @@ There's a new experimental ``manhole`` bin since 1.1.0, that emulates ``socat``:
                             Timeout to use. Default: 1 seconds.
       -1, -USR1             Send USR1 (10) to the process before connecting.
       -2, -USR2             Send USR2 (12) to the process before connecting.
+      -s SIGNAL, --signal SIGNAL
+                            Send the given SIGNAL to the process before
+                            connecting.
 
 .. end-badges
 
@@ -184,17 +187,17 @@ Options
   unbuffered stderr (stderr ``2`` file descriptor).
 * ``patch_fork`` - Set it to ``False`` if you don't want your ``os.fork`` and ``os.forkpy`` monkeypatched
 * ``activate_on`` - Set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you want the Manhole thread
-  to start when this signal is sent. This is desireable in case you don't want the thread active all the time.
+  to start when this signal is sent. This is desirable in case you don't want the thread active all the time.
 * ``thread`` - Set to ``True`` to start the always-on ManholeThread. Default: ``True``.
   Automatically switched to ``False`` if ``oneshot_on`` or ``activate_on`` are used.
 * ``oneshot_on`` - Set to ``"USR1"``, ``"USR2"`` or some other signal name, or a number if you want the Manhole to
   listen for connection in the signal handler. This is desireable in case you don't want threads at all.
 * ``sigmask`` - Will set the signal mask to the given list (using ``signalfd.sigprocmask``). No action is done if
   ``signalfd`` is not importable. **NOTE**: This is done so that the Manhole thread doesn't *steal* any signals;
-  Normally that is fine cause Python will force all the signal handling to be run in the main thread but signalfd
+  Normally that is fine because Python will force all the signal handling to be run in the main thread but signalfd
   doesn't.
-* ``socket_path`` - Use a specifc path for the unix domain socket (instead of ``/tmp/manhole-<pid>``). This disables
-  ``patch_fork`` as children cannot resuse the same path.
+* ``socket_path`` - Use a specific path for the unix domain socket (instead of ``/tmp/manhole-<pid>``). This disables
+  ``patch_fork`` as children cannot reuse the same path.
 * ``reinstall_delay`` - Delay the unix domain socket creation *reinstall_delay* seconds. This alleviates
   cleanup failures when using fork+exec patterns.
 * ``locals`` - Names to add to manhole interactive shell locals.
@@ -225,7 +228,7 @@ What happens when you actually connect to the socket
 ----------------------------------------------------
 
 1. Credentials are checked (if it's same user or root)
-2. ``sys.__std*__``/``sys.std*`` are be redirected to the UDS
+2. ``sys.__std*__``/``sys.std*`` are redirected to the UDS
 3. Stacktraces for each thread are written to the UDS
 4. REPL is started so you can fiddle with the process
 
