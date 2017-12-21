@@ -81,8 +81,8 @@ class ConnectionHandler(threading.Thread):
 
     def run(self):
         if self.read_fd is not None:
-            self._poller.register(self.read_fd, select.POLLIN | select.POLLPRI | select.POLLERR | select.POLLHUP)
-        self._poller.register(self.conn_fd, select.POLLIN | select.POLLPRI | select.POLLERR | select.POLLHUP)
+            self._poller.register(self.read_fd, select.POLLIN)
+        self._poller.register(self.conn_fd, select.POLLIN)
 
         while self.should_run:
             self.poll()
