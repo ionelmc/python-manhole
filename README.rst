@@ -313,7 +313,7 @@ Requirements
 ============
 
 :OS: Linux, OS X
-:Runtime: Python 2.6, 2.7, 3.2, 3.3, 3.4 or PyPy
+:Runtime: Python 2.7, 3.4, 3.5, 3.6 or PyPy
 
 Similar projects
 ================
