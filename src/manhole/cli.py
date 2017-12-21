@@ -92,7 +92,8 @@ class ConnectionHandler(threading.Thread):
                 self.poll()
 
     def poll(self):
-        for fd, _ in self._poller.poll(self.timeout):
+        milliseconds = self.timeout * 1000
+        for fd, _ in self._poller.poll(milliseconds):
             if fd == self.conn_fd:
                 data = self.sock.recv(1024*1024)
                 sys.stdout.write(data.decode('utf8'))
