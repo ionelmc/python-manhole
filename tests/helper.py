@@ -41,6 +41,7 @@ def setup_greenthreads(patch_threads=False):
 
     try:
         import eventlet
+        eventlet.hubs.get_hub()
         eventlet.monkey_patch(thread=False)
     except (ImportError, SyntaxError):
         pass
