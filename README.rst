@@ -162,6 +162,15 @@ Features
   * Use ``oneshot_on``, *or*
   * Disable thread monkeypatching (eg: ``gevent.monkey.patch_all(thread=False)``, ``eventlet.monkey_patch(thread=False)``
 
+  Note: on eventlet `you might <https://github.com/eventlet/eventlet/issues/401>`_ need to setup the hub first to prevent
+  circular import problems:
+
+  .. sourcecode:: python
+
+    import eventlet
+    eventlet.hubs.get_hub()  # do this first
+    eventlet.monkey_patch(thread=False)
+
 * The thread is compatible with apps that use signalfd (will mask all signals for the Manhole threads).
 
 Options

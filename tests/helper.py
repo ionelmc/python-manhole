@@ -41,7 +41,8 @@ def setup_greenthreads(patch_threads=False):
 
     try:
         import eventlet
-        eventlet.hubs.get_hub()
+        eventlet.hubs.get_hub()  # workaround for circular import issue in eventlet,
+                                 # see https://github.com/eventlet/eventlet/issues/401
         eventlet.monkey_patch(thread=False)
     except (ImportError, SyntaxError):
         pass
