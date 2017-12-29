@@ -400,7 +400,7 @@ class Logger(object):
                     os.write(self.destination, full_message.encode('ascii', 'ignore'))
                 else:
                     self.destination.write(full_message)
-            except:  # pylint: disable=W0702
+            except Exception:
                 pass
 
 
