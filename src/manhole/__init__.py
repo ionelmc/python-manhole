@@ -75,7 +75,7 @@ try:
     _pthread_setname_np.restype = ctypes.c_int
 
     def pthread_setname_np(ident, name):
-        _pthread_setname_np(ident, name[:15].encode('utf8'))
+        _pthread_setname_np(ident, name[:15])
 except ImportError:
     def pthread_setname_np(ident, name):
         pass
