@@ -22,9 +22,11 @@ from setuptools.command.install_lib import install_lib
 
 
 def read(*names, **kwargs):
-    return io.open(
+    with io.open(
         join(dirname(__file__), *names),
         encoding=kwargs.get('encoding', 'utf8')
+    ) as fh:
+        return fh.read()
     ).read()
 
 
@@ -85,7 +87,7 @@ class GeneratePTH(Command):
 setup(
     name='manhole',
     version='1.5.0',
-    license='BSD license',
+    license='BSD 2-Clause License',
     description='Manhole is in-process service that will accept unix domain socket connections and present the',
     long_description='%s\n%s' % (
         re.compile('^.. start-badges.*^.. end-badges', re.M | re.S).sub('', read('README.rst')),
@@ -115,9 +117,15 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
+        'Topic :: Utilities',
     ],
+    project_urls = {
+        'Documentation': 'https://python-manhole.readthedocs.io/',
+        'Changelog': 'https://python-manhole.readthedocs.io/en/latest/changelog.html',
+        'Issue Tracker': 'https://github.com/ionelmc/python-manhole/issues',
     entry_points={
         'console_scripts': [
             'manhole-cli = manhole.cli:main',
@@ -126,6 +134,7 @@ setup(
     keywords=[
         'debugging', 'manhole', 'thread', 'socket', 'unix domain socket'
     ],
+    python_requires = '>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
     install_requires=[
     ],
     cmdclass={

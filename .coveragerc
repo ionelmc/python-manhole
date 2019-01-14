@@ -1,9 +1,11 @@
 [paths]
-source = src scripts
+source = src
 
 [run]
-branch = True
-source = src
+branch = true
+source =
+    src
+    tests
 parallel = true
 
 [report]

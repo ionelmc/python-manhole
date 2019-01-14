@@ -12,11 +12,9 @@ Overview
     * - tests
       - | |travis| |requires|
         | |coveralls| |codecov|
-        | |landscape| |scrutinizer| |codacy| |codeclimate|
     * - package
       - | |version| |wheel| |supported-versions| |supported-implementations|
         | |commits-since|
-
 .. |docs| image:: https://readthedocs.org/projects/python-manhole/badge/?style=flat
     :target: https://readthedocs.org/projects/python-manhole
     :alt: Documentation Status
@@ -37,41 +35,25 @@ Overview
     :alt: Coverage Status
     :target: https://codecov.io/github/ionelmc/python-manhole
 
-.. |landscape| image:: https://landscape.io/github/ionelmc/python-manhole/master/landscape.svg?style=flat
-    :target: https://landscape.io/github/ionelmc/python-manhole/master
-    :alt: Code Quality Status
-
-.. |codacy| image:: https://img.shields.io/codacy/REPLACE_WITH_PROJECT_ID.svg
-    :target: https://www.codacy.com/app/ionelmc/python-manhole
-    :alt: Codacy Code Quality Status
-
-.. |codeclimate| image:: https://codeclimate.com/github/ionelmc/python-manhole/badges/gpa.svg
-   :target: https://codeclimate.com/github/ionelmc/python-manhole
-   :alt: CodeClimate Quality Status
-
 .. |version| image:: https://img.shields.io/pypi/v/manhole.svg
     :alt: PyPI Package latest release
-    :target: https://pypi.python.org/pypi/manhole
+    :target: https://pypi.org/project/manhole
 
-.. |commits-since| image:: https://img.shields.io/github/commits-since/ionelmc/python-manhole/v1.5.0.svg
+.. |commits-since| image:: https://img.shields.io/github/commits-since/ionelmc/python-manhole/v1.3.0.svg
     :alt: Commits since latest release
-    :target: https://github.com/ionelmc/python-manhole/compare/v1.5.0...master
+    :target: https://github.com/ionelmc/python-manhole/compare/v1.3.0...master
 
 .. |wheel| image:: https://img.shields.io/pypi/wheel/manhole.svg
     :alt: PyPI Wheel
-    :target: https://pypi.python.org/pypi/manhole
+    :target: https://pypi.org/project/manhole
 
 .. |supported-versions| image:: https://img.shields.io/pypi/pyversions/manhole.svg
     :alt: Supported versions
-    :target: https://pypi.python.org/pypi/manhole
+    :target: https://pypi.org/project/manhole
 
 .. |supported-implementations| image:: https://img.shields.io/pypi/implementation/manhole.svg
     :alt: Supported implementations
-    :target: https://pypi.python.org/pypi/manhole
-
-.. |scrutinizer| image:: https://img.shields.io/scrutinizer/g/ionelmc/python-manhole/master.svg
-    :alt: Scrutinizer Status
-    :target: https://scrutinizer-ci.com/g/ionelmc/python-manhole/
+    :target: https://pypi.org/project/manhole
 
 Manhole is in-process service that will accept unix domain socket connections and present the
 stacktraces for all threads and an interactive prompt. It can either work as a python daemon

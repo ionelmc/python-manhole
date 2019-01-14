@@ -17,7 +17,7 @@ When `reporting a bug <https://github.com/ionelmc/python-manhole/issues>`_ pleas
 Documentation improvements
 ==========================
 
-Manhole could always use more documentation, whether as part of the
+manhole could always use more documentation, whether as part of the
 official manhole docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
@@ -83,7 +83,7 @@ Tips
 
 To run a subset of tests::
 
-    tox -e envname -- py.test -k test_myfeature
+    tox -e envname -- pytest -k test_myfeature
 
 To run all the test environments in *parallel* (you need to ``pip install detox``)::
 

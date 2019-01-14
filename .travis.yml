@@ -1,5 +1,4 @@
 language: python
-sudo: false
 cache: pip
 env:
   global:
@@ -13,256 +12,268 @@ matrix:
   include:
     - python: '2.7'
       env:
-        - TOXENV=2.7-cover,report,coveralls,codecov
+        - TOXENV=py27-normal-normal-cover,report,coveralls,codecov
     - python: '2.7'
       env:
-        - TOXENV=2.7-eventlet-cover,report,coveralls,codecov
+        - TOXENV=py27-normal-normal-nocov
     - python: '2.7'
       env:
-        - TOXENV=2.7-eventlet-cover-patchthread,report,coveralls,codecov
+        - TOXENV=py27-normal-gevent-cover,report,coveralls,codecov
     - python: '2.7'
       env:
-        - TOXENV=2.7-eventlet-nocov
+        - TOXENV=py27-normal-gevent-nocov
     - python: '2.7'
       env:
-        - TOXENV=2.7-eventlet-nocov-patchthread
+        - TOXENV=py27-normal-eventlet-cover,report,coveralls,codecov
     - python: '2.7'
       env:
-        - TOXENV=2.7-gevent-cover,report,coveralls,codecov
+        - TOXENV=py27-normal-eventlet-nocov
     - python: '2.7'
       env:
-        - TOXENV=2.7-gevent-cover-patchthread,report,coveralls,codecov
+        - TOXENV=py27-signalfd-normal-cover,report,coveralls,codecov
     - python: '2.7'
       env:
-        - TOXENV=2.7-gevent-nocov
+        - TOXENV=py27-signalfd-normal-nocov
     - python: '2.7'
       env:
-        - TOXENV=2.7-gevent-nocov-patchthread
+        - TOXENV=py27-signalfd-gevent-cover,report,coveralls,codecov
     - python: '2.7'
       env:
-        - TOXENV=2.7-nocov
+        - TOXENV=py27-signalfd-gevent-nocov
     - python: '2.7'
       env:
-        - TOXENV=2.7-signalfd-cover,report,coveralls,codecov
+        - TOXENV=py27-signalfd-eventlet-cover,report,coveralls,codecov
     - python: '2.7'
       env:
-        - TOXENV=2.7-signalfd-eventlet-cover,report,coveralls,codecov
-    - python: '2.7'
-      env:
-        - TOXENV=2.7-signalfd-eventlet-cover-patchthread,report,coveralls,codecov
-    - python: '2.7'
-      env:
-        - TOXENV=2.7-signalfd-eventlet-nocov
-    - python: '2.7'
-      env:
-        - TOXENV=2.7-signalfd-eventlet-nocov-patchthread
-    - python: '2.7'
-      env:
-        - TOXENV=2.7-signalfd-gevent-cover,report,coveralls,codecov
-    - python: '2.7'
-      env:
-        - TOXENV=2.7-signalfd-gevent-cover-patchthread,report,coveralls,codecov
-    - python: '2.7'
-      env:
-        - TOXENV=2.7-signalfd-gevent-nocov
-    - python: '2.7'
-      env:
-        - TOXENV=2.7-signalfd-gevent-nocov-patchthread
-    - python: '2.7'
-      env:
-        - TOXENV=2.7-signalfd-nocov
+        - TOXENV=py27-signalfd-eventlet-nocov
     - python: '3.4'
       env:
-        - TOXENV=3.4-cover,report,coveralls,codecov
+        - TOXENV=py34-normal-normal-cover,report,coveralls,codecov
     - python: '3.4'
       env:
-        - TOXENV=3.4-eventlet-cover,report,coveralls,codecov
+        - TOXENV=py34-normal-normal-nocov
     - python: '3.4'
       env:
-        - TOXENV=3.4-eventlet-cover-patchthread,report,coveralls,codecov
+        - TOXENV=py34-normal-gevent-cover,report,coveralls,codecov
     - python: '3.4'
       env:
-        - TOXENV=3.4-eventlet-nocov
+        - TOXENV=py34-normal-gevent-nocov
     - python: '3.4'
       env:
-        - TOXENV=3.4-eventlet-nocov-patchthread
+        - TOXENV=py34-normal-eventlet-cover,report,coveralls,codecov
     - python: '3.4'
       env:
-        - TOXENV=3.4-gevent-cover,report,coveralls,codecov
+        - TOXENV=py34-normal-eventlet-nocov
     - python: '3.4'
       env:
-        - TOXENV=3.4-gevent-cover-patchthread,report,coveralls,codecov
+        - TOXENV=py34-signalfd-normal-cover,report,coveralls,codecov
     - python: '3.4'
       env:
-        - TOXENV=3.4-gevent-nocov
+        - TOXENV=py34-signalfd-normal-nocov
     - python: '3.4'
       env:
-        - TOXENV=3.4-gevent-nocov-patchthread
+        - TOXENV=py34-signalfd-gevent-cover,report,coveralls,codecov
     - python: '3.4'
       env:
-        - TOXENV=3.4-nocov
+        - TOXENV=py34-signalfd-gevent-nocov
     - python: '3.4'
       env:
-        - TOXENV=3.4-signalfd-cover,report,coveralls,codecov
+        - TOXENV=py34-signalfd-eventlet-cover,report,coveralls,codecov
     - python: '3.4'
       env:
-        - TOXENV=3.4-signalfd-eventlet-cover,report,coveralls,codecov
-    - python: '3.4'
-      env:
-        - TOXENV=3.4-signalfd-eventlet-cover-patchthread,report,coveralls,codecov
-    - python: '3.4'
-      env:
-        - TOXENV=3.4-signalfd-eventlet-nocov
-    - python: '3.4'
-      env:
-        - TOXENV=3.4-signalfd-eventlet-nocov-patchthread
-    - python: '3.4'
-      env:
-        - TOXENV=3.4-signalfd-gevent-cover,report,coveralls,codecov
-    - python: '3.4'
-      env:
-        - TOXENV=3.4-signalfd-gevent-cover-patchthread,report,coveralls,codecov
-    - python: '3.4'
-      env:
-        - TOXENV=3.4-signalfd-gevent-nocov
-    - python: '3.4'
-      env:
-        - TOXENV=3.4-signalfd-gevent-nocov-patchthread
-    - python: '3.4'
-      env:
-        - TOXENV=3.4-signalfd-nocov
+        - TOXENV=py34-signalfd-eventlet-nocov
     - python: '3.5'
       env:
-        - TOXENV=3.5-cover,report,coveralls,codecov
+        - TOXENV=py35-normal-normal-cover,report,coveralls,codecov
     - python: '3.5'
       env:
-        - TOXENV=3.5-eventlet-cover,report,coveralls,codecov
+        - TOXENV=py35-normal-normal-nocov
     - python: '3.5'
       env:
-        - TOXENV=3.5-eventlet-cover-patchthread,report,coveralls,codecov
+        - TOXENV=py35-normal-gevent-cover,report,coveralls,codecov
     - python: '3.5'
       env:
-        - TOXENV=3.5-eventlet-nocov
+        - TOXENV=py35-normal-gevent-nocov
     - python: '3.5'
       env:
-        - TOXENV=3.5-eventlet-nocov-patchthread
+        - TOXENV=py35-normal-eventlet-cover,report,coveralls,codecov
     - python: '3.5'
       env:
-        - TOXENV=3.5-gevent-cover,report,coveralls,codecov
+        - TOXENV=py35-normal-eventlet-nocov
     - python: '3.5'
       env:
-        - TOXENV=3.5-gevent-cover-patchthread,report,coveralls,codecov
+        - TOXENV=py35-signalfd-normal-cover,report,coveralls,codecov
     - python: '3.5'
       env:
-        - TOXENV=3.5-gevent-nocov
+        - TOXENV=py35-signalfd-normal-nocov
     - python: '3.5'
       env:
-        - TOXENV=3.5-gevent-nocov-patchthread
+        - TOXENV=py35-signalfd-gevent-cover,report,coveralls,codecov
     - python: '3.5'
       env:
-        - TOXENV=3.5-nocov
+        - TOXENV=py35-signalfd-gevent-nocov
     - python: '3.5'
       env:
-        - TOXENV=3.5-signalfd-cover,report,coveralls,codecov
+        - TOXENV=py35-signalfd-eventlet-cover,report,coveralls,codecov
     - python: '3.5'
       env:
-        - TOXENV=3.5-signalfd-eventlet-cover,report,coveralls,codecov
-    - python: '3.5'
-      env:
-        - TOXENV=3.5-signalfd-eventlet-cover-patchthread,report,coveralls,codecov
-    - python: '3.5'
-      env:
-        - TOXENV=3.5-signalfd-eventlet-nocov
-    - python: '3.5'
-      env:
-        - TOXENV=3.5-signalfd-eventlet-nocov-patchthread
-    - python: '3.5'
-      env:
-        - TOXENV=3.5-signalfd-gevent-cover,report,coveralls,codecov
-    - python: '3.5'
-      env:
-        - TOXENV=3.5-signalfd-gevent-cover-patchthread,report,coveralls,codecov
-    - python: '3.5'
-      env:
-        - TOXENV=3.5-signalfd-gevent-nocov
-    - python: '3.5'
-      env:
-        - TOXENV=3.5-signalfd-gevent-nocov-patchthread
-    - python: '3.5'
-      env:
-        - TOXENV=3.5-signalfd-nocov
+        - TOXENV=py35-signalfd-eventlet-nocov
     - python: '3.6'
       env:
-        - TOXENV=3.6-cover,report,coveralls,codecov
+        - TOXENV=py36-normal-normal-cover,report,coveralls,codecov
     - python: '3.6'
       env:
-        - TOXENV=3.6-eventlet-cover,report,coveralls,codecov
+        - TOXENV=py36-normal-normal-nocov
     - python: '3.6'
       env:
-        - TOXENV=3.6-eventlet-cover-patchthread,report,coveralls,codecov
+        - TOXENV=py36-normal-gevent-cover,report,coveralls,codecov
     - python: '3.6'
       env:
-        - TOXENV=3.6-eventlet-nocov
+        - TOXENV=py36-normal-gevent-nocov
     - python: '3.6'
       env:
-        - TOXENV=3.6-eventlet-nocov-patchthread
+        - TOXENV=py36-normal-eventlet-cover,report,coveralls,codecov
     - python: '3.6'
       env:
-        - TOXENV=3.6-gevent-cover,report,coveralls,codecov
+        - TOXENV=py36-normal-eventlet-nocov
     - python: '3.6'
       env:
-        - TOXENV=3.6-gevent-cover-patchthread,report,coveralls,codecov
+        - TOXENV=py36-signalfd-normal-cover,report,coveralls,codecov
     - python: '3.6'
       env:
-        - TOXENV=3.6-gevent-nocov
+        - TOXENV=py36-signalfd-normal-nocov
     - python: '3.6'
       env:
-        - TOXENV=3.6-gevent-nocov-patchthread
+        - TOXENV=py36-signalfd-gevent-cover,report,coveralls,codecov
     - python: '3.6'
       env:
-        - TOXENV=3.6-nocov
+        - TOXENV=py36-signalfd-gevent-nocov
     - python: '3.6'
       env:
-        - TOXENV=3.6-signalfd-cover,report,coveralls,codecov
+        - TOXENV=py36-signalfd-eventlet-cover,report,coveralls,codecov
     - python: '3.6'
       env:
-        - TOXENV=3.6-signalfd-eventlet-cover,report,coveralls,codecov
-    - python: '3.6'
+        - TOXENV=py36-signalfd-eventlet-nocov
+    - python: '3.7'
+      dist: xenial
       env:
-        - TOXENV=3.6-signalfd-eventlet-cover-patchthread,report,coveralls,codecov
-    - python: '3.6'
+        - TOXENV=py37-normal-normal-cover,report,coveralls,codecov
+    - python: '3.7'
+      dist: xenial
       env:
-        - TOXENV=3.6-signalfd-eventlet-nocov
-    - python: '3.6'
+        - TOXENV=py37-normal-normal-nocov
+    - python: '3.7'
+      dist: xenial
       env:
-        - TOXENV=3.6-signalfd-eventlet-nocov-patchthread
-    - python: '3.6'
+        - TOXENV=py37-normal-gevent-cover,report,coveralls,codecov
+    - python: '3.7'
+      dist: xenial
       env:
-        - TOXENV=3.6-signalfd-gevent-cover,report,coveralls,codecov
-    - python: '3.6'
+        - TOXENV=py37-normal-gevent-nocov
+    - python: '3.7'
+      dist: xenial
       env:
-        - TOXENV=3.6-signalfd-gevent-cover-patchthread,report,coveralls,codecov
-    - python: '3.6'
+        - TOXENV=py37-normal-eventlet-cover,report,coveralls,codecov
+    - python: '3.7'
+      dist: xenial
       env:
-        - TOXENV=3.6-signalfd-gevent-nocov
-    - python: '3.6'
+        - TOXENV=py37-normal-eventlet-nocov
+    - python: '3.7'
+      dist: xenial
       env:
-        - TOXENV=3.6-signalfd-gevent-nocov-patchthread
-    - python: '3.6'
+        - TOXENV=py37-signalfd-normal-cover,report,coveralls,codecov
+    - python: '3.7'
+      dist: xenial
       env:
-        - TOXENV=3.6-signalfd-nocov
-    - python: 'pypy-5.4'
+        - TOXENV=py37-signalfd-normal-nocov
+    - python: '3.7'
+      dist: xenial
       env:
-        - TOXENV=pypy-cover,report,coveralls,codecov
-    - python: 'pypy-5.4'
+        - TOXENV=py37-signalfd-gevent-cover,report,coveralls,codecov
+    - python: '3.7'
+      dist: xenial
       env:
-        - TOXENV=pypy-nocov
-    - python: 'pypy-5.4'
+        - TOXENV=py37-signalfd-gevent-nocov
+    - python: '3.7'
+      dist: xenial
       env:
-        - TOXENV=pypy-signalfd-cover,report,coveralls,codecov
-    - python: 'pypy-5.4'
+        - TOXENV=py37-signalfd-eventlet-cover,report,coveralls,codecov
+    - python: '3.7'
+      dist: xenial
       env:
-        - TOXENV=pypy-signalfd-nocov
+        - TOXENV=py37-signalfd-eventlet-nocov
+    - python: 'pypy'
+      env:
+        - TOXENV=pypy-normal-normal-cover,report,coveralls,codecov
+    - python: 'pypy'
+      env:
+        - TOXENV=pypy-normal-normal-nocov
+    - python: 'pypy'
+      env:
+        - TOXENV=pypy-normal-gevent-cover,report,coveralls,codecov
+    - python: 'pypy'
+      env:
+        - TOXENV=pypy-normal-gevent-nocov
+    - python: 'pypy'
+      env:
+        - TOXENV=pypy-normal-eventlet-cover,report,coveralls,codecov
+    - python: 'pypy'
+      env:
+        - TOXENV=pypy-normal-eventlet-nocov
+    - python: 'pypy'
+      env:
+        - TOXENV=pypy-signalfd-normal-cover,report,coveralls,codecov
+    - python: 'pypy'
+      env:
+        - TOXENV=pypy-signalfd-normal-nocov
+    - python: 'pypy'
+      env:
+        - TOXENV=pypy-signalfd-gevent-cover,report,coveralls,codecov
+    - python: 'pypy'
+      env:
+        - TOXENV=pypy-signalfd-gevent-nocov
+    - python: 'pypy'
+      env:
+        - TOXENV=pypy-signalfd-eventlet-cover,report,coveralls,codecov
+    - python: 'pypy'
+      env:
+        - TOXENV=pypy-signalfd-eventlet-nocov
+    - python: 'pypy3'
+      env:
+        - TOXENV=pypy3-normal-normal-cover,report,coveralls,codecov
+    - python: 'pypy3'
+      env:
+        - TOXENV=pypy3-normal-normal-nocov
+    - python: 'pypy3'
+      env:
+        - TOXENV=pypy3-normal-gevent-cover,report,coveralls,codecov
+    - python: 'pypy3'
+      env:
+        - TOXENV=pypy3-normal-gevent-nocov
+    - python: 'pypy3'
+      env:
+        - TOXENV=pypy3-normal-eventlet-cover,report,coveralls,codecov
+    - python: 'pypy3'
+      env:
+        - TOXENV=pypy3-normal-eventlet-nocov
+    - python: 'pypy3'
+      env:
+        - TOXENV=pypy3-signalfd-normal-cover,report,coveralls,codecov
+    - python: 'pypy3'
+      env:
+        - TOXENV=pypy3-signalfd-normal-nocov
+    - python: 'pypy3'
+      env:
+        - TOXENV=pypy3-signalfd-gevent-cover,report,coveralls,codecov
+    - python: 'pypy3'
+      env:
+        - TOXENV=pypy3-signalfd-gevent-nocov
+    - python: 'pypy3'
+      env:
+        - TOXENV=pypy3-signalfd-eventlet-cover,report,coveralls,codecov
+    - python: 'pypy3'
+      env:
+        - TOXENV=pypy3-signalfd-eventlet-nocov
 before_install:
   - python --version
   - uname -a
@@ -273,6 +284,27 @@ install:
   - easy_install --version
   - pip --version
   - tox --version
+  - |
+    set -ex
+    if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then
+        (cd $HOME
+         wget https://bitbucket.org/pypy/pypy/downloads/pypy2-v6.0.0-linux64.tar.bz2
+         tar xf pypy2-*.tar.bz2
+         pypy2-*/bin/pypy -m ensurepip
+         pypy2-*/bin/pypy -m pip install -U virtualenv)
+        export PATH=$(echo $HOME/pypy2-*/bin):$PATH
+        export TOXPYTHON=$(echo $HOME/pypy2-*/bin/pypy)
+    fi
+    if [[ $TRAVIS_PYTHON_VERSION == 'pypy3' ]]; then
+        (cd $HOME
+         wget https://bitbucket.org/pypy/pypy/downloads/pypy3-v6.0.0-linux64.tar.bz2
+         tar xf pypy3-*.tar.bz2
+         pypy3-*/bin/pypy3 -m ensurepip
+         pypy3-*/bin/pypy3 -m pip install -U virtualenv)
+        export PATH=$(echo $HOME/pypy3-*/bin):$PATH
+        export TOXPYTHON=$(echo $HOME/pypy3-*/bin/pypy3)
+    fi
+    set +x
 script:
   - tox -v
 after_failure:
