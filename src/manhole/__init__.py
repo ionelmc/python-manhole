@@ -204,6 +204,8 @@ class ManholeThread(_ORIGINAL_THREAD):
                 client = ManholeConnectionThread(sock.accept()[0], self.connection_handler, self.daemon_connection)
                 client.start()
                 client.join()
+            except socket.timeout:
+                continue
             except (InterruptedError, socket.error) as e:
                 if e.errno != errno.EINTR:
                     raise
