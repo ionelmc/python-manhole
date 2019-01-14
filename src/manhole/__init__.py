@@ -553,7 +553,7 @@ class Manhole(object):
     def patch_os_fork_functions(self):
         self.original_os_fork, os.fork = os.fork, self.patched_fork
         self.original_os_forkpty, os.forkpty = os.forkpty, self.patched_forkpty
-        _LOG("Patched %s and %s." % (self.original_os_fork, self.original_os_fork))
+        _LOG("Patched %s and %s." % (self.original_os_fork, self.original_os_forkpty))
 
     def restore_os_fork_functions(self):
         if self.original_os_fork:
