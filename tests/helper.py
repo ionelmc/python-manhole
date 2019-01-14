@@ -9,8 +9,6 @@ import sys
 import time
 from functools import partial
 
-from process_tests import setup_coverage
-
 TIMEOUT = int(os.getenv('MANHOLE_TEST_TIMEOUT', 10))
 SOCKET_PATH = '/tmp/manhole-socket'
 OUTPUT = sys.__stdout__
@@ -73,9 +71,6 @@ if __name__ == '__main__':
     )
     test_name = sys.argv[1]
     try:
-
-        setup_coverage()
-
         if os.getenv('PATCH_THREAD', False):
             import manhole
 
