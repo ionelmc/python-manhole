@@ -59,7 +59,6 @@ _ORIGINAL__ACTIVE = _get_original('threading', '_active')
 _ORIGINAL_SLEEP = _get_original('time', 'sleep')
 
 PY3 = sys.version_info[0] == 3
-PY26 = sys.version_info[:2] == (2, 6)
 
 try:
     import ctypes
@@ -178,7 +177,7 @@ class ManholeThread(_ORIGINAL_THREAD):
     def start(self):
         self.should_run = True
         super(ManholeThread, self).start()
-        if not self.serious.wait(self.start_timeout) and not PY26:
+        if not self.serious.wait(self.start_timeout):
             _LOG("WARNING: Waited %s seconds but Manhole thread didn't start yet :(" % self.start_timeout)
 
     def run(self):
