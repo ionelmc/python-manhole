@@ -150,6 +150,7 @@ class ManholeThread(_ORIGINAL_THREAD):
         self.daemon = True
         self.daemon_connection = daemon_connection
         self.name = "Manhole"
+        self.psname = b"Manhole"
         self.sigmask = sigmask
         self.serious = _ORIGINAL_EVENT()
         # time to wait for the manhole to get serious (to have a complete start)
@@ -190,7 +191,7 @@ class ManholeThread(_ORIGINAL_THREAD):
         self.serious.set()
         if signalfd and self.sigmask:
             signalfd.sigprocmask(signalfd.SIG_BLOCK, self.sigmask)
-        pthread_setname_np(self.ident, self.name)
+        pthread_setname_np(self.ident, self.psname)
 
         if self.bind_delay:
             _LOG("Delaying UDS binding %s seconds ..." % self.bind_delay)
@@ -225,12 +226,13 @@ class ManholeConnectionThread(_ORIGINAL_THREAD):
         self.client = force_original_socket(client)
         self.connection_handler = connection_handler
         self.name = "ManholeConnectionThread"
+        self.psname = b"ManholeConnectionThread"
 
     def run(self):
         _LOG('Started ManholeConnectionThread thread. Checking credentials ...')
-        pthread_setname_np(self.ident, "Manhole -------")
+        pthread_setname_np(self.ident, b"Manhole -------")
         pid, _, _ = check_credentials(self.client)
-        pthread_setname_np(self.ident, "Manhole < PID:%s" % pid)
+        pthread_setname_np(self.ident, b"Manhole < PID:%d" % pid)
         try:
             self.connection_handler(self.client)
         except BaseException as exc:
