@@ -2,7 +2,6 @@ from __future__ import print_function
 
 import imp
 import os
-import platform
 import re
 import select
 import signal
@@ -21,8 +20,6 @@ from process_tests import wait_for_strings
 TIMEOUT = int(os.getenv('MANHOLE_TEST_TIMEOUT', 10))
 SOCKET_PATH = '/tmp/manhole-socket'
 HELPER = os.path.join(os.path.dirname(__file__), 'helper.py')
-
-platform
 
 
 def is_module_available(mod):
@@ -528,7 +525,7 @@ def test_stderr_doesnt_deadlock():
                 wait_for_strings(proc.read, TIMEOUT, 'SUCCESS')
 
 
-@pytest.mark.skipif("platform.python_implementation() == 'PyPy'")
+@pytest.mark.skipif('is_module_available("__pypy__")')
 def test_uwsgi():
     with TestProcess(
             'uwsgi',
