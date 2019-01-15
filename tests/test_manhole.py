@@ -23,6 +23,8 @@ TIMEOUT = int(os.getenv('MANHOLE_TEST_TIMEOUT', 10))
 SOCKET_PATH = '/tmp/manhole-socket'
 HELPER = os.path.join(os.path.dirname(__file__), 'helper.py')
 
+platform
+
 
 def is_module_available(mod):
     try:

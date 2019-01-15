@@ -40,7 +40,7 @@ def setup_greenthreads(patch_threads=False):
     try:
         import eventlet
         eventlet.hubs.get_hub()  # workaround for circular import issue in eventlet,
-                                 # see https://github.com/eventlet/eventlet/issues/401
+        # see https://github.com/eventlet/eventlet/issues/401
         eventlet.monkey_patch(thread=False)
     except (ImportError, SyntaxError):
         pass
@@ -154,7 +154,6 @@ if __name__ == '__main__':
             def handle_usr2(_sig, _frame):
                 print('Got USR2')
 
-
             signal.signal(signal.SIGUSR2, handle_usr2)
 
             import ctypes
@@ -182,11 +181,13 @@ if __name__ == '__main__':
                 time.sleep(0.1)
         elif test_name.startswith('test_signalfd_weirdness'):
             signalled = False
+
             @partial(signal.signal, signal.SIGUSR1)
             def signal_handler(sig, _):
                 print('Received signal %s' % sig)
                 global signalled
                 signalled = True
+
             if 'negative' in test_name:
                 manhole.install(sigmask=None)
             else:
@@ -257,7 +258,6 @@ if __name__ == '__main__':
                             if e.errno != errno.ESRCH:
                                 raise
 
-
                     while not os.waitpid(pid, os.WNOHANG)[0]:
                         try:
                             os.write(2, os.read(masterfd, 1024))
@@ -270,7 +270,7 @@ if __name__ == '__main__':
                 do_fork()
             else:
                 raise RuntimeError('Invalid test spec.')
-    except:  # pylint: disable=W0702
+    except:  # noqa
         print('Died with %s.' % sys.exc_info()[0].__name__, file=OUTPUT)
         import traceback
 
