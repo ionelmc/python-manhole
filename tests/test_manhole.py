@@ -127,7 +127,7 @@ def test_install_twice_not_strict():
             assert_manhole_running(proc, uds_path)
 
 
-@mark.skipif(is_module_available('eventlet'), reason="evenlet can't deal with extra threads at process exit")
+@pytest.mark.xfail('sys.gettrace() and is_module_available("gevent") and is_module_available("__pypy__")')
 def test_daemon_connection():
     with TestProcess(sys.executable, HELPER, 'test_daemon_connection') as proc:
         with dump_on_error(proc.read):
@@ -143,11 +143,11 @@ def test_daemon_connection():
                     time.sleep(0.05)
                     print(repr(client.sock.recv(1024)))
 
-            raises((socket.error, OSError), assert_manhole_running, proc, uds_path, extra=terminate_and_read)
+            pytest.raises((socket.error, OSError), assert_manhole_running, proc, uds_path, extra=terminate_and_read)
             wait_for_strings(proc.read, TIMEOUT, 'In atexit handler')
 
 
-@mark.skipif(is_module_available('eventlet'), reason="evenlet can't deal with extra threads at process exit")
+@pytest.mark.xfail('sys.gettrace() and is_module_available("gevent") and is_module_available("__pypy__")')
 def test_non_daemon_connection():
     with TestProcess(sys.executable, HELPER, 'test_simple') as proc:
         with dump_on_error(proc.read):
