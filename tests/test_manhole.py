@@ -11,13 +11,12 @@ import sys
 import time
 from contextlib import closing
 
+import pytest
 import requests
 from process_tests import TestProcess
 from process_tests import TestSocket
 from process_tests import dump_on_error
 from process_tests import wait_for_strings
-from pytest import mark
-from pytest import raises
 
 TIMEOUT = int(os.getenv('MANHOLE_TEST_TIMEOUT', 10))
 SOCKET_PATH = '/tmp/manhole-socket'
@@ -64,7 +63,7 @@ def assert_manhole_running(proc, uds_path, oneshot=False, extra=None):
 def test_log_when_uninstalled():
     import manhole
 
-    raises(manhole.NotInstalled, manhole._LOG, "whatever")
+    pytest.raises(manhole.NotInstalled, manhole._LOG, "whatever")
 
 
 def test_log_fd(capfd):
@@ -90,7 +89,7 @@ def test_simple():
                 assert_manhole_running(proc, uds_path)
 
 
-@mark.parametrize('variant', ['str', 'func'])
+@pytest.mark.parametrize('variant', ['str', 'func'])
 def test_connection_handler_exec(variant):
     with TestProcess(sys.executable, HELPER, 'test_connection_handler_exec_' + variant) as proc:
         with dump_on_error(proc.read):
@@ -358,7 +357,7 @@ def test_with_fork():
                 assert_manhole_running(proc, new_uds_path)
 
 
-@mark.skipif(hasattr(sys, 'pypy_version_info'), reason="pypy doesn't support forkpty")
+@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'), reason="pypy doesn't support forkpty")
 def test_with_forkpty():
     with TestProcess(sys.executable, '-u', HELPER, 'test_with_forkpty') as proc:
         with dump_on_error(proc.read):
@@ -403,7 +402,7 @@ def test_auth_fail():
                 proc.proc.send_signal(signal.SIGINT)
 
 
-@mark.skipif(not is_module_available('signalfd'), reason="signalfd not available")
+@pytest.mark.skipif(not is_module_available('signalfd'), reason="signalfd not available")
 def test_sigprocmask():
     with TestProcess(sys.executable, '-u', HELPER, 'test_signalfd_weirdness') as proc:
         with dump_on_error(proc.read):
@@ -414,7 +413,7 @@ def test_sigprocmask():
             assert_manhole_running(proc, uds_path)
 
 
-@mark.skipif(not is_module_available('signalfd'),
+@pytest.mark.skipif(not is_module_available('signalfd'),
              reason="signalfd doesn't play well with gevent/eventlet")
 def test_sigprocmask_negative():
     with TestProcess(sys.executable, '-u', HELPER, 'test_signalfd_weirdness_negative') as proc:
@@ -430,7 +429,7 @@ def test_activate_on_usr2():
     with TestProcess(sys.executable, '-u', HELPER, 'test_activate_on_usr2') as proc:
         with dump_on_error(proc.read):
             wait_for_strings(proc.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Activation is done by signal')
-            raises(AssertionError, wait_for_strings, proc.read, TIMEOUT, '/tmp/manhole-')
+            pytest.raises(AssertionError, wait_for_strings, proc.read, TIMEOUT, '/tmp/manhole-')
             proc.signal(signal.SIGUSR2)
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
@@ -451,7 +450,7 @@ def test_oneshot_on_usr2():
         with dump_on_error(proc.read):
             wait_for_strings(proc.read, TIMEOUT,
                              'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
-            raises(AssertionError, wait_for_strings, proc.read, TIMEOUT, '/tmp/manhole-')
+            pytest.raises(AssertionError, wait_for_strings, proc.read, TIMEOUT, '/tmp/manhole-')
             proc.signal(signal.SIGUSR2)
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
@@ -464,7 +463,7 @@ def test_oneshot_on_usr2_error():
         with dump_on_error(proc.read):
             wait_for_strings(proc.read, TIMEOUT,
                              'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
-            raises(AssertionError, wait_for_strings, proc.read, TIMEOUT, '/tmp/manhole-')
+            pytest.raises(AssertionError, wait_for_strings, proc.read, TIMEOUT, '/tmp/manhole-')
             proc.signal(signal.SIGUSR2)
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r"(/tmp/manhole-\d+)", proc.read())[0]
@@ -504,7 +503,7 @@ def test_environ_variable_activation():
             assert_manhole_running(proc, uds_path, oneshot=True)
 
 
-@mark.skipif(not is_module_available('signalfd'), reason="signalfd not available")
+@pytest.mark.skipif(not is_module_available('signalfd'), reason="signalfd not available")
 def test_sigmask():
     with TestProcess(sys.executable, HELPER, 'test_sigmask') as proc:
         with dump_on_error(proc.read):
@@ -529,7 +528,7 @@ def test_stderr_doesnt_deadlock():
                 wait_for_strings(proc.read, TIMEOUT, 'SUCCESS')
 
 
-@mark.skipif("platform.python_implementation() == 'PyPy'")
+@pytest.mark.skipif("platform.python_implementation() == 'PyPy'")
 def test_uwsgi():
     with TestProcess(
             'uwsgi',
