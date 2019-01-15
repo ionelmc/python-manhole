@@ -12,41 +12,57 @@ matrix:
   include:
 {%- for env in tox_environments %}{{ '' }}
     - python: '{{ env.split("-")[0] if env.startswith("pypy") else "{0[2]}.{0[3]}".format(env) }}'
-{% if env.startswith('py37') %}
+      env:
+        - TOXENV={{ env }}{% if "cover" in env %},report,coveralls,codecov{% endif %}
+{% if "py37" in env %}{{ '' }}
       dist: xenial
 {% endif %}
+{% if "py37" in env or "py27" in env %}{{ '' }}
+    - os: osx
+      language: generic
       env:
-        - TOXENV={{ env }}{% if 'cover' in env %},report,coveralls,codecov{% endif -%}
+        - TOXENV={{ env }}{% if "cover" in env %},report,coveralls,codecov{% endif %}{{ '' }}
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
+{%- endif %}
 {%- endfor %}{{ '' }}
 before_install:
   - python --version
   - uname -a
-  - lsb_release -a
+  - lsb_release -a || true
+  - |
+    if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
+      [[ $TOXENV =~ py3 ]] && brew upgrade python
+      [[ $TOXENV =~ py2 ]] && brew install python@2
+      export PATH="/usr/local/opt/python/libexec/bin:${PATH}"
+    fi
 install:
-  - pip install tox
+  - pip install tox-wheel
   - virtualenv --version
   - easy_install --version
   - pip --version
   - tox --version
   - |
     set -ex
-    if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then
-        (cd $HOME
-         wget https://bitbucket.org/pypy/pypy/downloads/pypy2-v6.0.0-linux64.tar.bz2
-         tar xf pypy2-*.tar.bz2
-         pypy2-*/bin/pypy -m ensurepip
-         pypy2-*/bin/pypy -m pip install -U virtualenv)
-        export PATH=$(echo $HOME/pypy2-*/bin):$PATH
-        export TOXPYTHON=$(echo $HOME/pypy2-*/bin/pypy)
+    if [[ $TRAVIS_PYTHON_VERSION == pypy ]]; then
+      (cd $HOME
+       wget https://bitbucket.org/pypy/pypy/downloads/pypy2-v6.0.0-linux64.tar.bz2
+       tar xf pypy2-*.tar.bz2
+       pypy2-*/bin/pypy -m ensurepip
+       pypy2-*/bin/pypy -m pip install -U virtualenv)
+      export PATH=$(echo $HOME/pypy2-*/bin):$PATH
+      export TOXPYTHON=$(echo $HOME/pypy2-*/bin/pypy)
     fi
-    if [[ $TRAVIS_PYTHON_VERSION == 'pypy3' ]]; then
-        (cd $HOME
-         wget https://bitbucket.org/pypy/pypy/downloads/pypy3-v6.0.0-linux64.tar.bz2
-         tar xf pypy3-*.tar.bz2
-         pypy3-*/bin/pypy3 -m ensurepip
-         pypy3-*/bin/pypy3 -m pip install -U virtualenv)
-        export PATH=$(echo $HOME/pypy3-*/bin):$PATH
-        export TOXPYTHON=$(echo $HOME/pypy3-*/bin/pypy3)
+    if [[ $TRAVIS_PYTHON_VERSION == pypy3 ]]; then
+      (cd $HOME
+       wget https://bitbucket.org/pypy/pypy/downloads/pypy3-v6.0.0-linux64.tar.bz2
+       tar xf pypy3-*.tar.bz2
+       pypy3-*/bin/pypy3 -m ensurepip
+       pypy3-*/bin/pypy3 -m pip install -U virtualenv)
+      export PATH=$(echo $HOME/pypy3-*/bin):$PATH
+      export TOXPYTHON=$(echo $HOME/pypy3-*/bin/pypy3)
     fi
     set +x
 script:

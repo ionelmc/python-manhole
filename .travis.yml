@@ -13,39 +13,135 @@ matrix:
     - python: '2.7'
       env:
         - TOXENV=py27-normal-normal-cover,report,coveralls,codecov
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py27-normal-normal-cover,report,coveralls,codecov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
     - python: '2.7'
       env:
         - TOXENV=py27-normal-normal-nocov
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py27-normal-normal-nocov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
     - python: '2.7'
       env:
         - TOXENV=py27-normal-gevent-cover,report,coveralls,codecov
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py27-normal-gevent-cover,report,coveralls,codecov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
     - python: '2.7'
       env:
         - TOXENV=py27-normal-gevent-nocov
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py27-normal-gevent-nocov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
     - python: '2.7'
       env:
         - TOXENV=py27-normal-eventlet-cover,report,coveralls,codecov
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py27-normal-eventlet-cover,report,coveralls,codecov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
     - python: '2.7'
       env:
         - TOXENV=py27-normal-eventlet-nocov
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py27-normal-eventlet-nocov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
     - python: '2.7'
       env:
         - TOXENV=py27-signalfd-normal-cover,report,coveralls,codecov
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py27-signalfd-normal-cover,report,coveralls,codecov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
     - python: '2.7'
       env:
         - TOXENV=py27-signalfd-normal-nocov
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py27-signalfd-normal-nocov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
     - python: '2.7'
       env:
         - TOXENV=py27-signalfd-gevent-cover,report,coveralls,codecov
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py27-signalfd-gevent-cover,report,coveralls,codecov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
     - python: '2.7'
       env:
         - TOXENV=py27-signalfd-gevent-nocov
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py27-signalfd-gevent-nocov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
     - python: '2.7'
       env:
         - TOXENV=py27-signalfd-eventlet-cover,report,coveralls,codecov
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py27-signalfd-eventlet-cover,report,coveralls,codecov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
     - python: '2.7'
       env:
         - TOXENV=py27-signalfd-eventlet-nocov
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py27-signalfd-eventlet-nocov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
     - python: '3.5'
       env:
         - TOXENV=py35-normal-normal-cover,report,coveralls,codecov
@@ -119,53 +215,161 @@ matrix:
       env:
         - TOXENV=py36-signalfd-eventlet-nocov
     - python: '3.7'
-      dist: xenial
       env:
         - TOXENV=py37-normal-normal-cover,report,coveralls,codecov
-    - python: '3.7'
       dist: xenial
+
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py37-normal-normal-cover,report,coveralls,codecov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
+    - python: '3.7'
       env:
         - TOXENV=py37-normal-normal-nocov
-    - python: '3.7'
       dist: xenial
+
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py37-normal-normal-nocov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
+    - python: '3.7'
       env:
         - TOXENV=py37-normal-gevent-cover,report,coveralls,codecov
-    - python: '3.7'
       dist: xenial
+
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py37-normal-gevent-cover,report,coveralls,codecov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
+    - python: '3.7'
       env:
         - TOXENV=py37-normal-gevent-nocov
-    - python: '3.7'
       dist: xenial
+
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py37-normal-gevent-nocov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
+    - python: '3.7'
       env:
         - TOXENV=py37-normal-eventlet-cover,report,coveralls,codecov
-    - python: '3.7'
       dist: xenial
+
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py37-normal-eventlet-cover,report,coveralls,codecov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
+    - python: '3.7'
       env:
         - TOXENV=py37-normal-eventlet-nocov
-    - python: '3.7'
       dist: xenial
+
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py37-normal-eventlet-nocov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
+    - python: '3.7'
       env:
         - TOXENV=py37-signalfd-normal-cover,report,coveralls,codecov
-    - python: '3.7'
       dist: xenial
+
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py37-signalfd-normal-cover,report,coveralls,codecov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
+    - python: '3.7'
       env:
         - TOXENV=py37-signalfd-normal-nocov
-    - python: '3.7'
       dist: xenial
+
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py37-signalfd-normal-nocov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
+    - python: '3.7'
       env:
         - TOXENV=py37-signalfd-gevent-cover,report,coveralls,codecov
-    - python: '3.7'
       dist: xenial
+
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py37-signalfd-gevent-cover,report,coveralls,codecov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
+    - python: '3.7'
       env:
         - TOXENV=py37-signalfd-gevent-nocov
-    - python: '3.7'
       dist: xenial
+
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py37-signalfd-gevent-nocov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
+    - python: '3.7'
       env:
         - TOXENV=py37-signalfd-eventlet-cover,report,coveralls,codecov
-    - python: '3.7'
       dist: xenial
+
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py37-signalfd-eventlet-cover,report,coveralls,codecov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
+    - python: '3.7'
       env:
         - TOXENV=py37-signalfd-eventlet-nocov
+      dist: xenial
+
+    - os: osx
+      language: generic
+      env:
+        - TOXENV=py37-signalfd-eventlet-nocov
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/Library/Caches/pip
     - python: 'pypy'
       env:
         - TOXENV=pypy-normal-normal-cover,report,coveralls,codecov
@@ -241,32 +445,38 @@ matrix:
 before_install:
   - python --version
   - uname -a
-  - lsb_release -a
+  - lsb_release -a || true
+  - |
+    if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
+      [[ $TOXENV =~ py3 ]] && brew upgrade python
+      [[ $TOXENV =~ py2 ]] && brew install python@2
+      export PATH="/usr/local/opt/python/libexec/bin:${PATH}"
+    fi
 install:
-  - pip install tox
+  - pip install tox-wheel
   - virtualenv --version
   - easy_install --version
   - pip --version
   - tox --version
   - |
     set -ex
-    if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then
-        (cd $HOME
-         wget https://bitbucket.org/pypy/pypy/downloads/pypy2-v6.0.0-linux64.tar.bz2
-         tar xf pypy2-*.tar.bz2
-         pypy2-*/bin/pypy -m ensurepip
-         pypy2-*/bin/pypy -m pip install -U virtualenv)
-        export PATH=$(echo $HOME/pypy2-*/bin):$PATH
-        export TOXPYTHON=$(echo $HOME/pypy2-*/bin/pypy)
+    if [[ $TRAVIS_PYTHON_VERSION == pypy ]]; then
+      (cd $HOME
+       wget https://bitbucket.org/pypy/pypy/downloads/pypy2-v6.0.0-linux64.tar.bz2
+       tar xf pypy2-*.tar.bz2
+       pypy2-*/bin/pypy -m ensurepip
+       pypy2-*/bin/pypy -m pip install -U virtualenv)
+      export PATH=$(echo $HOME/pypy2-*/bin):$PATH
+      export TOXPYTHON=$(echo $HOME/pypy2-*/bin/pypy)
     fi
-    if [[ $TRAVIS_PYTHON_VERSION == 'pypy3' ]]; then
-        (cd $HOME
-         wget https://bitbucket.org/pypy/pypy/downloads/pypy3-v6.0.0-linux64.tar.bz2
-         tar xf pypy3-*.tar.bz2
-         pypy3-*/bin/pypy3 -m ensurepip
-         pypy3-*/bin/pypy3 -m pip install -U virtualenv)
-        export PATH=$(echo $HOME/pypy3-*/bin):$PATH
-        export TOXPYTHON=$(echo $HOME/pypy3-*/bin/pypy3)
+    if [[ $TRAVIS_PYTHON_VERSION == pypy3 ]]; then
+      (cd $HOME
+       wget https://bitbucket.org/pypy/pypy/downloads/pypy3-v6.0.0-linux64.tar.bz2
+       tar xf pypy3-*.tar.bz2
+       pypy3-*/bin/pypy3 -m ensurepip
+       pypy3-*/bin/pypy3 -m pip install -U virtualenv)
+      export PATH=$(echo $HOME/pypy3-*/bin):$PATH
+      export TOXPYTHON=$(echo $HOME/pypy3-*/bin/pypy3)
     fi
     set +x
 script:
