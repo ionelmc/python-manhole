@@ -144,7 +144,8 @@ def test_daemon_connection():
             wait_for_strings(proc.read, TIMEOUT, 'In atexit handler')
 
 
-@pytest.mark.xfail('sys.gettrace() and is_module_available("gevent") and is_module_available("__pypy__")')
+@pytest.mark.xfail('sys.gettrace() and is_module_available("gevent") and is_module_available("__pypy__") '
+                   'or is_module_available("eventlet") ')
 def test_non_daemon_connection():
     with TestProcess(sys.executable, HELPER, 'test_simple') as proc:
         with dump_on_error(proc.read):
@@ -354,7 +355,6 @@ def test_with_fork():
                 assert_manhole_running(proc, new_uds_path)
 
 
-@pytest.mark.skipif(hasattr(sys, 'pypy_version_info'), reason="pypy doesn't support forkpty")
 def test_with_forkpty():
     with TestProcess(sys.executable, '-u', HELPER, 'test_with_forkpty') as proc:
         with dump_on_error(proc.read):
@@ -399,7 +399,7 @@ def test_auth_fail():
                 proc.proc.send_signal(signal.SIGINT)
 
 
-@pytest.mark.skipif(not is_module_available('signalfd'), reason="signalfd not available")
+@pytest.mark.skipif('not is_module_available("signalfd")')
 def test_sigprocmask():
     with TestProcess(sys.executable, '-u', HELPER, 'test_signalfd_weirdness') as proc:
         with dump_on_error(proc.read):
@@ -410,8 +410,7 @@ def test_sigprocmask():
             assert_manhole_running(proc, uds_path)
 
 
-@pytest.mark.skipif(not is_module_available('signalfd'),
-             reason="signalfd doesn't play well with gevent/eventlet")
+@pytest.mark.skipif('not is_module_available("signalfd")')
 def test_sigprocmask_negative():
     with TestProcess(sys.executable, '-u', HELPER, 'test_signalfd_weirdness_negative') as proc:
         with dump_on_error(proc.read):
@@ -500,7 +499,7 @@ def test_environ_variable_activation():
             assert_manhole_running(proc, uds_path, oneshot=True)
 
 
-@pytest.mark.skipif(not is_module_available('signalfd'), reason="signalfd not available")
+@pytest.mark.skipif('not is_module_available("signalfd")')
 def test_sigmask():
     with TestProcess(sys.executable, HELPER, 'test_sigmask') as proc:
         with dump_on_error(proc.read):
@@ -528,17 +527,18 @@ def test_stderr_doesnt_deadlock():
 @pytest.mark.skipif('is_module_available("__pypy__")')
 def test_uwsgi():
     with TestProcess(
-            'uwsgi',
-            '--master',
-            '--processes', '1',
-            '--no-orphans',
-            '--log-5xx',
-            '--single-interpreter',
-            '--shared-socket', ':0',
-            '--no-default-app',
-            '--manage-script-name',
-            '--http', '=0',
-            '--mount', '=wsgi:application'
+        'uwsgi',
+        '--master',
+        '--processes', '1',
+        '--no-orphans',
+        '--log-5xx',
+        '--single-interpreter',
+        '--shared-socket', ':0',
+        '--no-default-app',
+        '--manage-script-name',
+        '--http', '=0',
+        '--mount', '=wsgi:application',
+        *['--virtualenv', os.environ['VIRTUAL_ENV']] if 'VIRTUAL_ENV' in os.environ else []
     ) as proc:
         with dump_on_error(proc.read):
             wait_for_strings(proc.read, TIMEOUT, 'uWSGI http bound')
