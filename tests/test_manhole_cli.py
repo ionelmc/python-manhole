@@ -17,6 +17,8 @@ except ImportError:
 TIMEOUT = int(os.getenv('MANHOLE_TEST_TIMEOUT', 10))
 HELPER = os.path.join(os.path.dirname(__file__), 'helper.py')
 
+pytest_plugins = 'pytester',
+
 
 def test_pid_validation():
     exc = pytest.raises(subprocess.CalledProcessError, subprocess.check_output, ['manhole-cli', 'asdfasdf'],
@@ -33,27 +35,24 @@ def test_sig_number_validation():
 manhole-cli: error: argument -s/--signal: Invalid signal number 12341234. Expected one of: """)
 
 
-def test_help():
-    output = subprocess.check_output(['manhole-cli', '--help'])
-    print(output)
-    assert output == b"""usage: manhole-cli [-h] [-t TIMEOUT] [-1 | -2 | -s SIGNAL] PID
-
-Connect to a manhole.
-
-positional arguments:
-  PID                   A numerical process id, or a path in the form:
-                        /tmp/manhole-1234
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -t TIMEOUT, --timeout TIMEOUT
-                        Timeout to use. Default: 1 seconds.
-  -1, -USR1             Send USR1 (10) to the process before connecting.
-  -2, -USR2             Send USR2 (12) to the process before connecting.
-  -s SIGNAL, --signal SIGNAL
-                        Send the given SIGNAL to the process before
-                        connecting.
-"""
+def test_help(testdir):
+    result = testdir.run('manhole-cli', '--help')
+    result.stdout.fnmatch_lines([
+        'usage: manhole-cli [-h] [-t TIMEOUT] [-1 | -2 | -s SIGNAL] PID',
+        'Connect to a manhole.',
+        'positional arguments:',
+        '  PID                   A numerical process id, or a path in the form:',
+        '                        /tmp/manhole-1234',
+        'optional arguments:',
+        '  -h, --help            show this help message and exit',
+        '  -t TIMEOUT, --timeout TIMEOUT',
+        '                        Timeout to use. Default: 1 seconds.',
+        '  -1, -USR1             Send USR1 (*) to the process before connecting.',
+        '  -2, -USR2             Send USR2 (*) to the process before connecting.',
+        '  -s SIGNAL, --signal SIGNAL',
+        '                        Send the given SIGNAL to the process before',
+        '                        connecting.',
+    ])
 
 
 def test_usr2():
