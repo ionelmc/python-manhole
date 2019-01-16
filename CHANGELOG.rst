@@ -2,6 +2,23 @@
 Changelog
 =========
 
+1.6.0 (2019-01-16)
+------------------
+
+* Testing improvements (changed some skips to xfail, added osx in Travis).
+* Fixed long standing Python 2.7 bug where ``sys.getfilesystemencoding()`` would be broken after installing a threaded
+  manhole. See `#51 <https://github.com/ionelmc/python-manhole/issues/51>`_.
+* Dropped support for Python 2.6, 3.3 and 3.4.
+* Fixed handling when ``socket.setdefaulttimeout()`` is used.
+  Contributed by "honnix" in `#53 <https://github.com/ionelmc/python-manhole/pull/53>`_.
+* Fixed some typos. Contributed by Jesús Cea in `#43 <https://github.com/ionelmc/python-manhole/pull/43>`_.
+* Fixed handling in ``manhole-cli`` so that timeout is actually seconds and not milliseconds.
+  Contributed by Nir Soffer in `#45 <https://github.com/ionelmc/python-manhole/pull/45>`_.
+* Cleaned up useless polling options in ``manhole-cli``.
+  Contributed by Nir Soffer in `#46 <https://github.com/ionelmc/python-manhole/pull/46>`_.
+* Documented and implemented a solution for using Manhole with Eventlet.
+  See `#49 <https://github.com/ionelmc/python-manhole/issues/49>`_.
+
 1.5.0 (2017-08-31)
 ------------------
 
