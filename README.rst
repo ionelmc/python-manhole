@@ -39,9 +39,9 @@ Overview
     :alt: PyPI Package latest release
     :target: https://pypi.org/project/manhole
 
-.. |commits-since| image:: https://img.shields.io/github/commits-since/ionelmc/python-manhole/v1.3.0.svg
+.. |commits-since| image:: https://img.shields.io/github/commits-since/ionelmc/python-manhole/v1.6.0.svg
     :alt: Commits since latest release
-    :target: https://github.com/ionelmc/python-manhole/compare/v1.3.0...master
+    :target: https://github.com/ionelmc/python-manhole/compare/v1.6.0...master
 
 .. |wheel| image:: https://img.shields.io/pypi/wheel/manhole.svg
     :alt: PyPI Wheel

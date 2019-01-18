@@ -11,7 +11,7 @@ import sys
 import traceback
 from contextlib import closing
 
-__version__ = '1.5.0'
+__version__ = '1.6.0'
 
 try:
     import signalfd

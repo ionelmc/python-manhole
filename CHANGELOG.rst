@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.6.0 (2019-01-16)
+1.6.0 (2019-01-19)
 ------------------
 
 * Testing improvements (changed some skips to xfail, added osx in Travis).
