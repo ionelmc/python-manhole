@@ -201,7 +201,7 @@ Options
 Environment variable installation
 ---------------------------------
 
-Manhole can be installed via the ``PYTHONMANHOLE`` environment varialbe.
+Manhole can be installed via the ``PYTHONMANHOLE`` environment variable.
 
 This::
 
