@@ -300,6 +300,8 @@ def handle_connection_repl(client):
                 setattr(sys, name, client.makefile(mode, 1 if PY3 else 0))
         try:
             handle_repl(_MANHOLE.locals)
+        except BrokenPipeError:
+            _LOG("REPL client disconnected")
         except Exception as exc:
             _LOG("REPL failed with %r." % exc)
         _LOG("DONE.")
