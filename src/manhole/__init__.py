@@ -45,8 +45,6 @@ except ImportError:
             return getattr(__import__(mod), name)
 
 _ORIGINAL_SOCKET = _get_original('socket', 'socket')
-_ORIGINAL_FROMFD = _get_original('socket', 'fromfd')
-_ORIGINAL_FDOPEN = _get_original('os', 'fdopen')
 _ORIGINAL_DUP = _get_original('os', 'dup')
 _ORIGINAL_DUP2 = _get_original('os', 'dup2')
 try:
@@ -267,7 +265,7 @@ def handle_connection_exec(client):
         raise ExitExecLoop()
 
     client.settimeout(None)
-    fh = os.fdopen(client.detach() if hasattr(client, 'detach') else client.fileno())
+    fh = client.makefile()
 
     with closing(client):
         with closing(fh):
@@ -296,11 +294,10 @@ def handle_connection_repl(client):
     if _MANHOLE.redirect_stderr:
         patches.append(('w', ('stderr', '__stderr__')))
     try:
-        client_fd = client.fileno()
         for mode, names in patches:
             for name in names:
                 backup.append((name, getattr(sys, name)))
-                setattr(sys, name, _ORIGINAL_FDOPEN(client_fd, mode, 1 if PY3 else 0))
+                setattr(sys, name, client.makefile(mode, 1 if PY3 else 0))
         try:
             handle_repl(_MANHOLE.locals)
         except Exception as exc:
