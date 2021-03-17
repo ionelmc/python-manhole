@@ -7,3 +7,4 @@ Authors
 * Nir Soffer - http://nirs.freeshell.org
 * Jesús Cea - https://github.com/jcea
 * "honnix" - https://github.com/honnix
+* Anton Ryzhov - https://github.com/anton-ryzhov

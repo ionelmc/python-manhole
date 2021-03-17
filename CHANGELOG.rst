@@ -2,6 +2,11 @@
 Changelog
 =========
 
+dev
+------------------
+
+* Fixed memory leak via ``sys.last_type``, ``sys.last_value``, ``sys.last_traceback``
+
 1.6.0 (2019-01-19)
 ------------------
 
