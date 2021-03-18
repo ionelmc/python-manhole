@@ -367,7 +367,14 @@ def handle_repl(locals):
     }
     if locals:
         namespace.update(locals)
-    ManholeConsole(namespace).interact()
+    try:
+        ManholeConsole(namespace).interact()
+    finally:
+        for attribute in ['last_type', 'last_value', 'last_traceback']:
+            try:
+                delattr(sys, attribute)
+            except AttributeError:
+                pass
 
 
 class Logger(object):
