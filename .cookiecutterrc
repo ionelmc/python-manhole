@@ -46,7 +46,7 @@ default_context:
     test_matrix_separate_coverage: yes
     test_runner: pytest
     travis: yes
-    travis_osx: no
+    travis_osx: yes
     version: 1.6.0
     website: http://blog.ionelmc.ro
     year_from: '2012'
