@@ -1,13 +1,13 @@
 language: python
-cache: pip
+dist: xenial
+virt: lxd
+cache: false
 env:
   global:
     - MANHOLE_TEST_TIMEOUT=30
     - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
     - SEGFAULT_SIGNALS=all
-  matrix:
-    - TOXENV=check
-    - TOXENV=docs
+    - LANG=en_US.UTF-8
 matrix:
   include:
     - python: '2.7'

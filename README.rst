@@ -19,9 +19,9 @@ Overview
     :target: https://readthedocs.org/projects/python-manhole
     :alt: Documentation Status
 
-.. |travis| image:: https://travis-ci.org/ionelmc/python-manhole.svg?branch=master
+.. |travis| image:: https://api.travis-ci.com/ionelmc/python-manhole.svg?branch=master
     :alt: Travis-CI Build Status
-    :target: https://travis-ci.org/ionelmc/python-manhole
+    :target: https://travis-ci.com/github/ionelmc/python-manhole
 
 .. |requires| image:: https://requires.io/github/ionelmc/python-manhole/requirements.svg?branch=master
     :alt: Requirements Status
@@ -31,17 +31,13 @@ Overview
     :alt: Coverage Status
     :target: https://coveralls.io/r/ionelmc/python-manhole
 
-.. |codecov| image:: https://codecov.io/github/ionelmc/python-manhole/coverage.svg?branch=master
+.. |codecov| image:: https://codecov.io/gh/ionelmc/python-manhole/branch/master/graphs/badge.svg?branch=master
     :alt: Coverage Status
     :target: https://codecov.io/github/ionelmc/python-manhole
 
 .. |version| image:: https://img.shields.io/pypi/v/manhole.svg
     :alt: PyPI Package latest release
     :target: https://pypi.org/project/manhole
-
-.. |commits-since| image:: https://img.shields.io/github/commits-since/ionelmc/python-manhole/v1.6.0.svg
-    :alt: Commits since latest release
-    :target: https://github.com/ionelmc/python-manhole/compare/v1.6.0...master
 
 .. |wheel| image:: https://img.shields.io/pypi/wheel/manhole.svg
     :alt: PyPI Wheel
