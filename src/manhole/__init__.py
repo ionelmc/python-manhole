@@ -267,7 +267,11 @@ def handle_connection_exec(client):
         raise ExitExecLoop()
 
     client.settimeout(None)
-    fh = os.fdopen(client.detach() if hasattr(client, 'detach') else client.fileno())
+    if hasattr(client, 'detach'):
+        client_fd = client.detach()
+    else:
+        client_fd = _ORIGINAL_DUP(client.fileno())
+    fh = _ORIGINAL_FDOPEN(client_fd)
 
     with closing(client):
         with closing(fh):
@@ -296,7 +300,10 @@ def handle_connection_repl(client):
     if _MANHOLE.redirect_stderr:
         patches.append(('w', ('stderr', '__stderr__')))
     try:
-        client_fd = client.fileno()
+        if hasattr(client, 'detach'):
+            client_fd = client.detach()
+        else:
+            client_fd = _ORIGINAL_DUP(client.fileno())
         for mode, names in patches:
             for name in names:
                 backup.append((name, getattr(sys, name)))
