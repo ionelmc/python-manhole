@@ -2,10 +2,15 @@
 Changelog
 =========
 
-dev
+1.7.0 (2021-03-22)
 ------------------
 
-* Fixed memory leak via ``sys.last_type``, ``sys.last_value``, ``sys.last_traceback``
+* Fixed memory leak via ``sys.last_type``, ``sys.last_value``, ``sys.last_traceback``.
+  Contributed by Anton Ryzhov in `#59 <https://github.com/ionelmc/python-manhole/pull/59>`_.
+* Fixed a bunch of double-close bugs and simplified stream handler code.
+  Contributed by Anton Ryzhov in `#58 <https://github.com/ionelmc/python-manhole/pull/58>`_.
+* Loosen up ``pid`` argument parsing in ``manhole-cli`` to allow using paths with any prefix
+  (not just ``/tmp``).
 
 1.6.0 (2019-01-19)
 ------------------
