@@ -25,6 +25,11 @@ try:
     InterruptedError = InterruptedError
 except NameError:  # python <= 3.2
     InterruptedError = OSError
+try:
+    BrokenPipeError = BrokenPipeError
+except NameError:  # old python
+    class BrokenPipeError(Exception):
+        pass
 if hasattr(sys, 'setswitchinterval'):
     setinterval = sys.setswitchinterval
     getinterval = sys.getswitchinterval
