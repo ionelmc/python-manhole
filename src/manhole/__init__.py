@@ -50,8 +50,6 @@ except ImportError:
             return getattr(__import__(mod), name)
 
 _ORIGINAL_SOCKET = _get_original('socket', 'socket')
-_ORIGINAL_DUP = _get_original('os', 'dup')
-_ORIGINAL_DUP2 = _get_original('os', 'dup2')
 try:
     _ORIGINAL_ALLOCATE_LOCK = _get_original('thread', 'allocate_lock')
 except ImportError:  # python 3
