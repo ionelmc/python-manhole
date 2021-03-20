@@ -518,7 +518,7 @@ def test_sigmask():
 
 
 def test_stderr_doesnt_deadlock():
-    for _ in range(100):
+    for _ in range(25 if is_module_available("__pypy__") else 100):
         with TestProcess(sys.executable, HELPER, 'test_stderr_doesnt_deadlock') as proc:
             with dump_on_error(proc.read):
                 wait_for_strings(proc.read, TIMEOUT, 'SUCCESS')
@@ -548,7 +548,13 @@ def test_uwsgi():
             wait_for_strings(proc.read, TIMEOUT, 'spawned uWSGI worker 1')
             pid = re.findall(r"spawned uWSGI worker 1 \(pid: (\d+), ", proc.read())[0]
 
-            for _ in range(2):
+            for retry in range(5)[::-1]:
                 with open('/tmp/manhole-pid', 'w') as fh:
                     fh.write(pid)
-                assert_manhole_running(proc, '/tmp/manhole-%s' % pid, oneshot=True)
+                try:
+                    assert_manhole_running(proc, '/tmp/manhole-%s' % pid, oneshot=True)
+                except Exception:
+                    if not retry:
+                        raise
+                else:
+                    break

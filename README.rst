@@ -16,12 +16,12 @@ Overview
       - | |version| |wheel| |supported-versions| |supported-implementations|
         | |commits-since|
 .. |docs| image:: https://readthedocs.org/projects/python-manhole/badge/?style=flat
-    :target: https://readthedocs.org/projects/python-manhole
+    :target: https://python-manhole.readthedocs.io/
     :alt: Documentation Status
 
-.. |travis| image:: https://travis-ci.org/ionelmc/python-manhole.svg?branch=master
+.. |travis| image:: https://api.travis-ci.com/ionelmc/python-manhole.svg?branch=master
     :alt: Travis-CI Build Status
-    :target: https://travis-ci.org/ionelmc/python-manhole
+    :target: https://travis-ci.com/github/ionelmc/python-manhole
 
 .. |requires| image:: https://requires.io/github/ionelmc/python-manhole/requirements.svg?branch=master
     :alt: Requirements Status
@@ -31,17 +31,13 @@ Overview
     :alt: Coverage Status
     :target: https://coveralls.io/r/ionelmc/python-manhole
 
-.. |codecov| image:: https://codecov.io/github/ionelmc/python-manhole/coverage.svg?branch=master
+.. |codecov| image:: https://codecov.io/gh/ionelmc/python-manhole/branch/master/graphs/badge.svg?branch=master
     :alt: Coverage Status
     :target: https://codecov.io/github/ionelmc/python-manhole
 
 .. |version| image:: https://img.shields.io/pypi/v/manhole.svg
     :alt: PyPI Package latest release
     :target: https://pypi.org/project/manhole
-
-.. |commits-since| image:: https://img.shields.io/github/commits-since/ionelmc/python-manhole/v1.6.0.svg
-    :alt: Commits since latest release
-    :target: https://github.com/ionelmc/python-manhole/compare/v1.6.0...master
 
 .. |wheel| image:: https://img.shields.io/pypi/wheel/manhole.svg
     :alt: PyPI Wheel
@@ -54,6 +50,14 @@ Overview
 .. |supported-implementations| image:: https://img.shields.io/pypi/implementation/manhole.svg
     :alt: Supported implementations
     :target: https://pypi.org/project/manhole
+
+.. |commits-since| image:: https://img.shields.io/github/commits-since/ionelmc/python-manhole/v1.6.0.svg
+    :alt: Commits since latest release
+    :target: https://github.com/ionelmc/python-manhole/compare/v1.6.0...master
+
+
+
+.. end-badges
 
 Manhole is in-process service that will accept unix domain socket connections and present the
 stacktraces for all threads and an interactive prompt. It can either work as a python daemon
@@ -228,8 +232,7 @@ Known issues
 ============
 
 * Using threads and file handle (not raw file descriptor) ``verbose_destination`` can cause deadlocks. See bug reports:
-  `PyPy <https://bitbucket.org/pypy/pypy/issue/1895/writing-to-stderr-from-multiple-processes>`_ and `Python 3.4
-  <http://bugs.python.org/issue22697>`_.
+  `PyPy <https://foss.heptapod.net/pypy/pypy/-/issues/1895>`_ and `Python 3.4 <http://bugs.python.org/issue22697>`_.
 
 SIGTERM and socket cleanup
 --------------------------

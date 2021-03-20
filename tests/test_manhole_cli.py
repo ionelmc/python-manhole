@@ -63,7 +63,7 @@ def test_usr2():
             with TestProcess('manhole-cli', '-USR2', str(service.proc.pid), bufsize=0, stdin=subprocess.PIPE) as client:
                 with dump_on_error(client.read):
                     wait_for_strings(client.read, TIMEOUT, '(ManholeConsole)', '>>>')
-                    client.proc.stdin.write(b"1234+2345\n")
+                    client.proc.stdin.write("1234+2345\n")
                     wait_for_strings(client.read, TIMEOUT, '3579')
 
 
@@ -74,7 +74,7 @@ def test_pid():
             with TestProcess('manhole-cli', str(service.proc.pid), bufsize=0, stdin=subprocess.PIPE) as client:
                 with dump_on_error(client.read):
                     wait_for_strings(client.read, TIMEOUT, '(ManholeConsole)', '>>>')
-                    client.proc.stdin.write(b"1234+2345\n")
+                    client.proc.stdin.write("1234+2345\n")
                     wait_for_strings(client.read, TIMEOUT, '3579')
 
 
@@ -86,7 +86,7 @@ def test_path():
                              stdin=subprocess.PIPE) as client:
                 with dump_on_error(client.read):
                     wait_for_strings(client.read, TIMEOUT, '(ManholeConsole)', '>>>')
-                    client.proc.stdin.write(b"1234+2345\n")
+                    client.proc.stdin.write("1234+2345\n")
                     wait_for_strings(client.read, TIMEOUT, '3579')
 
 
@@ -99,7 +99,7 @@ def test_sig_usr2():
                              stdin=subprocess.PIPE) as client:
                 with dump_on_error(client.read):
                     wait_for_strings(client.read, TIMEOUT, '(ManholeConsole)', '>>>')
-                    client.proc.stdin.write(b"1234+2345\n")
+                    client.proc.stdin.write("1234+2345\n")
                     wait_for_strings(client.read, TIMEOUT, '3579')
 
 
@@ -112,7 +112,7 @@ def test_sig_usr2_full():
                              stdin=subprocess.PIPE) as client:
                 with dump_on_error(client.read):
                     wait_for_strings(client.read, TIMEOUT, '(ManholeConsole)', '>>>')
-                    client.proc.stdin.write(b"1234+2345\n")
+                    client.proc.stdin.write("1234+2345\n")
                     wait_for_strings(client.read, TIMEOUT, '3579')
 
 
@@ -125,5 +125,5 @@ def test_sig_usr2_number():
                              stdin=subprocess.PIPE) as client:
                 with dump_on_error(client.read):
                     wait_for_strings(client.read, TIMEOUT, '(ManholeConsole)', '>>>')
-                    client.proc.stdin.write(b"1234+2345\n")
+                    client.proc.stdin.write("1234+2345\n")
                     wait_for_strings(client.read, TIMEOUT, '3579')

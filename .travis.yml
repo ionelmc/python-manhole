@@ -1,447 +1,405 @@
 language: python
-cache: pip
+dist: xenial
+virt: lxd
+cache: false
 env:
   global:
     - MANHOLE_TEST_TIMEOUT=30
     - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
     - SEGFAULT_SIGNALS=all
-  matrix:
-    - TOXENV=check
-    - TOXENV=docs
+    - LANG=en_US.UTF-8
 matrix:
   include:
-    - python: '2.7'
+    - python: '3.6'
       env:
-        - TOXENV=py27-normal-normal-cover,report,coveralls,codecov
+        - TOXENV=check
+    - python: '3.6'
+      env:
+        - TOXENV=docs
     - os: osx
+      osx_image: xcode12.2
       language: generic
       env:
-        - TOXENV=py27-normal-normal-cover,report,coveralls,codecov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '2.7'
+        - TOXENV=py27-normal-normal-cover
+    - env:
+        - TOXENV=py27-normal-normal-cover,codecov,coveralls
+      python: '2.7'
+    - os: osx
+      osx_image: xcode12.2
+      language: generic
       env:
         - TOXENV=py27-normal-normal-nocov
-    - os: osx
-      language: generic
-      env:
+    - env:
         - TOXENV=py27-normal-normal-nocov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '2.7'
-      env:
-        - TOXENV=py27-normal-gevent-cover,report,coveralls,codecov
+      python: '2.7'
     - os: osx
+      osx_image: xcode12.2
       language: generic
       env:
-        - TOXENV=py27-normal-gevent-cover,report,coveralls,codecov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '2.7'
-      env:
-        - TOXENV=py27-normal-gevent-nocov
+        - TOXENV=py27-normal-gevent-cover
+    - env:
+        - TOXENV=py27-normal-gevent-cover,codecov,coveralls
+      python: '2.7'
     - os: osx
+      osx_image: xcode12.2
       language: generic
       env:
         - TOXENV=py27-normal-gevent-nocov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '2.7'
-      env:
-        - TOXENV=py27-normal-eventlet-cover,report,coveralls,codecov
+    - env:
+        - TOXENV=py27-normal-gevent-nocov
+      python: '2.7'
     - os: osx
+      osx_image: xcode12.2
       language: generic
       env:
-        - TOXENV=py27-normal-eventlet-cover,report,coveralls,codecov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '2.7'
-      env:
-        - TOXENV=py27-normal-eventlet-nocov
+        - TOXENV=py27-normal-eventlet-cover
+    - env:
+        - TOXENV=py27-normal-eventlet-cover,codecov,coveralls
+      python: '2.7'
     - os: osx
+      osx_image: xcode12.2
       language: generic
       env:
         - TOXENV=py27-normal-eventlet-nocov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '2.7'
-      env:
-        - TOXENV=py27-signalfd-normal-cover,report,coveralls,codecov
+    - env:
+        - TOXENV=py27-normal-eventlet-nocov
+      python: '2.7'
     - os: osx
+      osx_image: xcode12.2
       language: generic
       env:
-        - TOXENV=py27-signalfd-normal-cover,report,coveralls,codecov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '2.7'
-      env:
-        - TOXENV=py27-signalfd-normal-nocov
+        - TOXENV=py27-signalfd-normal-cover
+    - env:
+        - TOXENV=py27-signalfd-normal-cover,codecov,coveralls
+      python: '2.7'
     - os: osx
+      osx_image: xcode12.2
       language: generic
       env:
         - TOXENV=py27-signalfd-normal-nocov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '2.7'
-      env:
-        - TOXENV=py27-signalfd-gevent-cover,report,coveralls,codecov
+    - env:
+        - TOXENV=py27-signalfd-normal-nocov
+      python: '2.7'
     - os: osx
+      osx_image: xcode12.2
       language: generic
       env:
-        - TOXENV=py27-signalfd-gevent-cover,report,coveralls,codecov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '2.7'
-      env:
-        - TOXENV=py27-signalfd-gevent-nocov
+        - TOXENV=py27-signalfd-gevent-cover
+    - env:
+        - TOXENV=py27-signalfd-gevent-cover,codecov,coveralls
+      python: '2.7'
     - os: osx
+      osx_image: xcode12.2
       language: generic
       env:
         - TOXENV=py27-signalfd-gevent-nocov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '2.7'
-      env:
-        - TOXENV=py27-signalfd-eventlet-cover,report,coveralls,codecov
+    - env:
+        - TOXENV=py27-signalfd-gevent-nocov
+      python: '2.7'
     - os: osx
+      osx_image: xcode12.2
       language: generic
       env:
-        - TOXENV=py27-signalfd-eventlet-cover,report,coveralls,codecov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '2.7'
-      env:
-        - TOXENV=py27-signalfd-eventlet-nocov
+        - TOXENV=py27-signalfd-eventlet-cover
+    - env:
+        - TOXENV=py27-signalfd-eventlet-cover,codecov,coveralls
+      python: '2.7'
     - os: osx
+      osx_image: xcode12.2
       language: generic
       env:
         - TOXENV=py27-signalfd-eventlet-nocov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '3.5'
-      env:
-        - TOXENV=py35-normal-normal-cover,report,coveralls,codecov
-    - python: '3.5'
-      env:
-        - TOXENV=py35-normal-normal-nocov
-    - python: '3.5'
-      env:
-        - TOXENV=py35-normal-gevent-cover,report,coveralls,codecov
-    - python: '3.5'
-      env:
-        - TOXENV=py35-normal-gevent-nocov
-    - python: '3.5'
-      env:
-        - TOXENV=py35-normal-eventlet-cover,report,coveralls,codecov
-    - python: '3.5'
-      env:
-        - TOXENV=py35-normal-eventlet-nocov
-    - python: '3.5'
-      env:
-        - TOXENV=py35-signalfd-normal-cover,report,coveralls,codecov
-    - python: '3.5'
-      env:
-        - TOXENV=py35-signalfd-normal-nocov
-    - python: '3.5'
-      env:
-        - TOXENV=py35-signalfd-gevent-cover,report,coveralls,codecov
-    - python: '3.5'
-      env:
-        - TOXENV=py35-signalfd-gevent-nocov
-    - python: '3.5'
-      env:
-        - TOXENV=py35-signalfd-eventlet-cover,report,coveralls,codecov
-    - python: '3.5'
-      env:
-        - TOXENV=py35-signalfd-eventlet-nocov
-    - python: '3.6'
-      env:
-        - TOXENV=py36-normal-normal-cover,report,coveralls,codecov
-    - python: '3.6'
-      env:
+    - env:
+        - TOXENV=py27-signalfd-eventlet-nocov
+      python: '2.7'
+    - env:
+        - TOXENV=py36-normal-normal-cover,codecov,coveralls
+      python: '3.6'
+    - env:
         - TOXENV=py36-normal-normal-nocov
-    - python: '3.6'
-      env:
-        - TOXENV=py36-normal-gevent-cover,report,coveralls,codecov
-    - python: '3.6'
-      env:
+      python: '3.6'
+    - env:
+        - TOXENV=py36-normal-gevent-cover,codecov,coveralls
+      python: '3.6'
+    - env:
         - TOXENV=py36-normal-gevent-nocov
-    - python: '3.6'
-      env:
-        - TOXENV=py36-normal-eventlet-cover,report,coveralls,codecov
-    - python: '3.6'
-      env:
+      python: '3.6'
+    - env:
+        - TOXENV=py36-normal-eventlet-cover,codecov,coveralls
+      python: '3.6'
+    - env:
         - TOXENV=py36-normal-eventlet-nocov
-    - python: '3.6'
-      env:
-        - TOXENV=py36-signalfd-normal-cover,report,coveralls,codecov
-    - python: '3.6'
-      env:
+      python: '3.6'
+    - env:
+        - TOXENV=py36-signalfd-normal-cover,codecov,coveralls
+      python: '3.6'
+    - env:
         - TOXENV=py36-signalfd-normal-nocov
-    - python: '3.6'
-      env:
-        - TOXENV=py36-signalfd-gevent-cover,report,coveralls,codecov
-    - python: '3.6'
-      env:
+      python: '3.6'
+    - env:
+        - TOXENV=py36-signalfd-gevent-cover,codecov,coveralls
+      python: '3.6'
+    - env:
         - TOXENV=py36-signalfd-gevent-nocov
-    - python: '3.6'
-      env:
-        - TOXENV=py36-signalfd-eventlet-cover,report,coveralls,codecov
-    - python: '3.6'
-      env:
+      python: '3.6'
+    - env:
+        - TOXENV=py36-signalfd-eventlet-cover,codecov,coveralls
+      python: '3.6'
+    - env:
         - TOXENV=py36-signalfd-eventlet-nocov
-    - python: '3.7'
-      env:
-        - TOXENV=py37-normal-normal-cover,report,coveralls,codecov
-      dist: xenial
-
-    - os: osx
-      language: generic
-      env:
-        - TOXENV=py37-normal-normal-cover,report,coveralls,codecov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '3.7'
-      env:
+      python: '3.6'
+    - env:
+        - TOXENV=py37-normal-normal-cover,codecov,coveralls
+      python: '3.7'
+    - env:
         - TOXENV=py37-normal-normal-nocov
-      dist: xenial
-
-    - os: osx
-      language: generic
-      env:
-        - TOXENV=py37-normal-normal-nocov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '3.7'
-      env:
-        - TOXENV=py37-normal-gevent-cover,report,coveralls,codecov
-      dist: xenial
-
-    - os: osx
-      language: generic
-      env:
-        - TOXENV=py37-normal-gevent-cover,report,coveralls,codecov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '3.7'
-      env:
+      python: '3.7'
+    - env:
+        - TOXENV=py37-normal-gevent-cover,codecov,coveralls
+      python: '3.7'
+    - env:
         - TOXENV=py37-normal-gevent-nocov
-      dist: xenial
-
-    - os: osx
-      language: generic
-      env:
-        - TOXENV=py37-normal-gevent-nocov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '3.7'
-      env:
-        - TOXENV=py37-normal-eventlet-cover,report,coveralls,codecov
-      dist: xenial
-
-    - os: osx
-      language: generic
-      env:
-        - TOXENV=py37-normal-eventlet-cover,report,coveralls,codecov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '3.7'
-      env:
+      python: '3.7'
+    - env:
+        - TOXENV=py37-normal-eventlet-cover,codecov,coveralls
+      python: '3.7'
+    - env:
         - TOXENV=py37-normal-eventlet-nocov
-      dist: xenial
-
-    - os: osx
-      language: generic
-      env:
-        - TOXENV=py37-normal-eventlet-nocov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '3.7'
-      env:
-        - TOXENV=py37-signalfd-normal-cover,report,coveralls,codecov
-      dist: xenial
-
-    - os: osx
-      language: generic
-      env:
-        - TOXENV=py37-signalfd-normal-cover,report,coveralls,codecov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '3.7'
-      env:
+      python: '3.7'
+    - env:
+        - TOXENV=py37-signalfd-normal-cover,codecov,coveralls
+      python: '3.7'
+    - env:
         - TOXENV=py37-signalfd-normal-nocov
-      dist: xenial
-
-    - os: osx
-      language: generic
-      env:
-        - TOXENV=py37-signalfd-normal-nocov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '3.7'
-      env:
-        - TOXENV=py37-signalfd-gevent-cover,report,coveralls,codecov
-      dist: xenial
-
-    - os: osx
-      language: generic
-      env:
-        - TOXENV=py37-signalfd-gevent-cover,report,coveralls,codecov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '3.7'
-      env:
+      python: '3.7'
+    - env:
+        - TOXENV=py37-signalfd-gevent-cover,codecov,coveralls
+      python: '3.7'
+    - env:
         - TOXENV=py37-signalfd-gevent-nocov
-      dist: xenial
-
-    - os: osx
-      language: generic
-      env:
-        - TOXENV=py37-signalfd-gevent-nocov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '3.7'
-      env:
-        - TOXENV=py37-signalfd-eventlet-cover,report,coveralls,codecov
-      dist: xenial
-
-    - os: osx
-      language: generic
-      env:
-        - TOXENV=py37-signalfd-eventlet-cover,report,coveralls,codecov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: '3.7'
-      env:
+      python: '3.7'
+    - env:
+        - TOXENV=py37-signalfd-eventlet-cover,codecov,coveralls
+      python: '3.7'
+    - env:
         - TOXENV=py37-signalfd-eventlet-nocov
-      dist: xenial
-
+      python: '3.7'
+    - env:
+        - TOXENV=py38-normal-normal-cover,codecov,coveralls
+      python: '3.8'
+    - env:
+        - TOXENV=py38-normal-normal-nocov
+      python: '3.8'
+    - env:
+        - TOXENV=py38-normal-gevent-cover,codecov,coveralls
+      python: '3.8'
+    - env:
+        - TOXENV=py38-normal-gevent-nocov
+      python: '3.8'
+    - env:
+        - TOXENV=py38-normal-eventlet-cover,codecov,coveralls
+      python: '3.8'
+    - env:
+        - TOXENV=py38-normal-eventlet-nocov
+      python: '3.8'
+    - env:
+        - TOXENV=py38-signalfd-normal-cover,codecov,coveralls
+      python: '3.8'
+    - env:
+        - TOXENV=py38-signalfd-normal-nocov
+      python: '3.8'
+    - env:
+        - TOXENV=py38-signalfd-gevent-cover,codecov,coveralls
+      python: '3.8'
+    - env:
+        - TOXENV=py38-signalfd-gevent-nocov
+      python: '3.8'
+    - env:
+        - TOXENV=py38-signalfd-eventlet-cover,codecov,coveralls
+      python: '3.8'
+    - env:
+        - TOXENV=py38-signalfd-eventlet-nocov
+      python: '3.8'
     - os: osx
+      osx_image: xcode12.2
       language: generic
       env:
-        - TOXENV=py37-signalfd-eventlet-nocov
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/Library/Caches/pip
-    - python: 'pypy'
+        - TOXENV=py39-normal-normal-cover
+    - env:
+        - TOXENV=py39-normal-normal-cover,codecov,coveralls
+      python: '3.9'
+    - os: osx
+      osx_image: xcode12.2
+      language: generic
       env:
-        - TOXENV=pypy-normal-normal-cover,report,coveralls,codecov
-    - python: 'pypy'
+        - TOXENV=py39-normal-normal-nocov
+    - env:
+        - TOXENV=py39-normal-normal-nocov
+      python: '3.9'
+    - os: osx
+      osx_image: xcode12.2
+      language: generic
       env:
+        - TOXENV=py39-normal-gevent-cover
+    - env:
+        - TOXENV=py39-normal-gevent-cover,codecov,coveralls
+      python: '3.9'
+    - os: osx
+      osx_image: xcode12.2
+      language: generic
+      env:
+        - TOXENV=py39-normal-gevent-nocov
+    - env:
+        - TOXENV=py39-normal-gevent-nocov
+      python: '3.9'
+    - os: osx
+      osx_image: xcode12.2
+      language: generic
+      env:
+        - TOXENV=py39-normal-eventlet-cover
+    - env:
+        - TOXENV=py39-normal-eventlet-cover,codecov,coveralls
+      python: '3.9'
+    - os: osx
+      osx_image: xcode12.2
+      language: generic
+      env:
+        - TOXENV=py39-normal-eventlet-nocov
+    - env:
+        - TOXENV=py39-normal-eventlet-nocov
+      python: '3.9'
+    - os: osx
+      osx_image: xcode12.2
+      language: generic
+      env:
+        - TOXENV=py39-signalfd-normal-cover
+    - env:
+        - TOXENV=py39-signalfd-normal-cover,codecov,coveralls
+      python: '3.9'
+    - os: osx
+      osx_image: xcode12.2
+      language: generic
+      env:
+        - TOXENV=py39-signalfd-normal-nocov
+    - env:
+        - TOXENV=py39-signalfd-normal-nocov
+      python: '3.9'
+    - os: osx
+      osx_image: xcode12.2
+      language: generic
+      env:
+        - TOXENV=py39-signalfd-gevent-cover
+    - env:
+        - TOXENV=py39-signalfd-gevent-cover,codecov,coveralls
+      python: '3.9'
+    - os: osx
+      osx_image: xcode12.2
+      language: generic
+      env:
+        - TOXENV=py39-signalfd-gevent-nocov
+    - env:
+        - TOXENV=py39-signalfd-gevent-nocov
+      python: '3.9'
+    - os: osx
+      osx_image: xcode12.2
+      language: generic
+      env:
+        - TOXENV=py39-signalfd-eventlet-cover
+    - env:
+        - TOXENV=py39-signalfd-eventlet-cover,codecov,coveralls
+      python: '3.9'
+    - os: osx
+      osx_image: xcode12.2
+      language: generic
+      env:
+        - TOXENV=py39-signalfd-eventlet-nocov
+    - env:
+        - TOXENV=py39-signalfd-eventlet-nocov
+      python: '3.9'
+    - env:
+        - TOXENV=pypy-normal-normal-cover,codecov,coveralls
+      python: 'pypy'
+    - env:
         - TOXENV=pypy-normal-normal-nocov
-    - python: 'pypy'
-      env:
-        - TOXENV=pypy-normal-gevent-cover,report,coveralls,codecov
-    - python: 'pypy'
-      env:
+      python: 'pypy'
+    - env:
+        - TOXENV=pypy-normal-gevent-cover,codecov,coveralls
+      python: 'pypy'
+    - env:
         - TOXENV=pypy-normal-gevent-nocov
-    - python: 'pypy'
-      env:
-        - TOXENV=pypy-normal-eventlet-cover,report,coveralls,codecov
-    - python: 'pypy'
-      env:
+      python: 'pypy'
+    - env:
+        - TOXENV=pypy-normal-eventlet-cover,codecov,coveralls
+      python: 'pypy'
+    - env:
         - TOXENV=pypy-normal-eventlet-nocov
-    - python: 'pypy'
-      env:
-        - TOXENV=pypy-signalfd-normal-cover,report,coveralls,codecov
-    - python: 'pypy'
-      env:
+      python: 'pypy'
+    - env:
+        - TOXENV=pypy-signalfd-normal-cover,codecov,coveralls
+      python: 'pypy'
+    - env:
         - TOXENV=pypy-signalfd-normal-nocov
-    - python: 'pypy'
-      env:
-        - TOXENV=pypy-signalfd-gevent-cover,report,coveralls,codecov
-    - python: 'pypy'
-      env:
+      python: 'pypy'
+    - env:
+        - TOXENV=pypy-signalfd-gevent-cover,codecov,coveralls
+      python: 'pypy'
+    - env:
         - TOXENV=pypy-signalfd-gevent-nocov
-    - python: 'pypy'
-      env:
-        - TOXENV=pypy-signalfd-eventlet-cover,report,coveralls,codecov
-    - python: 'pypy'
-      env:
+      python: 'pypy'
+    - env:
+        - TOXENV=pypy-signalfd-eventlet-cover,codecov,coveralls
+      python: 'pypy'
+    - env:
         - TOXENV=pypy-signalfd-eventlet-nocov
-    - python: 'pypy3'
-      env:
-        - TOXENV=pypy3-normal-normal-cover,report,coveralls,codecov
-    - python: 'pypy3'
-      env:
+      python: 'pypy'
+    - env:
+        - TOXENV=pypy3-normal-normal-cover,codecov,coveralls
+        - TOXPYTHON=pypy3
+      python: 'pypy3'
+    - env:
         - TOXENV=pypy3-normal-normal-nocov
-    - python: 'pypy3'
-      env:
-        - TOXENV=pypy3-normal-gevent-cover,report,coveralls,codecov
-    - python: 'pypy3'
-      env:
+        - TOXPYTHON=pypy3
+      python: 'pypy3'
+    - env:
+        - TOXENV=pypy3-normal-gevent-cover,codecov,coveralls
+        - TOXPYTHON=pypy3
+      python: 'pypy3'
+    - env:
         - TOXENV=pypy3-normal-gevent-nocov
-    - python: 'pypy3'
-      env:
-        - TOXENV=pypy3-normal-eventlet-cover,report,coveralls,codecov
-    - python: 'pypy3'
-      env:
+        - TOXPYTHON=pypy3
+      python: 'pypy3'
+    - env:
+        - TOXENV=pypy3-normal-eventlet-cover,codecov,coveralls
+        - TOXPYTHON=pypy3
+      python: 'pypy3'
+    - env:
         - TOXENV=pypy3-normal-eventlet-nocov
-    - python: 'pypy3'
-      env:
-        - TOXENV=pypy3-signalfd-normal-cover,report,coveralls,codecov
-    - python: 'pypy3'
-      env:
+        - TOXPYTHON=pypy3
+      python: 'pypy3'
+    - env:
+        - TOXENV=pypy3-signalfd-normal-cover,codecov,coveralls
+        - TOXPYTHON=pypy3
+      python: 'pypy3'
+    - env:
         - TOXENV=pypy3-signalfd-normal-nocov
-    - python: 'pypy3'
-      env:
-        - TOXENV=pypy3-signalfd-gevent-cover,report,coveralls,codecov
-    - python: 'pypy3'
-      env:
+        - TOXPYTHON=pypy3
+      python: 'pypy3'
+    - env:
+        - TOXENV=pypy3-signalfd-gevent-cover,codecov,coveralls
+        - TOXPYTHON=pypy3
+      python: 'pypy3'
+    - env:
         - TOXENV=pypy3-signalfd-gevent-nocov
-    - python: 'pypy3'
-      env:
-        - TOXENV=pypy3-signalfd-eventlet-cover,report,coveralls,codecov
-    - python: 'pypy3'
-      env:
+        - TOXPYTHON=pypy3
+      python: 'pypy3'
+    - env:
+        - TOXENV=pypy3-signalfd-eventlet-cover,codecov,coveralls
+        - TOXPYTHON=pypy3
+      python: 'pypy3'
+    - env:
         - TOXENV=pypy3-signalfd-eventlet-nocov
+        - TOXPYTHON=pypy3
+      python: 'pypy3'
 before_install:
   - python --version
   - uname -a
@@ -453,37 +411,15 @@ before_install:
       export PATH="/usr/local/opt/python/libexec/bin:${PATH}"
     fi
 install:
-  - pip install tox-wheel
+  - python -mpip install --progress-bar=off tox -rci/requirements.txt
   - virtualenv --version
-  - easy_install --version
   - pip --version
   - tox --version
-  - |
-    set -ex
-    if [[ $TRAVIS_PYTHON_VERSION == pypy ]]; then
-      (cd $HOME
-       wget https://bitbucket.org/pypy/pypy/downloads/pypy2-v6.0.0-linux64.tar.bz2
-       tar xf pypy2-*.tar.bz2
-       pypy2-*/bin/pypy -m ensurepip
-       pypy2-*/bin/pypy -m pip install -U virtualenv)
-      export PATH=$(echo $HOME/pypy2-*/bin):$PATH
-      export TOXPYTHON=$(echo $HOME/pypy2-*/bin/pypy)
-    fi
-    if [[ $TRAVIS_PYTHON_VERSION == pypy3 ]]; then
-      (cd $HOME
-       wget https://bitbucket.org/pypy/pypy/downloads/pypy3-v6.0.0-linux64.tar.bz2
-       tar xf pypy3-*.tar.bz2
-       pypy3-*/bin/pypy3 -m ensurepip
-       pypy3-*/bin/pypy3 -m pip install -U virtualenv)
-      export PATH=$(echo $HOME/pypy3-*/bin):$PATH
-      export TOXPYTHON=$(echo $HOME/pypy3-*/bin/pypy3)
-    fi
-    set +x
 script:
   - tox -v
 after_failure:
-  - more .tox/log/* | cat
-  - more .tox/*/log/* | cat
+  - cat .tox/log/*
+  - cat .tox/*/log/*
 notifications:
   email:
     on_success: never
