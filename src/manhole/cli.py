@@ -69,10 +69,9 @@ group.add_argument('-s', '--signal', dest='signal', type=parse_signal, metavar="
 
 
 class ConnectionHandler(threading.Thread):
-    def __init__(self, timeout, sock, read_fd=None, wait_the_end=True):
+    def __init__(self, timeout, sock, wait_the_end=True):
         super(ConnectionHandler, self).__init__()
         self.sock = sock
-        self.read_fd = read_fd
         self.conn_fd = sock.fileno()
         self.timeout = timeout
         self.should_run = True
@@ -80,8 +79,6 @@ class ConnectionHandler(threading.Thread):
         self.wait_the_end = wait_the_end
 
     def run(self):
-        if self.read_fd is not None:
-            self._poller.register(self.read_fd, select.POLLIN)
         self._poller.register(self.conn_fd, select.POLLIN)
 
         while self.should_run:
@@ -99,9 +96,6 @@ class ConnectionHandler(threading.Thread):
                 sys.stdout.write(data.decode('utf8'))
                 sys.stdout.flush()
                 readline.redisplay()
-            elif fd == self.read_fd:
-                data = os.read(self.read_fd, 1024)
-                self.sock.sendall(data)
             else:
                 raise RuntimeError("Unknown FD %s" % fd)
 
@@ -138,9 +132,7 @@ def main():
         print("Failed to connect to %r: Timeout" % uds_path, file=sys.stderr)
         sys.exit(5)
 
-    read_fd, write_fd = os.pipe()
-
-    thread = ConnectionHandler(args.timeout, sock, read_fd, not sys.stdin.isatty())
+    thread = ConnectionHandler(args.timeout, sock, not sys.stdin.isatty())
     thread.start()
 
     try:
@@ -149,8 +141,8 @@ def main():
                 data = input()
             except EOFError:
                 break
-            os.write(write_fd, data.encode('utf8'))
-            os.write(write_fd, b'\n')
+            data += '\n'
+            sock.sendall(data.encode('utf8'))
     except KeyboardInterrupt:
         pass
     finally:
