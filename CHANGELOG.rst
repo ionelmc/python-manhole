@@ -2,6 +2,9 @@
 Changelog
 =========
 
+dev
+* Simplify connection closing code
+
 1.7.0 (2021-03-22)
 ------------------
 
