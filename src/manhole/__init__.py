@@ -363,6 +363,8 @@ def handle_repl(locals):
         namespace.update(locals)
     try:
         ManholeConsole(namespace).interact()
+    except SystemExit:
+        pass
     finally:
         for attribute in ['last_type', 'last_value', 'last_traceback']:
             try:

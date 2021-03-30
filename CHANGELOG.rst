@@ -4,6 +4,7 @@ Changelog
 
 dev
 * Simplify connection closing code
+* Graceful connection shutdown in ``manhole-cli``
 
 1.7.0 (2021-03-22)
 ------------------
