@@ -2,9 +2,13 @@
 Changelog
 =========
 
-dev
-* Simplify connection closing code
-* Graceful connection shutdown in ``manhole-cli``
+1.8.0 (2021-04-08)
+------------------
+
+* Simplified connection closing code.
+  Contributed by Anton Ryzhov in `#62 <https://github.com/ionelmc/python-manhole/pull/62>`_.
+* Made connection shutdown in ``manhole-cli`` more graceful.
+  Contributed by Anton Ryzhov in `#63 <https://github.com/ionelmc/python-manhole/pull/63>`_.
 
 1.7.0 (2021-03-22)
 ------------------
