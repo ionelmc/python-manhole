@@ -95,7 +95,7 @@ Now in a shell you can do either of these::
     socat readline unix-connect:/tmp/manhole-1234
 
 Socat with readline is best (history, editing etc).
-If your socat doesn't have readme try `this <https://launchpad.net/~ionel-mc/+archive/ubuntu/socat>`_.
+If your socat doesn't have readline try `this <https://launchpad.net/~ionel-mc/+archive/ubuntu/socat>`_.
 
 Sample output::
 
