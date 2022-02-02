@@ -6,17 +6,17 @@ Changelog
 ------------------
 
 * Simplified connection closing code.
-  Contributed by Anton Ryzhov in `#62 <https://github.com/ionelmc/python-manhole/pull/62>`_.
+  Contributed by Anton Ryzhov in :pr:`62`.
 * Made connection shutdown in ``manhole-cli`` more graceful.
-  Contributed by Anton Ryzhov in `#63 <https://github.com/ionelmc/python-manhole/pull/63>`_.
+  Contributed by Anton Ryzhov in :pr:`63`.
 
 1.7.0 (2021-03-22)
 ------------------
 
 * Fixed memory leak via ``sys.last_type``, ``sys.last_value``, ``sys.last_traceback``.
-  Contributed by Anton Ryzhov in `#59 <https://github.com/ionelmc/python-manhole/pull/59>`_.
+  Contributed by Anton Ryzhov in :pr:`59`.
 * Fixed a bunch of double-close bugs and simplified stream handler code.
-  Contributed by Anton Ryzhov in `#58 <https://github.com/ionelmc/python-manhole/pull/58>`_.
+  Contributed by Anton Ryzhov in :pr:`58`.
 * Loosen up ``pid`` argument parsing in ``manhole-cli`` to allow using paths with any prefix
   (not just ``/tmp``).
 
@@ -25,17 +25,17 @@ Changelog
 
 * Testing improvements (changed some skips to xfail, added osx in Travis).
 * Fixed long standing Python 2.7 bug where ``sys.getfilesystemencoding()`` would be broken after installing a threaded
-  manhole. See `#51 <https://github.com/ionelmc/python-manhole/issues/51>`_.
+  manhole. See :issue:`51`.
 * Dropped support for Python 2.6, 3.3 and 3.4.
 * Fixed handling when ``socket.setdefaulttimeout()`` is used.
-  Contributed by "honnix" in `#53 <https://github.com/ionelmc/python-manhole/pull/53>`_.
-* Fixed some typos. Contributed by Jesús Cea in `#43 <https://github.com/ionelmc/python-manhole/pull/43>`_.
+  Contributed by "honnix" in :pr:`53`.
+* Fixed some typos. Contributed by Jesús Cea in :pr:`43`.
 * Fixed handling in ``manhole-cli`` so that timeout is actually seconds and not milliseconds.
-  Contributed by Nir Soffer in `#45 <https://github.com/ionelmc/python-manhole/pull/45>`_.
+  Contributed by Nir Soffer in :pr:`45`.
 * Cleaned up useless polling options in ``manhole-cli``.
-  Contributed by Nir Soffer in `#46 <https://github.com/ionelmc/python-manhole/pull/46>`_.
+  Contributed by Nir Soffer in :pr:`46`.
 * Documented and implemented a solution for using Manhole with Eventlet.
-  See `#49 <https://github.com/ionelmc/python-manhole/issues/49>`_.
+  See :issue:`49`.
 
 1.5.0 (2017-08-31)
 ------------------
