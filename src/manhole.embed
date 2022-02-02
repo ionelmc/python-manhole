@@ -5,4 +5,3 @@ if "PYTHONMANHOLE" in os.environ:
         eval("install({0[PYTHONMANHOLE]})".format(os.environ))
     except Exception as exc:
         sys.stderr.write("Failed to manhole.install({[PYTHONMANHOLE]}): {!r}\n".format(os.environ, exc))
-
