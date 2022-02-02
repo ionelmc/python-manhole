@@ -9,6 +9,7 @@ import socket
 import sys
 import time
 from contextlib import closing
+from ctypes.util import find_library
 
 import pytest
 import requests
@@ -20,6 +21,10 @@ from process_tests import wait_for_strings
 TIMEOUT = int(os.getenv('MANHOLE_TEST_TIMEOUT', 10))
 SOCKET_PATH = '/tmp/manhole-socket'
 HELPER = os.path.join(os.path.dirname(__file__), 'helper.py')
+
+
+def is_lib_available(lib):
+    return find_library(lib)
 
 
 def is_module_available(mod):
@@ -475,6 +480,7 @@ def test_oneshot_on_usr2_error():
             assert_manhole_running(proc, uds_path, oneshot=True)
 
 
+@pytest.mark.skipif('not is_lib_available("pthread")')
 def test_interrupt_on_accept():
     with TestProcess(sys.executable, '-u', HELPER, 'test_interrupt_on_accept') as proc:
         with dump_on_error(proc.read):

@@ -161,10 +161,10 @@ if __name__ == '__main__':
 
             libpthread_path = ctypes.util.find_library("pthread")
             if not libpthread_path:
-                raise ImportError
+                raise ImportError('ctypes.util.find_library("pthread") failed')
             libpthread = ctypes.CDLL(libpthread_path)
             if not hasattr(libpthread, "pthread_setname_np"):
-                raise ImportError
+                raise ImportError('libpthread.pthread_setname_np missing')
             pthread_kill = libpthread.pthread_kill
             pthread_kill.argtypes = [ctypes.c_void_p, ctypes.c_int]
             pthread_kill.restype = ctypes.c_int
