@@ -10,7 +10,7 @@ Overview
     * - docs
       - |docs|
     * - tests
-      - | |travis| |requires|
+      - | |github-actions| |requires|
         | |coveralls| |codecov|
     * - package
       - | |version| |wheel| |supported-versions| |supported-implementations|
@@ -19,9 +19,9 @@ Overview
     :target: https://python-manhole.readthedocs.io/
     :alt: Documentation Status
 
-.. |travis| image:: https://api.travis-ci.com/ionelmc/python-manhole.svg?branch=master
-    :alt: Travis-CI Build Status
-    :target: https://travis-ci.com/github/ionelmc/python-manhole
+.. |github-actions| image:: https://github.com/ionelmc/python-manhole/actions/workflows/github-actions.yml/badge.svg
+    :alt: GitHub Actions Build Status
+    :target: https://github.com/ionelmc/python-manhole/actions
 
 .. |requires| image:: https://requires.io/github/ionelmc/python-manhole/requirements.svg?branch=master
     :alt: Requirements Status
@@ -53,7 +53,7 @@ Overview
 
 .. |commits-since| image:: https://img.shields.io/github/commits-since/ionelmc/python-manhole/v1.8.0.svg
     :alt: Commits since latest release
-    :target: https://github.com/ionelmc/python-manhole/compare/v1.6.0...master
+    :target: https://github.com/ionelmc/python-manhole/compare/v1.8.0...master
 
 
 

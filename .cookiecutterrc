@@ -16,10 +16,10 @@ default_context:
     command_line_interface: no
     command_line_interface_bin_name: '-'
     coveralls: yes
-    coveralls_token: '[Required for Appveyor, take it from https://coveralls.io/github/ionelmc/python-manhole]'
     distribution_name: manhole
     email: contact@ionelmc.ro
     full_name: Ionel Cristian Mărieș
+    github_actions: yes
     legacy_python: yes
     license: BSD 2-Clause License
     linter: flake8
@@ -29,9 +29,10 @@ default_context:
     project_short_description: Manhole is in-process service that will accept unix domain socket connections and present the
     pypi_badge: yes
     pypi_disable_upload: no
-    release_date: '2019-01-19'
+    release_date: '2021-04-08'
     repo_hosting: github.com
     repo_hosting_domain: github.com
+    repo_main_branch: master
     repo_name: python-manhole
     repo_username: ionelmc
     requiresio: yes
@@ -45,9 +46,10 @@ default_context:
     test_matrix_configurator: no
     test_matrix_separate_coverage: yes
     test_runner: pytest
-    travis: yes
-    travis_osx: yes
-    version: 1.6.0
+    travis: no
+    travis_osx: no
+    version: 1.8.0
+    version_manager: bump2version
     website: http://blog.ionelmc.ro
     year_from: '2012'
-    year_to: '2021'
+    year_to: '2022'
