@@ -218,7 +218,7 @@ Is equivalent to having this in ``yourapp.py``::
 
 Any extra text in the environment variable is passed to ``manhole.install()``. Example::
 
-    PYTHONMANHOLE='onshot_on="USR2"' python yourapp.py
+    PYTHONMANHOLE='oneshot_on="USR2"' python yourapp.py
 
 What happens when you actually connect to the socket
 ----------------------------------------------------
