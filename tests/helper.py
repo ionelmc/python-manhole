@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import atexit
 import errno
 import logging
@@ -16,7 +14,7 @@ OUTPUT = sys.__stdout__
 
 def handle_sigterm(signo, _frame):
     # Simulate real termination
-    print("Terminated", file=OUTPUT)
+    print('Terminated', file=OUTPUT)
     sys.exit(128 + signo)
 
 
@@ -27,18 +25,20 @@ signal.signal(signal.SIGTERM, handle_sigterm)
 
 @atexit.register
 def log_exit():
-    print("In atexit handler.", file=OUTPUT)
+    print('In atexit handler.', file=OUTPUT)
 
 
 def setup_greenthreads(patch_threads=False):
     try:
         from gevent import monkey
+
         monkey.patch_all(thread=False)
     except (ImportError, SyntaxError):
         pass
 
     try:
         import eventlet
+
         eventlet.hubs.get_hub()  # workaround for circular import issue in eventlet,
         # see https://github.com/eventlet/eventlet/issues/401
         eventlet.monkey_patch(thread=False)
@@ -49,6 +49,7 @@ def setup_greenthreads(patch_threads=False):
 def do_fork():
     pid = os.fork()
     if pid:
+
         @atexit.register
         def cleanup():
             try:
@@ -87,17 +88,18 @@ if __name__ == '__main__':
             time.sleep(TIMEOUT)
         elif test_name == 'test_log_fd':
             manhole.install(verbose=True, verbose_destination=2)
-            manhole._LOG("whatever-1")
-            manhole._LOG("whatever-2")
+            manhole._LOG('whatever-1')
+            manhole._LOG('whatever-2')
         elif test_name == 'test_log_fh':
-            class Output(object):
+
+            class Output:
                 data = []
                 write = data.append
 
             manhole.install(verbose=True, verbose_destination=Output)
-            manhole._LOG("whatever")
-            if Output.data and "]: whatever" in Output.data[-1]:
-                print("SUCCESS")
+            manhole._LOG('whatever')
+            if Output.data and ']: whatever' in Output.data[-1]:
+                print('SUCCESS')
         elif test_name == 'test_activate_on_usr2':
             manhole.install(activate_on='USR2')
             for i in range(TIMEOUT * 100):
@@ -109,7 +111,7 @@ if __name__ == '__main__':
             except manhole.AlreadyInstalled:
                 print('ALREADY_INSTALLED')
             else:
-                raise AssertionError("Did not raise AlreadyInstalled")
+                raise AssertionError('Did not raise AlreadyInstalled')
         elif test_name == 'test_stderr_doesnt_deadlock':
             import subprocess
 
@@ -128,10 +130,10 @@ if __name__ == '__main__':
             print('SUCCESS')
         elif test_name == 'test_fork_exec':
             manhole.install(reinstall_delay=5)
-            print("Installed.")
+            print('Installed.')
             time.sleep(0.2)
             pid = os.fork()
-            print("Forked, pid =", pid)
+            print('Forked, pid =', pid)
             if pid:
                 os.waitpid(pid, 0)
                 path = '/tmp/manhole-%d' % pid
@@ -141,7 +143,7 @@ if __name__ == '__main__':
             else:
                 try:
                     time.sleep(1)
-                    print("Exec-ing `true`")
+                    print('Exec-ing `true`')
                     os.execvp('true', ['true'])
                 finally:
                     os._exit(1)
@@ -151,6 +153,7 @@ if __name__ == '__main__':
             for i in range(TIMEOUT * 100):
                 time.sleep(0.1)
         elif test_name == 'test_interrupt_on_accept':
+
             def handle_usr2(_sig, _frame):
                 print('Got USR2')
 
@@ -159,11 +162,11 @@ if __name__ == '__main__':
             import ctypes
             import ctypes.util
 
-            libpthread_path = ctypes.util.find_library("pthread")
+            libpthread_path = ctypes.util.find_library('pthread')
             if not libpthread_path:
                 raise ImportError('ctypes.util.find_library("pthread") failed')
             libpthread = ctypes.CDLL(libpthread_path)
-            if not hasattr(libpthread, "pthread_setname_np"):
+            if not hasattr(libpthread, 'pthread_setname_np'):
                 raise ImportError('libpthread.pthread_setname_np missing')
             pthread_kill = libpthread.pthread_kill
             pthread_kill.argtypes = [ctypes.c_void_p, ctypes.c_int]
@@ -171,7 +174,7 @@ if __name__ == '__main__':
             manhole.install(sigmask=None)
             for i in range(15):
                 time.sleep(0.1)
-            print("Sending signal to manhole thread ...")
+            print('Sending signal to manhole thread ...')
             pthread_kill(manhole._MANHOLE.thread.ident, signal.SIGUSR2)
             for i in range(TIMEOUT * 100):
                 time.sleep(0.1)
@@ -218,8 +221,7 @@ if __name__ == '__main__':
             time.sleep(TIMEOUT)
             do_fork()
         elif test_name == 'test_locals':
-            manhole.install(socket_path=SOCKET_PATH,
-                            locals={'k1': 'v1', 'k2': 'v2'})
+            manhole.install(socket_path=SOCKET_PATH, locals={'k1': 'v1', 'k2': 'v2'})
             time.sleep(TIMEOUT)
         elif test_name == 'test_locals_after_fork':
             manhole.install(locals={'k1': 'v1', 'k2': 'v2'})
@@ -248,6 +250,7 @@ if __name__ == '__main__':
                 time.sleep(1)
                 pid, masterfd = os.forkpty()
                 if pid:
+
                     @atexit.register
                     def cleanup():
                         try:
@@ -262,7 +265,7 @@ if __name__ == '__main__':
                         try:
                             os.write(2, os.read(masterfd, 1024))
                         except OSError as e:
-                            print("Error while reading from masterfd:", e)
+                            print('Error while reading from masterfd:', e)
                 else:
                     time.sleep(TIMEOUT * 10)
             elif test_name == 'test_with_fork':

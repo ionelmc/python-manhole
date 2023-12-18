@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import print_function
 
 import argparse
 import errno
@@ -29,7 +28,7 @@ for sig, num in vars(signal).items():
 def parse_pid(value, regex=re.compile(r'^(.*/manhole-)?(?P<pid>\d+)$')):
     match = regex.match(value)
     if not match:
-        raise argparse.ArgumentTypeError("PID must be in one of these forms: 1234 or /tmp/manhole-1234")
+        raise argparse.ArgumentTypeError('PID must be in one of these forms: 1234 or /tmp/manhole-1234')
 
     return int(match.group('pid'))
 
@@ -43,28 +42,41 @@ def parse_signal(value):
         if value in SIG_NUMBERS:
             return value
         else:
-            raise argparse.ArgumentTypeError("Invalid signal number %s. Expected one of: %s" % (
-                value, ', '.join(str(i) for i in SIG_NUMBERS)
-            ))
+            raise argparse.ArgumentTypeError(
+                'Invalid signal number %s. Expected one of: %s' % (value, ', '.join(str(i) for i in SIG_NUMBERS))
+            )
     value = value.upper()
     if value in SIG_NAMES:
         return SIG_NAMES[value]
     else:
-        raise argparse.ArgumentTypeError("Invalid signal name %r." % value)
+        raise argparse.ArgumentTypeError('Invalid signal name %r.' % value)
 
 
 parser = argparse.ArgumentParser(description='Connect to a manhole.')
-parser.add_argument('pid', metavar='PID', type=parse_pid,  # nargs='?',
-                    help='A numerical process id, or a path in the form: /tmp/manhole-1234')
-parser.add_argument('-t', '--timeout', dest='timeout', default=1, type=float,
-                    help='Timeout to use. Default: %(default)s seconds.')
+parser.add_argument(
+    'pid', metavar='PID', type=parse_pid, help='A numerical process id, or a path in the form: /tmp/manhole-1234'  # nargs='?',
+)
+parser.add_argument('-t', '--timeout', dest='timeout', default=1, type=float, help='Timeout to use. Default: %(default)s seconds.')
 group = parser.add_mutually_exclusive_group()
-group.add_argument('-1', '-USR1', dest='signal', action='store_const', const=int(signal.SIGUSR1),
-                   help='Send USR1 (%(const)s) to the process before connecting.')
-group.add_argument('-2', '-USR2', dest='signal', action='store_const', const=int(signal.SIGUSR2),
-                   help='Send USR2 (%(const)s) to the process before connecting.')
-group.add_argument('-s', '--signal', dest='signal', type=parse_signal, metavar="SIGNAL",
-                   help='Send the given SIGNAL to the process before connecting.')
+group.add_argument(
+    '-1',
+    '-USR1',
+    dest='signal',
+    action='store_const',
+    const=int(signal.SIGUSR1),
+    help='Send USR1 (%(const)s) to the process before connecting.',
+)
+group.add_argument(
+    '-2',
+    '-USR2',
+    dest='signal',
+    action='store_const',
+    const=int(signal.SIGUSR2),
+    help='Send USR2 (%(const)s) to the process before connecting.',
+)
+group.add_argument(
+    '-s', '--signal', dest='signal', type=parse_signal, metavar='SIGNAL', help='Send the given SIGNAL to the process before connecting.'
+)
 
 
 class ConnectionHandler(threading.Thread):
@@ -93,10 +105,10 @@ class ConnectionHandler(threading.Thread):
 def main():
     args = parser.parse_args()
 
-    histfile = os.path.join(os.path.expanduser("~"), ".manhole_history")
+    histfile = os.path.join(os.path.expanduser('~'), '.manhole_history')
     try:
         readline.read_history_file(histfile)
-    except IOError:
+    except OSError:
         pass
     import atexit
 
@@ -115,11 +127,11 @@ def main():
             sock.connect(uds_path)
         except Exception as exc:
             if exc.errno not in (errno.ENOENT, errno.ECONNREFUSED):
-                print("Failed to connect to %r: %r" % (uds_path, exc), file=sys.stderr)
+                print('Failed to connect to %r: %r' % (uds_path, exc), file=sys.stderr)
         else:
             break
     else:
-        print("Failed to connect to %r: Timeout" % uds_path, file=sys.stderr)
+        print('Failed to connect to %r: Timeout' % uds_path, file=sys.stderr)
         sys.exit(5)
 
     is_closing = threading.Event()

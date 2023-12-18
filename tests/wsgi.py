@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import os
 import sys
 
@@ -15,7 +13,7 @@ try:
         open(stack_dump_file, 'w')
 
     def open_manhole(dummy_signum):
-        with open(stack_dump_file, 'r') as fh:
+        with open(stack_dump_file) as fh:
             pid = fh.read().strip()
             if pid == str(os.getpid()):
                 inst = manhole.install(strict=False, thread=False)
@@ -24,11 +22,11 @@ try:
     uwsgi.register_signal(uwsgi_signal_number, 'workers', open_manhole)
     uwsgi.add_file_monitor(uwsgi_signal_number, stack_dump_file)
 
-    print("Listening for stack manhole requests via %r" % (stack_dump_file,), file=sys.stderr)
+    print('Listening for stack manhole requests via %r' % (stack_dump_file,), file=sys.stderr)
 except ImportError:
-    print("Not running under uwsgi; unable to configure manhole trigger", file=sys.stderr)
-except IOError:
-    print("IOError creating manhole trigger %r" % (stack_dump_file,), file=sys.stderr)
+    print('Not running under uwsgi; unable to configure manhole trigger', file=sys.stderr)
+except OSError:
+    print('IOError creating manhole trigger %r' % (stack_dump_file,), file=sys.stderr)
 
 
 def application(env, sr):

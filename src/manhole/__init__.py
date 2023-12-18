@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import atexit
 import code
 import errno
@@ -28,8 +26,11 @@ except NameError:  # python <= 3.2
 try:
     BrokenPipeError = BrokenPipeError
 except NameError:  # old python
+
     class BrokenPipeError(Exception):
         pass
+
+
 if hasattr(sys, 'setswitchinterval'):
     setinterval = sys.setswitchinterval
     getinterval = sys.getswitchinterval
@@ -42,12 +43,15 @@ try:
 
     def _get_original(mod, name):
         return getattr(_original(mod), name)
+
 except ImportError:
     try:
         from gevent.monkey import get_original as _get_original
     except ImportError:
+
         def _get_original(mod, name):
             return getattr(__import__(mod), name)
+
 
 _ORIGINAL_SOCKET = _get_original('socket', 'socket')
 try:
@@ -65,11 +69,11 @@ try:
     import ctypes
     import ctypes.util
 
-    libpthread_path = ctypes.util.find_library("pthread")
+    libpthread_path = ctypes.util.find_library('pthread')
     if not libpthread_path:
         raise ImportError
     libpthread = ctypes.CDLL(libpthread_path)
-    if not hasattr(libpthread, "pthread_setname_np"):
+    if not hasattr(libpthread, 'pthread_setname_np'):
         raise ImportError
     _pthread_setname_np = libpthread.pthread_setname_np
     _pthread_setname_np.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
@@ -77,11 +81,14 @@ try:
 
     def pthread_setname_np(ident, name):
         _pthread_setname_np(ident, name[:15])
+
 except ImportError:
+
     def pthread_setname_np(ident, name):
         pass
 
-if sys.platform == 'darwin' or sys.platform.startswith("freebsd"):
+
+if sys.platform == 'darwin' or sys.platform.startswith('freebsd'):
     _PEERCRED_LEVEL = getattr(socket, 'SOL_LOCAL', 0)
     _PEERCRED_OPTION = getattr(socket, 'LOCAL_PEERCRED', 1)
 else:
@@ -89,8 +96,7 @@ else:
     # TODO: Is this missing on some platforms?
     _PEERCRED_OPTION = getattr(socket, 'SO_PEERCRED', 17)
 
-_ALL_SIGNALS = tuple(getattr(signal, sig) for sig in dir(signal)
-                     if sig.startswith('SIG') and '_' not in sig)
+_ALL_SIGNALS = tuple(getattr(signal, sig) for sig in dir(signal) if sig.startswith('SIG') and '_' not in sig)
 
 # These (_LOG and _MANHOLE) will hold instances after install
 _MANHOLE = None
@@ -144,14 +150,12 @@ class ManholeThread(_ORIGINAL_THREAD):
         daemon_connection (bool): The connection thread is daemonic (dies on app exit). Default: ``False``.
     """
 
-    def __init__(self,
-                 get_socket, sigmask, start_timeout, connection_handler,
-                 bind_delay=None, daemon_connection=False):
+    def __init__(self, get_socket, sigmask, start_timeout, connection_handler, bind_delay=None, daemon_connection=False):
         super(ManholeThread, self).__init__()
         self.daemon = True
         self.daemon_connection = daemon_connection
-        self.name = "Manhole"
-        self.psname = b"Manhole"
+        self.name = 'Manhole'
+        self.psname = b'Manhole'
         self.sigmask = sigmask
         self.serious = _ORIGINAL_EVENT()
         # time to wait for the manhole to get serious (to have a complete start)
@@ -170,10 +174,12 @@ class ManholeThread(_ORIGINAL_THREAD):
         Make a fresh thread with the same options. This is usually used on dead threads.
         """
         return ManholeThread(
-            self.get_socket, self.sigmask, self.start_timeout,
+            self.get_socket,
+            self.sigmask,
+            self.start_timeout,
             connection_handler=self.connection_handler,
             daemon_connection=self.daemon_connection,
-            **kwargs
+            **kwargs,
         )
 
     def start(self):
@@ -195,19 +201,19 @@ class ManholeThread(_ORIGINAL_THREAD):
         pthread_setname_np(self.ident, self.psname)
 
         if self.bind_delay:
-            _LOG("Delaying UDS binding %s seconds ..." % self.bind_delay)
+            _LOG('Delaying UDS binding %s seconds ...' % self.bind_delay)
             _ORIGINAL_SLEEP(self.bind_delay)
 
         sock = self.get_socket()
         while self.should_run:
-            _LOG("Waiting for new connection (in pid:%s) ..." % os.getpid())
+            _LOG('Waiting for new connection (in pid:%s) ...' % os.getpid())
             try:
                 client = ManholeConnectionThread(sock.accept()[0], self.connection_handler, self.daemon_connection)
                 client.start()
                 client.join()
             except socket.timeout:
                 continue
-            except (InterruptedError, socket.error) as e:
+            except (OSError, InterruptedError) as e:
                 if e.errno != errno.EINTR:
                     raise
                 continue
@@ -226,18 +232,18 @@ class ManholeConnectionThread(_ORIGINAL_THREAD):
         self.daemon = daemon
         self.client = force_original_socket(client)
         self.connection_handler = connection_handler
-        self.name = "ManholeConnectionThread"
-        self.psname = b"ManholeConnectionThread"
+        self.name = 'ManholeConnectionThread'
+        self.psname = b'ManholeConnectionThread'
 
     def run(self):
         _LOG('Started ManholeConnectionThread thread. Checking credentials ...')
-        pthread_setname_np(self.ident, b"Manhole -------")
+        pthread_setname_np(self.ident, b'Manhole -------')
         pid, _, _ = check_credentials(self.client)
-        pthread_setname_np(self.ident, b"Manhole < PID:%d" % pid)
+        pthread_setname_np(self.ident, b'Manhole < PID:%d' % pid)
         try:
             self.connection_handler(self.client)
         except BaseException as exc:
-            _LOG("ManholeConnectionThread failure: %r" % exc)
+            _LOG('ManholeConnectionThread failure: %r' % exc)
 
 
 def check_credentials(client):
@@ -247,13 +253,11 @@ def check_credentials(client):
     pid, uid, gid = get_peercred(client)
 
     euid = os.geteuid()
-    client_name = "PID:%s UID:%s GID:%s" % (pid, uid, gid)
+    client_name = 'PID:%s UID:%s GID:%s' % (pid, uid, gid)
     if uid not in (0, euid):
-        raise SuspiciousClient("Can't accept client with %s. It doesn't match the current EUID:%s or ROOT." % (
-            client_name, euid
-        ))
+        raise SuspiciousClient("Can't accept client with %s. It doesn't match the current EUID:%s or ROOT." % (client_name, euid))
 
-    _LOG("Accepted connection on fd:%s from %s" % (client.fileno(), client_name))
+    _LOG('Accepted connection on fd:%s from %s' % (client.fileno(), client_name))
     return pid, uid, gid
 
 
@@ -261,11 +265,12 @@ def handle_connection_exec(client):
     """
     Alternate connection handler. No output redirection.
     """
+
     class ExitExecLoop(Exception):
         pass
 
     def exit():
-        raise ExitExecLoop()
+        raise ExitExecLoop
 
     client.settimeout(None)
     fh = client.makefile()
@@ -275,11 +280,11 @@ def handle_connection_exec(client):
             try:
                 payload = fh.readline()
                 while payload:
-                    _LOG("Running: %r." % payload)
+                    _LOG('Running: %r.' % payload)
                     eval(compile(payload, '<manhole>', 'exec'), {'exit': exit}, _MANHOLE.locals)
                     payload = fh.readline()
             except ExitExecLoop:
-                _LOG("Exiting exec loop.")
+                _LOG('Exiting exec loop.')
 
 
 def handle_connection_repl(client):
@@ -304,10 +309,10 @@ def handle_connection_repl(client):
         try:
             handle_repl(_MANHOLE.locals)
         except BrokenPipeError:
-            _LOG("REPL client disconnected")
+            _LOG('REPL client disconnected')
         except Exception as exc:
-            _LOG("REPL failed with %r." % exc)
-        _LOG("DONE.")
+            _LOG('REPL failed with %r.' % exc)
+        _LOG('DONE.')
     finally:
         try:
             # Change the switch/check interval to something ridiculous. We don't want to have other thread try
@@ -317,22 +322,19 @@ def handle_connection_repl(client):
             for name, fh in backup:
                 try:
                     getattr(sys, name).close()
-                except IOError:
+                except OSError:
                     pass
                 setattr(sys, name, fh)
             try:
                 client.close()
-            except IOError:
+            except OSError:
                 pass
         finally:
             setinterval(old_interval)
-            _LOG("Cleaned up.")
+            _LOG('Cleaned up.')
 
 
-_CONNECTION_HANDLER_ALIASES = {
-    'repl': handle_connection_repl,
-    'exec': handle_connection_exec
-}
+_CONNECTION_HANDLER_ALIASES = {'repl': handle_connection_repl, 'exec': handle_connection_exec}
 
 
 class ManholeConsole(code.InteractiveConsole):
@@ -373,13 +375,14 @@ def handle_repl(locals):
                 pass
 
 
-class Logger(object):
+class Logger:
     """
     Internal object used for logging.
 
     Initially this is not configured. Until you call ``manhole.install()``, this logger object won't work (will raise
     ``NotInstalled``).
     """
+
     time = _get_original('time', 'time')
     enabled = True
     destination = None
@@ -398,9 +401,9 @@ class Logger(object):
         """
         if self.enabled:
             if self.destination is None:
-                raise NotInstalled("Manhole is not installed!")
+                raise NotInstalled('Manhole is not installed!')
             try:
-                full_message = "Manhole[%s:%.4f]: %s\n" % (os.getpid(), self.time(), message)
+                full_message = 'Manhole[%s:%.4f]: %s\n' % (os.getpid(), self.time(), message)
 
                 if isinstance(self.destination, int):
                     os.write(self.destination, full_message.encode('ascii', 'ignore'))
@@ -413,7 +416,7 @@ class Logger(object):
 _LOG = Logger()
 
 
-class Manhole(object):
+class Manhole:
     # Manhole core configuration
     # These are initialized when manhole is installed.
     daemon_connection = False
@@ -430,10 +433,21 @@ class Manhole(object):
     previous_signal_handlers = None
     _thread = None
 
-    def configure(self,
-                  patch_fork=True, activate_on=None, sigmask=_ALL_SIGNALS, oneshot_on=None, thread=True,
-                  start_timeout=0.5, socket_path=None, reinstall_delay=0.5, locals=None, daemon_connection=False,
-                  redirect_stderr=True, connection_handler=handle_connection_repl):
+    def configure(
+        self,
+        patch_fork=True,
+        activate_on=None,
+        sigmask=_ALL_SIGNALS,
+        oneshot_on=None,
+        thread=True,
+        start_timeout=0.5,
+        socket_path=None,
+        reinstall_delay=0.5,
+        locals=None,
+        daemon_connection=False,
+        redirect_stderr=True,
+        connection_handler=handle_connection_repl,
+    ):
         self.socket_path = socket_path
         self.reinstall_delay = reinstall_delay
         self.redirect_stderr = redirect_stderr
@@ -455,8 +469,9 @@ class Manhole(object):
         if activate_on is not None:
             activate_on = getattr(signal, 'SIG' + activate_on) if isinstance(activate_on, string) else activate_on
             if activate_on == oneshot_on:
-                raise ConfigurationConflict('You cannot do activation of the Manhole thread on the same signal '
-                                            'that you want to do oneshot activation !')
+                raise ConfigurationConflict(
+                    'You cannot do activation of the Manhole thread on the same signal ' 'that you want to do oneshot activation !'
+                )
             self.previous_signal_handlers.setdefault(activate_on, signal.signal(activate_on, self.activate_on_signal))
 
         atexit.register(self.remove_manhole_uds)
@@ -465,11 +480,11 @@ class Manhole(object):
                 self.patch_os_fork_functions()
             else:
                 if activate_on:
-                    _LOG("Not patching os.fork and os.forkpty. Activation is done by signal %s" % activate_on)
+                    _LOG('Not patching os.fork and os.forkpty. Activation is done by signal %s' % activate_on)
                 elif oneshot_on:
-                    _LOG("Not patching os.fork and os.forkpty. Oneshot activation is done by signal %s" % oneshot_on)
+                    _LOG('Not patching os.fork and os.forkpty. Oneshot activation is done by signal %s' % oneshot_on)
                 elif socket_path:
-                    _LOG("Not patching os.fork and os.forkpty. Using user socket path %s" % socket_path)
+                    _LOG('Not patching os.fork and os.forkpty. Using user socket path %s' % socket_path)
 
     def release(self):
         if self._thread:
@@ -485,8 +500,7 @@ class Manhole(object):
     def thread(self):
         if self._thread is None:
             self._thread = ManholeThread(
-                self.get_socket, self.sigmask, self.start_timeout, self.connection_handler,
-                daemon_connection=self.daemon_connection
+                self.get_socket, self.sigmask, self.start_timeout, self.connection_handler, daemon_connection=self.daemon_connection
             )
         return self._thread
 
@@ -499,7 +513,7 @@ class Manhole(object):
         name = self.remove_manhole_uds()
         sock.bind(name)
         sock.listen(5)
-        _LOG("Manhole UDS path: " + name)
+        _LOG('Manhole UDS path: ' + name)
         return sock
 
     def reinstall(self):
@@ -516,7 +530,7 @@ class Manhole(object):
         try:
             try:
                 sock = self.get_socket()
-                _LOG("Waiting for new connection (in pid:%s) ..." % os.getpid())
+                _LOG('Waiting for new connection (in pid:%s) ...' % os.getpid())
                 client = force_original_socket(sock.accept()[0])
                 check_credentials(client)
                 self.connection_handler(client)
@@ -524,7 +538,7 @@ class Manhole(object):
                 self.remove_manhole_uds()
         except BaseException as exc:  # pylint: disable=W0702
             # we don't want to let any exception out, it might make the application misbehave
-            _LOG("Oneshot failure: %r" % exc)
+            _LOG('Oneshot failure: %r' % exc)
 
     def remove_manhole_uds(self):
         name = self.uds_name
@@ -535,7 +549,7 @@ class Manhole(object):
     @property
     def uds_name(self):
         if self.socket_path is None:
-            return "/tmp/manhole-%s" % os.getpid()
+            return '/tmp/manhole-%s' % os.getpid()
         return self.socket_path
 
     def patched_fork(self):
@@ -557,7 +571,7 @@ class Manhole(object):
     def patch_os_fork_functions(self):
         self.original_os_fork, os.fork = os.fork, self.patched_fork
         self.original_os_forkpty, os.forkpty = os.forkpty, self.patched_forkpty
-        _LOG("Patched %s and %s." % (self.original_os_fork, self.original_os_forkpty))
+        _LOG('Patched %s and %s.' % (self.original_os_fork, self.original_os_forkpty))
 
     def restore_os_fork_functions(self):
         if self.original_os_fork:
@@ -569,10 +583,12 @@ class Manhole(object):
         self.thread.start()
 
 
-def install(verbose=True,
-            verbose_destination=sys.__stderr__.fileno() if hasattr(sys.__stderr__, 'fileno') else sys.__stderr__,
-            strict=True,
-            **kwargs):
+def install(
+    verbose=True,
+    verbose_destination=sys.__stderr__.fileno() if hasattr(sys.__stderr__, 'fileno') else sys.__stderr__,
+    strict=True,
+    **kwargs,
+):
     """
     Installs the manhole.
 
@@ -611,7 +627,7 @@ def install(verbose=True,
             _MANHOLE = Manhole()
         else:
             if strict:
-                raise AlreadyInstalled("Manhole already installed!")
+                raise AlreadyInstalled('Manhole already installed!')
             else:
                 _LOG.release()
                 _MANHOLE.release()  # Threads might be started here
@@ -627,13 +643,11 @@ def dump_stacktraces():
     """
     lines = []
     for thread_id, stack in sys._current_frames().items():  # pylint: disable=W0212
-        lines.append("\n######### ProcessID=%s, ThreadID=%s #########" % (
-            os.getpid(), thread_id
-        ))
+        lines.append('\n######### ProcessID=%s, ThreadID=%s #########' % (os.getpid(), thread_id))
         for filename, lineno, name, line in traceback.extract_stack(stack):
             lines.append('File: "%s", line %d, in %s' % (filename, lineno, name))
             if line:
-                lines.append("  %s" % (line.strip()))
-    lines.append("#############################################\n\n")
+                lines.append('  %s' % (line.strip()))
+    lines.append('#############################################\n\n')
 
     print('\n'.join(lines), file=sys.stderr if _MANHOLE.redirect_stderr else sys.stdout)
