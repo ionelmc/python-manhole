@@ -1,4 +1,4 @@
-import imp
+import importlib.util
 import os
 import re
 import select
@@ -27,7 +27,7 @@ def is_lib_available(lib):
 
 def is_module_available(mod):
     try:
-        return imp.find_module(mod)
+        return importlib.util.find_spec(mod)
     except ImportError:
         return False
 
@@ -85,7 +85,7 @@ def test_simple():
             uds_path = re.findall(r'(/tmp/manhole-\d+)', proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
             for _ in range(20):
-                proc.reset()
+                proc.buff.reset()
                 assert_manhole_running(proc, uds_path)
 
 
@@ -97,7 +97,7 @@ def test_connection_handler_exec(variant):
             uds_path = re.findall(r'(/tmp/manhole-\d+)', proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
             for _ in range(200):
-                proc.reset()
+                proc.buff.reset()
                 sock = connect_to_manhole(uds_path)
                 wait_for_strings(
                     proc.read,
@@ -183,7 +183,7 @@ def test_locals_after_fork():
     with TestProcess(sys.executable, HELPER, 'test_locals_after_fork') as proc:
         with dump_on_error(proc.read):
             wait_for_strings(proc.read, TIMEOUT, 'Fork detected')
-            proc.reset()
+            proc.buff.reset()
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             child_uds_path = re.findall(r'(/tmp/manhole-\d+)', proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
@@ -209,7 +209,7 @@ def test_socket_path():
     with TestProcess(sys.executable, HELPER, 'test_socket_path') as proc:
         with dump_on_error(proc.read):
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
-            proc.reset()
+            proc.buff.reset()
             assert_manhole_running(proc, SOCKET_PATH)
 
 
@@ -343,10 +343,10 @@ def test_with_fork():
             uds_path = re.findall(r'(/tmp/manhole-\d+)', proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
             for _ in range(2):
-                proc.reset()
+                proc.buff.reset()
                 assert_manhole_running(proc, uds_path)
 
-            proc.reset()
+            proc.buff.reset()
             wait_for_strings(proc.read, TIMEOUT, 'Fork detected')
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             new_uds_path = re.findall(r'(/tmp/manhole-\d+)', proc.read())[0]
@@ -354,7 +354,7 @@ def test_with_fork():
 
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
             for _ in range(2):
-                proc.reset()
+                proc.buff.reset()
                 assert_manhole_running(proc, new_uds_path)
 
 
@@ -365,10 +365,10 @@ def test_with_forkpty():
             uds_path = re.findall(r'(/tmp/manhole-\d+)', proc.read())[0]
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
             for _ in range(2):
-                proc.reset()
+                proc.buff.reset()
                 assert_manhole_running(proc, uds_path)
 
-            proc.reset()
+            proc.buff.reset()
             wait_for_strings(proc.read, TIMEOUT, 'Fork detected')
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             new_uds_path = re.findall(r'(/tmp/manhole-\d+)', proc.read())[0]
@@ -376,7 +376,7 @@ def test_with_forkpty():
 
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
             for _ in range(2):
-                proc.reset()
+                proc.buff.reset()
                 assert_manhole_running(proc, new_uds_path)
 
 
@@ -469,7 +469,7 @@ def test_oneshot_on_usr2_error():
             wait_for_strings(proc.read, TIMEOUT, 'Waiting for new connection')
             assert_manhole_running(proc, uds_path, oneshot=True, extra=lambda client: client.sock.send(b'raise SystemExit()\n'))
 
-            proc.reset()
+            proc.buff.reset()
             proc.signal(signal.SIGUSR2)
             wait_for_strings(proc.read, TIMEOUT, '/tmp/manhole-')
             uds_path = re.findall(r'(/tmp/manhole-\d+)', proc.read())[0]
