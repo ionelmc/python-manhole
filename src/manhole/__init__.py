@@ -11,6 +11,8 @@ from contextlib import closing
 
 __version__ = '1.8.0'
 
+from io import TextIOWrapper
+
 try:
     import signalfd
 except ImportError:
@@ -62,8 +64,6 @@ _ORIGINAL_THREAD = _get_original('threading', 'Thread')
 _ORIGINAL_EVENT = _get_original('threading', 'Event')
 _ORIGINAL__ACTIVE = _get_original('threading', '_active')
 _ORIGINAL_SLEEP = _get_original('time', 'sleep')
-
-PY3 = sys.version_info[0] == 3
 
 try:
     import ctypes
@@ -287,7 +287,7 @@ def handle_connection_exec(client):
                 _LOG('Exiting exec loop.')
 
 
-def handle_connection_repl(client):
+def handle_connection_repl(client: socket.socket):
     """
     Handles connection.
     """
@@ -304,8 +304,10 @@ def handle_connection_repl(client):
     try:
         for mode, names in patches:
             for name in names:
-                backup.append((name, getattr(sys, name)))
-                setattr(sys, name, client.makefile(mode, 1 if PY3 else 0))
+                backup.append((name, backup_fh := getattr(sys, name)))
+                setattr(sys, name, wrapped_fh := TextIOWrapper(client.makefile(f'{mode}b', 0), encoding=backup_fh.encoding))
+                wrapped_fh.mode = mode
+
         try:
             handle_repl(_MANHOLE.locals)
         except BrokenPipeError:
