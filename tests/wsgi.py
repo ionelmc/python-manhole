@@ -22,11 +22,11 @@ try:
     uwsgi.register_signal(uwsgi_signal_number, 'workers', open_manhole)
     uwsgi.add_file_monitor(uwsgi_signal_number, stack_dump_file)
 
-    print('Listening for stack manhole requests via %r' % (stack_dump_file,), file=sys.stderr)
+    print(f'Listening for stack manhole requests via {stack_dump_file!r}', file=sys.stderr)
 except ImportError:
     print('Not running under uwsgi; unable to configure manhole trigger', file=sys.stderr)
 except OSError:
-    print('IOError creating manhole trigger %r' % (stack_dump_file,), file=sys.stderr)
+    print(f'IOError creating manhole trigger {stack_dump_file!r}', file=sys.stderr)
 
 
 def application(env, sr):

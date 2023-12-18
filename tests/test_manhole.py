@@ -40,7 +40,7 @@ def connect_to_manhole(uds_path):
             sock.connect(uds_path)
             return sock
         except Exception as exc:
-            print('Failed to connect to %s: %s' % (uds_path, exc))
+            print(f'Failed to connect to {uds_path}: {exc}')
             if i + 1 == TIMEOUT:
                 sock.close()
                 raise
@@ -551,7 +551,7 @@ def test_uwsgi():
         with dump_on_error(proc.read):
             wait_for_strings(proc.read, TIMEOUT, 'uWSGI http bound')
             port = re.findall(r'uWSGI http bound on :(\d+) fd', proc.read())[0]
-            assert requests.get('http://127.0.0.1:%s/' % port).text == 'OK'
+            assert requests.get('http://127.0.0.1:%s/' % port, timeout=TIMEOUT).text == 'OK'
 
             wait_for_strings(proc.read, TIMEOUT, 'spawned uWSGI worker 1')
             pid = re.findall(r'spawned uWSGI worker 1 \(pid: (\d+), ', proc.read())[0]

@@ -151,7 +151,7 @@ class ManholeThread(_ORIGINAL_THREAD):
     """
 
     def __init__(self, get_socket, sigmask, start_timeout, connection_handler, bind_delay=None, daemon_connection=False):
-        super(ManholeThread, self).__init__()
+        super().__init__()
         self.daemon = True
         self.daemon_connection = daemon_connection
         self.name = 'Manhole'
@@ -184,7 +184,7 @@ class ManholeThread(_ORIGINAL_THREAD):
 
     def start(self):
         self.should_run = True
-        super(ManholeThread, self).start()
+        super().start()
         if not self.serious.wait(self.start_timeout):
             _LOG("WARNING: Waited %s seconds but Manhole thread didn't start yet :(" % self.start_timeout)
 
@@ -228,7 +228,7 @@ class ManholeConnectionThread(_ORIGINAL_THREAD):
     """
 
     def __init__(self, client, connection_handler, daemon=False):
-        super(ManholeConnectionThread, self).__init__()
+        super().__init__()
         self.daemon = daemon
         self.client = force_original_socket(client)
         self.connection_handler = connection_handler
@@ -253,11 +253,11 @@ def check_credentials(client):
     pid, uid, gid = get_peercred(client)
 
     euid = os.geteuid()
-    client_name = 'PID:%s UID:%s GID:%s' % (pid, uid, gid)
+    client_name = f'PID:{pid} UID:{uid} GID:{gid}'
     if uid not in (0, euid):
-        raise SuspiciousClient("Can't accept client with %s. It doesn't match the current EUID:%s or ROOT." % (client_name, euid))
+        raise SuspiciousClient(f"Can't accept client with {client_name}. It doesn't match the current EUID:{euid} or ROOT.")
 
-    _LOG('Accepted connection on fd:%s from %s' % (client.fileno(), client_name))
+    _LOG(f'Accepted connection on fd:{client.fileno()} from {client_name}')
     return pid, uid, gid
 
 
@@ -403,7 +403,7 @@ class Logger:
             if self.destination is None:
                 raise NotInstalled('Manhole is not installed!')
             try:
-                full_message = 'Manhole[%s:%.4f]: %s\n' % (os.getpid(), self.time(), message)
+                full_message = f'Manhole[{os.getpid()}:{self.time():.4f}]: {message}\n'
 
                 if isinstance(self.destination, int):
                     os.write(self.destination, full_message.encode('ascii', 'ignore'))
@@ -571,7 +571,7 @@ class Manhole:
     def patch_os_fork_functions(self):
         self.original_os_fork, os.fork = os.fork, self.patched_fork
         self.original_os_forkpty, os.forkpty = os.forkpty, self.patched_forkpty
-        _LOG('Patched %s and %s.' % (self.original_os_fork, self.original_os_forkpty))
+        _LOG(f'Patched {self.original_os_fork} and {self.original_os_forkpty}.')
 
     def restore_os_fork_functions(self):
         if self.original_os_fork:
@@ -643,7 +643,7 @@ def dump_stacktraces():
     """
     lines = []
     for thread_id, stack in sys._current_frames().items():  # pylint: disable=W0212
-        lines.append('\n######### ProcessID=%s, ThreadID=%s #########' % (os.getpid(), thread_id))
+        lines.append(f'\n######### ProcessID={os.getpid()}, ThreadID={thread_id} #########')
         for filename, lineno, name, line in traceback.extract_stack(stack):
             lines.append('File: "%s", line %d, in %s' % (filename, lineno, name))
             if line:

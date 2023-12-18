@@ -6,6 +6,7 @@ import signal
 import sys
 import time
 from functools import partial
+from typing import ClassVar
 
 TIMEOUT = int(os.getenv('MANHOLE_TEST_TIMEOUT', 10))
 SOCKET_PATH = '/tmp/manhole-socket'
@@ -93,7 +94,7 @@ if __name__ == '__main__':
         elif test_name == 'test_log_fh':
 
             class Output:
-                data = []
+                data: ClassVar = []
                 write = data.append
 
             manhole.install(verbose=True, verbose_destination=Output)
@@ -102,7 +103,7 @@ if __name__ == '__main__':
                 print('SUCCESS')
         elif test_name == 'test_activate_on_usr2':
             manhole.install(activate_on='USR2')
-            for i in range(TIMEOUT * 100):
+            for _ in range(TIMEOUT * 100):
                 time.sleep(0.1)
         elif test_name == 'test_install_once':
             manhole.install()
@@ -150,7 +151,7 @@ if __name__ == '__main__':
             print('SUCCESS')
         elif test_name == 'test_activate_on_with_oneshot_on':
             manhole.install(activate_on='USR2', oneshot_on='USR2')
-            for i in range(TIMEOUT * 100):
+            for _ in range(TIMEOUT * 100):
                 time.sleep(0.1)
         elif test_name == 'test_interrupt_on_accept':
 
@@ -172,15 +173,15 @@ if __name__ == '__main__':
             pthread_kill.argtypes = [ctypes.c_void_p, ctypes.c_int]
             pthread_kill.restype = ctypes.c_int
             manhole.install(sigmask=None)
-            for i in range(15):
+            for _ in range(15):
                 time.sleep(0.1)
             print('Sending signal to manhole thread ...')
             pthread_kill(manhole._MANHOLE.thread.ident, signal.SIGUSR2)
-            for i in range(TIMEOUT * 100):
+            for _ in range(TIMEOUT * 100):
                 time.sleep(0.1)
         elif test_name == 'test_oneshot_on_usr2':
             manhole.install(oneshot_on='USR2')
-            for i in range(TIMEOUT * 100):
+            for _ in range(TIMEOUT * 100):
                 time.sleep(0.1)
         elif test_name.startswith('test_signalfd_weirdness'):
             signalled = False
@@ -202,7 +203,7 @@ if __name__ == '__main__':
 
             signalfd.sigprocmask(signalfd.SIG_BLOCK, [signal.SIGUSR1])
             sys.setcheckinterval(1)
-            for i in range(100000):
+            for _ in range(100000):
                 os.kill(os.getpid(), signal.SIGUSR1)
             print('signalled=%s' % signalled)
             time.sleep(TIMEOUT * 10)

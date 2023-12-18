@@ -43,7 +43,7 @@ def parse_signal(value):
             return value
         else:
             raise argparse.ArgumentTypeError(
-                'Invalid signal number %s. Expected one of: %s' % (value, ', '.join(str(i) for i in SIG_NUMBERS))
+                'Invalid signal number {}. Expected one of: {}'.format(value, ', '.join(str(i) for i in SIG_NUMBERS))
             )
     value = value.upper()
     if value in SIG_NAMES:
@@ -81,7 +81,7 @@ group.add_argument(
 
 class ConnectionHandler(threading.Thread):
     def __init__(self, sock, is_closing):
-        super(ConnectionHandler, self).__init__()
+        super().__init__()
         self.sock = sock
         self.is_closing = is_closing
 
@@ -127,7 +127,7 @@ def main():
             sock.connect(uds_path)
         except Exception as exc:
             if exc.errno not in (errno.ENOENT, errno.ECONNREFUSED):
-                print('Failed to connect to %r: %r' % (uds_path, exc), file=sys.stderr)
+                print(f'Failed to connect to {uds_path!r}: {exc!r}', file=sys.stderr)
         else:
             break
     else:

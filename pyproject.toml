@@ -13,6 +13,13 @@ ignore = [
     "S101", # flake8-bandit assert
     "S308", # flake8-bandit suspicious-mark-safe-usage
     "E501", # pycodestyle line-too-long
+    "B008",
+    "S108",
+    "S110",
+    "S307",
+    "S603",
+    "S606",
+    "S607",
 ]
 line-length = 140
 select = [
@@ -28,7 +35,7 @@ select = [
     "PLC", # pylint convention
     "PLE", # pylint errors
     "PT", # flake8-pytest-style
-    "PTH", # flake8-use-pathlib
+#    "PTH", # flake8-use-pathlib
     "Q", # flake8-quotes
     "RSE", # flake8-raise
     "RUF", # ruff-specific rules
