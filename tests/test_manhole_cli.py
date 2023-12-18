@@ -46,7 +46,7 @@ def test_help(testdir):
             'Connect to a manhole.',
             'positional arguments:',
             '  PID                   A numerical process id, or a path in the form:*',
-            'optional arguments:',
+            'options:',
             '  -h, --help            show this help message and exit',
             '  -t TIMEOUT, --timeout TIMEOUT',
             '                        Timeout to use. Default: 1 seconds.',
@@ -125,3 +125,13 @@ def test_sig_usr2_number():
                     wait_for_strings(client.read, TIMEOUT, '(ManholeConsole)', '>>>')
                     client.proc.stdin.write('1234+2345\n')
                     wait_for_strings(client.read, TIMEOUT, '3579')
+
+
+def test_unbuffered():
+    with TestProcess(sys.executable, '-u', HELPER, 'test_unbuffered') as service:
+        with dump_on_error(service.read):
+            with TestProcess('manhole-cli', str(service.proc.pid), bufsize=0, stdin=subprocess.PIPE) as client:
+                with dump_on_error(client.read):
+                    wait_for_strings(client.read, TIMEOUT, '(ManholeConsole)', '>>>')
+                    for i in range(5):
+                        wait_for_strings(client.read, 1, f'line{i}')

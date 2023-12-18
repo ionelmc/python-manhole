@@ -87,6 +87,13 @@ if __name__ == '__main__':
             manhole.install(oneshot_on='USR2')
             manhole.install(strict=False)
             time.sleep(TIMEOUT)
+        elif test_name == 'test_unbuffered':
+            manhole.install(verbose=True)
+            print(os.getpid())
+            for i in range(5):
+                time.sleep(1)
+                print(f'line{i}')
+                sys.stdout.flush()
         elif test_name == 'test_log_fd':
             manhole.install(verbose=True, verbose_destination=2)
             manhole._LOG('whatever-1')
