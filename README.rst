@@ -10,7 +10,7 @@ Overview
     * - docs
       - |docs|
     * - tests
-      - | |github-actions| |requires|
+      - | |github-actions|
         | |coveralls| |codecov|
     * - package
       - | |version| |wheel| |supported-versions| |supported-implementations|
@@ -23,17 +23,13 @@ Overview
     :alt: GitHub Actions Build Status
     :target: https://github.com/ionelmc/python-manhole/actions
 
-.. |requires| image:: https://requires.io/github/ionelmc/python-manhole/requirements.svg?branch=master
-    :alt: Requirements Status
-    :target: https://requires.io/github/ionelmc/python-manhole/requirements/?branch=master
-
-.. |coveralls| image:: https://coveralls.io/repos/ionelmc/python-manhole/badge.svg?branch=master&service=github
+.. |coveralls| image:: https://coveralls.io/repos/github/ionelmc/python-manhole/badge.svg?branch=master
     :alt: Coverage Status
-    :target: https://coveralls.io/r/ionelmc/python-manhole
+    :target: https://coveralls.io/github/ionelmc/python-manhole?branch=master
 
 .. |codecov| image:: https://codecov.io/gh/ionelmc/python-manhole/branch/master/graphs/badge.svg?branch=master
     :alt: Coverage Status
-    :target: https://codecov.io/github/ionelmc/python-manhole
+    :target: https://app.codecov.io/github/ionelmc/python-manhole
 
 .. |version| image:: https://img.shields.io/pypi/v/manhole.svg
     :alt: PyPI Package latest release
