@@ -186,7 +186,7 @@ class ManholeThread(_ORIGINAL_THREAD):
         self.should_run = True
         super().start()
         if not self.serious.wait(self.start_timeout):
-            _LOG("WARNING: Waited %s seconds but Manhole thread didn't start yet :(" % self.start_timeout)
+            _LOG(f"WARNING: Waited {self.start_timeout} seconds but Manhole thread didn't start yet :(")
 
     def run(self):
         """
@@ -201,12 +201,12 @@ class ManholeThread(_ORIGINAL_THREAD):
         pthread_setname_np(self.ident, self.psname)
 
         if self.bind_delay:
-            _LOG('Delaying UDS binding %s seconds ...' % self.bind_delay)
+            _LOG(f'Delaying UDS binding {self.bind_delay} seconds ...')
             _ORIGINAL_SLEEP(self.bind_delay)
 
         sock = self.get_socket()
         while self.should_run:
-            _LOG('Waiting for new connection (in pid:%s) ...' % os.getpid())
+            _LOG(f'Waiting for new connection (in pid:{os.getpid()}) ...')
             try:
                 client = ManholeConnectionThread(sock.accept()[0], self.connection_handler, self.daemon_connection)
                 client.start()
@@ -243,7 +243,7 @@ class ManholeConnectionThread(_ORIGINAL_THREAD):
         try:
             self.connection_handler(self.client)
         except BaseException as exc:
-            _LOG('ManholeConnectionThread failure: %r' % exc)
+            _LOG(f'ManholeConnectionThread failure: {exc!r}')
 
 
 def check_credentials(client):
@@ -280,7 +280,7 @@ def handle_connection_exec(client):
             try:
                 payload = fh.readline()
                 while payload:
-                    _LOG('Running: %r.' % payload)
+                    _LOG(f'Running: {payload!r}.')
                     eval(compile(payload, '<manhole>', 'exec'), {'exit': exit}, _MANHOLE.locals)
                     payload = fh.readline()
             except ExitExecLoop:
@@ -313,7 +313,7 @@ def handle_connection_repl(client: socket.socket):
         except BrokenPipeError:
             _LOG('REPL client disconnected')
         except Exception as exc:
-            _LOG('REPL failed with %r.' % exc)
+            _LOG(f'REPL failed with {exc!r}.')
         _LOG('DONE.')
     finally:
         try:
@@ -482,11 +482,11 @@ class Manhole:
                 self.patch_os_fork_functions()
             else:
                 if activate_on:
-                    _LOG('Not patching os.fork and os.forkpty. Activation is done by signal %s' % activate_on)
+                    _LOG(f'Not patching os.fork and os.forkpty. Activation is done by signal {activate_on}')
                 elif oneshot_on:
-                    _LOG('Not patching os.fork and os.forkpty. Oneshot activation is done by signal %s' % oneshot_on)
+                    _LOG(f'Not patching os.fork and os.forkpty. Oneshot activation is done by signal {oneshot_on}')
                 elif socket_path:
-                    _LOG('Not patching os.fork and os.forkpty. Using user socket path %s' % socket_path)
+                    _LOG(f'Not patching os.fork and os.forkpty. Using user socket path {socket_path}')
 
     def release(self):
         if self._thread:
@@ -532,7 +532,7 @@ class Manhole:
         try:
             try:
                 sock = self.get_socket()
-                _LOG('Waiting for new connection (in pid:%s) ...' % os.getpid())
+                _LOG(f'Waiting for new connection (in pid:{os.getpid()}) ...')
                 client = force_original_socket(sock.accept()[0])
                 check_credentials(client)
                 self.connection_handler(client)
@@ -540,7 +540,7 @@ class Manhole:
                 self.remove_manhole_uds()
         except BaseException as exc:  # pylint: disable=W0702
             # we don't want to let any exception out, it might make the application misbehave
-            _LOG('Oneshot failure: %r' % exc)
+            _LOG(f'Oneshot failure: {exc!r}')
 
     def remove_manhole_uds(self):
         name = self.uds_name
@@ -551,7 +551,7 @@ class Manhole:
     @property
     def uds_name(self):
         if self.socket_path is None:
-            return '/tmp/manhole-%s' % os.getpid()
+            return f'/tmp/manhole-{os.getpid()}'
         return self.socket_path
 
     def patched_fork(self):
@@ -649,7 +649,7 @@ def dump_stacktraces():
         for filename, lineno, name, line in traceback.extract_stack(stack):
             lines.append('File: "%s", line %d, in %s' % (filename, lineno, name))
             if line:
-                lines.append('  %s' % (line.strip()))
+                lines.append(f'  {line.strip()}')
     lines.append('#############################################\n\n')
 
     print('\n'.join(lines), file=sys.stderr if _MANHOLE.redirect_stderr else sys.stdout)

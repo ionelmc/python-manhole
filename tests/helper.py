@@ -195,7 +195,7 @@ if __name__ == '__main__':
 
             @partial(signal.signal, signal.SIGUSR1)
             def signal_handler(sig, _):
-                print('Received signal %s' % sig)
+                print(f'Received signal {sig}')
                 global signalled
                 signalled = True
 
@@ -212,7 +212,7 @@ if __name__ == '__main__':
             sys.setcheckinterval(1)
             for _ in range(100000):
                 os.kill(os.getpid(), signal.SIGUSR1)
-            print('signalled=%s' % signalled)
+            print(f'signalled={signalled}')
             time.sleep(TIMEOUT * 10)
         elif test_name == 'test_auth_fail':
             manhole.get_peercred = lambda _: (-1, -1, -1)
@@ -282,7 +282,7 @@ if __name__ == '__main__':
             else:
                 raise RuntimeError('Invalid test spec.')
     except:  # noqa
-        print('Died with %s.' % sys.exc_info()[0].__name__, file=OUTPUT)
+        print(f'Died with {sys.exc_info()[0].__name__}.', file=OUTPUT)
         import traceback
 
         traceback.print_exc(file=OUTPUT)

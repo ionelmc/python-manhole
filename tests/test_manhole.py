@@ -54,7 +54,7 @@ def assert_manhole_running(proc, uds_path, oneshot=False, extra=None):
             wait_for_strings(client.read, TIMEOUT, 'ProcessID', 'ThreadID', '>>>')
             sock.send(b"print('FOOBAR')\n")
             wait_for_strings(client.read, TIMEOUT, 'FOOBAR')
-            wait_for_strings(proc.read, TIMEOUT, 'UID:%s' % os.getuid())
+            wait_for_strings(proc.read, TIMEOUT, f'UID:{os.getuid()}')
             if extra:
                 extra(client)
     wait_for_strings(proc.read, TIMEOUT, 'Cleaned up.', *[] if oneshot else ['Waiting for new connection'])
@@ -102,7 +102,7 @@ def test_connection_handler_exec(variant):
                 wait_for_strings(
                     proc.read,
                     TIMEOUT,
-                    'UID:%s' % os.getuid(),
+                    f'UID:{os.getuid()}',
                 )
                 with TestSocket(sock) as client:
                     with dump_on_error(client.read):
@@ -238,7 +238,7 @@ def test_redirect_stderr_default():
                 with dump_on_error(client.read):
                     wait_for_strings(client.read, 1, '>>>')
                     client.reset()
-                    sock.send(b"import sys\n" b"sys.stderr.write('OK')\n")
+                    sock.send(b'import sys\n' b"sys.stderr.write('OK')\n")
                     wait_for_strings(client.read, 1, 'OK')
 
 
@@ -265,7 +265,7 @@ def test_redirect_stderr_disabled():
                 with dump_on_error(client.read):
                     wait_for_strings(client.read, 1, '>>>')
                     client.reset()
-                    sock.send(b"import sys\n" b"sys.stderr.write('STDERR')\n" b"sys.stdout.write('STDOUT')\n")
+                    sock.send(b'import sys\n' b"sys.stderr.write('STDERR')\n" b"sys.stdout.write('STDOUT')\n")
                     wait_for_strings(client.read, 1, 'STDOUT')
                     assert 'STDERR' not in client.read()
 
@@ -321,18 +321,18 @@ def test_exit_with_grace():
                     sock.send(b"print('FOOBAR')\n")
                     wait_for_strings(client.read, TIMEOUT, 'FOOBAR')
 
-                    wait_for_strings(proc.read, TIMEOUT, 'UID:%s' % os.getuid())
+                    wait_for_strings(proc.read, TIMEOUT, f'UID:{os.getuid()}')
                     sock.shutdown(socket.SHUT_WR)
                     select.select([sock], [], [], 5)
                     sock.recv(1024)
                     try:
                         sock.shutdown(socket.SHUT_RD)
                     except Exception as exc:
-                        print('Failed to SHUT_RD: %s' % exc)
+                        print(f'Failed to SHUT_RD: {exc}')
                     try:
                         sock.close()
                     except Exception as exc:
-                        print('Failed to close socket: %s' % exc)
+                        print(f'Failed to close socket: {exc}')
             wait_for_strings(proc.read, TIMEOUT, 'DONE.', 'Cleaned up.', 'Waiting for new connection')
 
 
@@ -396,7 +396,7 @@ def test_auth_fail():
                 wait_for_strings(
                     proc.read,
                     TIMEOUT,
-                    "SuspiciousClient: Can't accept client with PID:-1 UID:-1 GID:-1. It doesn't match the current " "EUID:",
+                    "SuspiciousClient: Can't accept client with PID:-1 UID:-1 GID:-1. It doesn't match the current " 'EUID:',
                     'Waiting for new connection',
                 )
                 proc.proc.send_signal(signal.SIGINT)
@@ -551,7 +551,7 @@ def test_uwsgi():
         with dump_on_error(proc.read):
             wait_for_strings(proc.read, TIMEOUT, 'uWSGI http bound')
             port = re.findall(r'uWSGI http bound on :(\d+) fd', proc.read())[0]
-            assert requests.get('http://127.0.0.1:%s/' % port, timeout=TIMEOUT).text == 'OK'
+            assert requests.get(f'http://127.0.0.1:{port}/', timeout=TIMEOUT).text == 'OK'
 
             wait_for_strings(proc.read, TIMEOUT, 'spawned uWSGI worker 1')
             pid = re.findall(r'spawned uWSGI worker 1 \(pid: (\d+), ', proc.read())[0]
@@ -560,7 +560,7 @@ def test_uwsgi():
                 with open('/tmp/manhole-pid', 'w') as fh:
                     fh.write(pid)
                 try:
-                    assert_manhole_running(proc, '/tmp/manhole-%s' % pid, oneshot=True)
+                    assert_manhole_running(proc, f'/tmp/manhole-{pid}', oneshot=True)
                 except Exception:
                     if not retry:
                         raise

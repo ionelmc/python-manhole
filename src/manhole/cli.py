@@ -49,12 +49,15 @@ def parse_signal(value):
     if value in SIG_NAMES:
         return SIG_NAMES[value]
     else:
-        raise argparse.ArgumentTypeError('Invalid signal name %r.' % value)
+        raise argparse.ArgumentTypeError(f'Invalid signal name {value!r}.')
 
 
 parser = argparse.ArgumentParser(description='Connect to a manhole.')
 parser.add_argument(
-    'pid', metavar='PID', type=parse_pid, help='A numerical process id, or a path in the form: /tmp/manhole-1234'  # nargs='?',
+    'pid',
+    metavar='PID',
+    type=parse_pid,
+    help='A numerical process id, or a path in the form: /tmp/manhole-1234',  # nargs='?',
 )
 parser.add_argument('-t', '--timeout', dest='timeout', default=1, type=float, help='Timeout to use. Default: %(default)s seconds.')
 group = parser.add_mutually_exclusive_group()
@@ -119,7 +122,7 @@ def main():
         os.kill(args.pid, args.signal)
 
     start = time.time()
-    uds_path = '/tmp/manhole-%s' % args.pid
+    uds_path = f'/tmp/manhole-{args.pid}'
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     sock.settimeout(args.timeout)
     while time.time() - start < args.timeout:
@@ -131,7 +134,7 @@ def main():
         else:
             break
     else:
-        print('Failed to connect to %r: Timeout' % uds_path, file=sys.stderr)
+        print(f'Failed to connect to {uds_path!r}: Timeout', file=sys.stderr)
         sys.exit(5)
 
     is_closing = threading.Event()

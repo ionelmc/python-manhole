@@ -85,7 +85,7 @@ def test_path():
     with TestProcess(sys.executable, HELPER, 'test_simple') as service:
         with dump_on_error(service.read):
             wait_for_strings(service.read, TIMEOUT, '/tmp/manhole-')
-            with TestProcess('manhole-cli', '/tmp/manhole-%s' % service.proc.pid, bufsize=0, stdin=subprocess.PIPE) as client:
+            with TestProcess('manhole-cli', f'/tmp/manhole-{service.proc.pid}', bufsize=0, stdin=subprocess.PIPE) as client:
                 with dump_on_error(client.read):
                     wait_for_strings(client.read, TIMEOUT, '(ManholeConsole)', '>>>')
                     client.proc.stdin.write('1234+2345\n')
