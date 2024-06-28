@@ -10,13 +10,11 @@ Overview
     * - docs
       - |docs|
     * - tests
-      - | |github-actions|
-        | |coveralls| |codecov|
+      - |github-actions| |coveralls| |codecov|
     * - package
-      - | |version| |wheel| |supported-versions| |supported-implementations|
-        | |commits-since|
+      - |version| |wheel| |supported-versions| |supported-implementations| |commits-since|
 .. |docs| image:: https://readthedocs.org/projects/python-manhole/badge/?style=flat
-    :target: https://python-manhole.readthedocs.io/
+    :target: https://readthedocs.org/projects/python-manhole/
     :alt: Documentation Status
 
 .. |github-actions| image:: https://github.com/ionelmc/python-manhole/actions/workflows/github-actions.yml/badge.svg

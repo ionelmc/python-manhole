@@ -1,5 +1,5 @@
 name: build
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 jobs:
   test:
     name: {{ '${{ matrix.name }}' }}
@@ -32,7 +32,7 @@ jobs:
 {% endif %}
 {% for os, python_arch in [
     ['ubuntu', 'x64'],
-    ['macos', 'x64'],
+    ['macos', 'arm64'],
 ] %}
           - name: '{{ env }} ({{ os }})'
             python: '{{ python }}'
@@ -70,3 +70,6 @@ jobs:
     - uses: coverallsapp/github-action@v2
       with:
         parallel-finished: true
+    - uses: codecov/codecov-action@v3
+      with:
+        CODECOV_TOKEN: {% raw %}${{ secrets.CODECOV_TOKEN }}{% endraw %}
