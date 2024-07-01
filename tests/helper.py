@@ -82,6 +82,7 @@ if __name__ == '__main__':
             import manhole
 
         if test_name == 'test_environ_variable_activation':
+            print(f'Sleeping {TIMEOUT} seconds...')
             time.sleep(TIMEOUT)
         elif test_name == 'test_install_twice_not_strict':
             manhole.install(oneshot_on='USR2')

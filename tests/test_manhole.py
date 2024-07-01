@@ -490,7 +490,11 @@ def test_interrupt_on_accept():
 
 def test_environ_variable_activation():
     with TestProcess(
-        sys.executable, '-u', HELPER, 'test_environ_variable_activation', env=dict(os.environ, PYTHONMANHOLE="oneshot_on='USR2'")
+        sys.executable,
+        '-u',
+        HELPER,
+        'test_environ_variable_activation',
+        env=dict(os.environ, PYTHONMANHOLE="oneshot_on='USR2',verbose=True"),
     ) as proc:
         with dump_on_error(proc.read):
             wait_for_strings(proc.read, TIMEOUT, 'Not patching os.fork and os.forkpty. Oneshot activation is done by signal')
