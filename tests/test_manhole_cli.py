@@ -46,15 +46,13 @@ def test_help(testdir):
             'Connect to a manhole.',
             'positional arguments:',
             '  PID                   A numerical process id, or a path in the form:*',
-            'options:',
             '  -h, --help            show this help message and exit',
             '  -t TIMEOUT, --timeout TIMEOUT',
             '                        Timeout to use. Default: 1 seconds.',
             '  -1, -USR1             Send USR1 (*) to the process before connecting.',
             '  -2, -USR2             Send USR2 (*) to the process before connecting.',
             '  -s SIGNAL, --signal SIGNAL',
-            '                        Send the given SIGNAL to the process before',
-            '                        connecting.',
+            '                        Send the given SIGNAL to the process before*',
         ]
     )
 
