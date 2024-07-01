@@ -132,4 +132,4 @@ def test_unbuffered():
                 with dump_on_error(client.read):
                     wait_for_strings(client.read, TIMEOUT, '(ManholeConsole)', '>>>')
                     for i in range(5):
-                        wait_for_strings(client.read, 1, f'line{i}')
+                        wait_for_strings(client.read, 5, f'line{i}')

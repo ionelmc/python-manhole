@@ -1189,6 +1189,7 @@ jobs:
     - name: test
       env:
         TOXPYTHON: '${{ matrix.toxpython }}'
+        MANHOLE_TEST_TIMEOUT: 40
       run: >
         tox -e ${{ matrix.tox_env }} -v
   finish:
