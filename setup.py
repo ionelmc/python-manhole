@@ -5,10 +5,12 @@ from itertools import chain
 from os import fspath
 from pathlib import Path
 
+from setuptools import Command
 from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.develop import develop
 from setuptools.command.easy_install import easy_install
+from setuptools.command.editable_wheel import editable_wheel
 from setuptools.command.install_lib import install_lib
 
 pth_file = Path(__file__).parent.joinpath('src', 'manhole.pth')
@@ -18,6 +20,26 @@ class BuildWithPTH(build):
     def run(self):
         super().run()
         self.copy_file(fspath(pth_file), fspath(Path(self.build_lib, pth_file.name)))
+
+
+class PTHWheelPiggyback:
+    def __init__(self, strategy):
+        self.strategy = strategy
+
+    def __enter__(self):
+        self.strategy.__enter__()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.strategy.__exit__(exc_type, exc_val, exc_tb)
+
+    def __call__(self, wheel, files, mapping):
+        self.strategy(wheel, files, mapping)
+        wheel.writestr(fspath(pth_file.name), pth_file.read_bytes())
+
+
+class EditableWheelWithPTH(editable_wheel):
+    def _select_strategy(self, dist_name, tag, lib):
+        return PTHWheelPiggyback(super()._select_strategy(dist_name, tag, lib))
 
 
 class EasyInstallWithPTH(easy_install):
@@ -41,6 +63,21 @@ class DevelopWithPTH(develop):
     def run(self):
         super().run()
         self.copy_file(fspath(pth_file), str(Path(self.install_dir, pth_file.name)))
+
+
+class GeneratePTH(Command):
+    user_options = []  # noqa: RUF012
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        with pth_file.open('w') as fh:
+            with pth_file.with_suffix('.embed').open() as sh:
+                fh.write(f"import os, sys;exec({sh.read().replace('    ', ' ')!r})")
 
 
 def read(*names, **kwargs):
@@ -118,5 +155,7 @@ setup(
         'easy_install': EasyInstallWithPTH,
         'install_lib': InstallLibWithPTH,
         'develop': DevelopWithPTH,
+        'editable_wheel': EditableWheelWithPTH,
+        'genpth': GeneratePTH,
     },
 )
