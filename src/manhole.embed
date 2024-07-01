@@ -1,4 +1,3 @@
-from __future__ import print_function
 if "PYTHONMANHOLE" in os.environ:
     try:
         from manhole import install
