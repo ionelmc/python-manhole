@@ -25,10 +25,12 @@ jobs:
 {% set python %}pypy-{{ prefix[4] }}.{{ prefix[5:] }}{% endset %}
 {% set cpython %}pp{{ prefix[4:5] }}{% endset %}
 {% set toxpython %}pypy{{ prefix[4] }}.{{ prefix[5:] }}{% endset %}
+{% set pypy %}true{% endset %}
 {% else %}
 {% set python %}{{ prefix[2] }}.{{ prefix[3:] }}{% endset %}
 {% set cpython %}cp{{ prefix[2:] }}{% endset %}
 {% set toxpython %}python{{ prefix[2] }}.{{ prefix[3:] }}{% endset %}
+{% set pypy %}false{% endset %}
 {% endif %}
 {% for os, python_arch in [
     ['ubuntu', 'x64'],
@@ -40,6 +42,7 @@ jobs:
             python_arch: '{{ python_arch }}'
             tox_env: '{{ env }}'
             os: '{{ os }}-latest'
+            pypy: {{ pypy }}
 {% endfor %}
 {% endfor %}
     steps:
@@ -50,6 +53,12 @@ jobs:
       with:
         python-version: {{ '${{ matrix.python }}' }}
         architecture: {{ '${{ matrix.python_arch }}' }}
+
+    - name: install dependencies (terminfo)
+      if: >
+        matrix.pypy
+      run: >
+        sudo apt-get install terminfo
     - name: install dependencies
       run: |
         python -mpip install --progress-bar=off -r ci/requirements.txt
@@ -57,6 +66,7 @@ jobs:
         pip --version
         tox --version
         pip list --format=freeze
+
     - name: test
       env:
         TOXPYTHON: '{{ '${{ matrix.toxpython }}' }}'
