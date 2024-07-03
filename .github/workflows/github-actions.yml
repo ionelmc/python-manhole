@@ -1376,7 +1376,7 @@ jobs:
       if: >
         matrix.pypy
       run: >
-        sudo apt-get install terminfo
+        sudo apt-get install terminfo libtinfo6 libncursesw6
     - name: install dependencies
       run: |
         python -mpip install --progress-bar=off -r ci/requirements.txt
