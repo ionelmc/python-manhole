@@ -226,7 +226,7 @@ Known issues
 ============
 
 * Using threads and file handle (not raw file descriptor) ``verbose_destination`` can cause deadlocks. See bug reports:
-  `PyPy <https://foss.heptapod.net/pypy/pypy/-/issues/1895>`_ and `Python 3.4 <http://bugs.python.org/issue22697>`_.
+  `PyPy <https://github.com/pypy/pypy/issues/1895>`_ and `Python 3.4 <http://bugs.python.org/issue22697>`_.
 
 SIGTERM and socket cleanup
 --------------------------
