@@ -2,6 +2,14 @@
 Changelog
 =========
 
+1.8.1 (2024-07-24)
+------------------
+
+* Fixed buffering issue on Python 3.11. See :issue:`66`.
+* Cleaned up some packaging/test problems.
+* Removed more leftover Python 2 code.
+* Fixed license metadata. See: :issue:`68`.
+
 1.8.0 (2021-04-08)
 ------------------
 
