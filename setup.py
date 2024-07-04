@@ -87,7 +87,7 @@ def read(*names, **kwargs):
 
 setup(
     name='manhole',
-    version='1.8.0',
+    version='1.8.1',
     license='BSD-2-Clause',
     description='Manhole is in-process service that will accept unix domain socket connections and present the'
     'stacktraces for all threads and an interactive prompt.',

@@ -15,7 +15,7 @@ project = 'manhole'
 year = '2012-2024'
 author = 'Ionel Cristian Mărieș'
 copyright = f'{year}, {author}'
-version = release = '1.8.0'
+version = release = '1.8.1'
 
 pygments_style = 'trac'
 templates_path = ['.']
