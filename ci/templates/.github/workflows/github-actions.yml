@@ -25,13 +25,6 @@ jobs:
 {% set python %}pypy-{{ prefix[4] }}.{{ prefix[5:] }}{% endset %}
 {% set cpython %}pp{{ prefix[4:5] }}{% endset %}
 {% set toxpython %}pypy{{ prefix[4] }}.{{ prefix[5:] }}{% endset %}
-{% set pypy %}true{% endset %}
-{% else %}
-{% set python %}{{ prefix[2] }}.{{ prefix[3:] }}{% endset %}
-{% set cpython %}cp{{ prefix[2:] }}{% endset %}
-{% set toxpython %}python{{ prefix[2] }}.{{ prefix[3:] }}{% endset %}
-{% set pypy %}false{% endset %}
-{% endif %}
 {% for os, python_arch in [
     ['ubuntu', 'x64'],
     ['macos', 'arm64'],
@@ -42,8 +35,8 @@ jobs:
             python_arch: '{{ python_arch }}'
             tox_env: '{{ env }}'
             os: '{{ os }}-latest'
-            pypy: {{ pypy }}
 {% endfor %}
+{% endif %}
 {% endfor %}
     steps:
     - uses: actions/checkout@v4
@@ -54,11 +47,6 @@ jobs:
         python-version: {{ '${{ matrix.python }}' }}
         architecture: {{ '${{ matrix.python_arch }}' }}
 
-    - name: install dependencies (terminfo)
-      if: >
-        matrix.pypy
-      run: >
-        sudo apt-get install terminfo libtinfo6 libncursesw6
     - name: install dependencies
       run: |
         python -mpip install --progress-bar=off -r ci/requirements.txt
@@ -70,8 +58,7 @@ jobs:
     - name: test
       env:
         TOXPYTHON: '{{ '${{ matrix.toxpython }}' }}'
-        MANHOLE_TEST_TIMEOUT: 40
-        TERM: xterm
+        MANHOLE_TEST_TIMEOUT: 60
       run: >
         tox -e {{ '${{ matrix.tox_env }}' }} -v
   finish:
@@ -85,3 +72,4 @@ jobs:
     - uses: codecov/codecov-action@v3
       with:
         CODECOV_TOKEN: {% raw %}${{ secrets.CODECOV_TOKEN }}{% endraw %}
+{{ '' }}
