@@ -58,7 +58,7 @@ jobs:
       if: >
         matrix.pypy
       run: >
-        sudo apt-get install terminfo libtinfo6 libncursesw6 
+        sudo apt-get install terminfo libtinfo6 libncursesw6
     - name: install dependencies
       run: |
         python -mpip install --progress-bar=off -r ci/requirements.txt
@@ -71,6 +71,7 @@ jobs:
       env:
         TOXPYTHON: '{{ '${{ matrix.toxpython }}' }}'
         MANHOLE_TEST_TIMEOUT: 40
+        TERM: xterm
       run: >
         tox -e {{ '${{ matrix.tox_env }}' }} -v
   finish:
