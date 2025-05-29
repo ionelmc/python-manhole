@@ -40,19 +40,13 @@ else:
     setinterval = sys.setcheckinterval
     getinterval = sys.getcheckinterval
 
-try:
+if "eventlet" in sys.modules:
     from eventlet.patcher import original as _original
-
+elif "gevent" in sys.modules:
+    from gevent.monkey import get_original as _get_original
+else:
     def _get_original(mod, name):
-        return getattr(_original(mod), name)
-
-except ImportError:
-    try:
-        from gevent.monkey import get_original as _get_original
-    except ImportError:
-
-        def _get_original(mod, name):
-            return getattr(__import__(mod), name)
+        return getattr(__import__(mod), name)
 
 
 _ORIGINAL_SOCKET = _get_original('socket', 'socket')
