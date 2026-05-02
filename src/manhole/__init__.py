@@ -42,6 +42,8 @@ else:
 
 if "eventlet" in sys.modules:
     from eventlet.patcher import original as _original
+    def _get_original(mod, name):
+        return getattr(_original(mod), name)
 elif "gevent" in sys.modules:
     from gevent.monkey import get_original as _get_original
 else:
